@@ -316,10 +316,10 @@ body {
 
             <div class="card-section">
                 <h2>Card of the Day</h2>
-                <div class="card-spinner" onclick="app.spinCard()">
+                <div class="card-spinner" onclick="spinCard()">
                     <div class="card-content">
                         <div style="font-size: 40px;">🔮</div>
-                        <p>Tap to reveal your daily guidance</p>
+                        <p>Tap to reveal your today's message </p>
                     </div>
                 </div>
                 <div id="card-result"></div>
@@ -710,15 +710,8 @@ body {
     </div>
 
     <!-- Scripts -->
-    <script> 
-        function showPage(pageId) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById(pageId).classList.add('active');
-    
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    event.target.closest('.nav-item').classList.add('active');
-}
-    let usedMessages = [];
+    <script>
+let usedMessages = [];
 let allMessages = [];
 
 // Load messages from JSON file
@@ -747,7 +740,7 @@ function spinCard() {
         
         if (result) {
             result.classList.add('show');
-            result.innerHTML = `<h3>🌟 Your Daily Message</h3><p>${randomMessage}</p>`;
+            result.innerHTML = `<h3>🌟 Soul Reminder of the Day</h3><p>${randomMessage}</p>`;
         }
     }, 2000);
 }
@@ -777,7 +770,9 @@ document.addEventListener('DOMContentLoaded', function() {
     loadMessages();
     document.getElementById('home').classList.add('active');
 });
+
 </script>
+
     <script>
         // Register service worker for PWA
         if ('serviceWorker' in navigator) {
@@ -876,6 +871,5 @@ document.addEventListener('DOMContentLoaded', function() {
     </script>
 </body>
 </html>
-
 
 
