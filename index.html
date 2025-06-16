@@ -711,75 +711,20 @@ body {
 
     <!-- Scripts -->
     <script>
-// App functionality will go here
-let currentPage = 'home';
-const pages = ['home', 'meditations', 'affirmations', 'calculators', 'energy', 'profile'];
-
-// Show page function
 function showPage(pageId) {
-    // Hide all pages
-    pages.forEach(page => {
-        const pageElement = document.getElementById(page);
-        if (pageElement) {
-            pageElement.classList.remove('active');
-        }
-    });
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
     
-    // Show selected page
-    const targetPage = document.getElementById(pageId);
-    if (targetPage) {
-        targetPage.classList.add('active');
-        currentPage = pageId;
-    }
-    
-    // Update navigation
-    updateNavigation(pageId);
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    event.target.closest('.nav-item').classList.add('active');
 }
 
-// Update navigation active state
-function updateNavigation(activePageId) {
-    const navItems = document.querySelectorAll('.nav-item');
-    navItems.forEach(item => {
-        item.classList.remove('active');
-        if (item.getAttribute('onclick') && item.getAttribute('onclick').includes(activePageId)) {
-            item.classList.add('active');
-        }
-    });
-}
-
-// Card spinner function
 function spinCard() {
-    const spinner = document.querySelector('.card-spinner');
-    const result = document.getElementById('card-result');
-    
-    if (spinner) {
-        spinner.classList.add('spinning');
-        
-        setTimeout(() => {
-            spinner.classList.remove('spinning');
-            if (result) {
-                result.classList.add('show');
-                result.innerHTML = '<h3>Your Daily Message</h3><p>Trust your intuition today. The answers you seek are already within you.</p>';
-            }
-        }, 3000);
-    }
+    alert('Card feature coming soon!');
 }
 
-// Initialize app
 document.addEventListener('DOMContentLoaded', function() {
-    // Show home page by default
-    showPage('home');
-    
-    // Hide loading screen
-    const loadingScreen = document.querySelector('.loading-screen');
-    if (loadingScreen) {
-        setTimeout(() => {
-            loadingScreen.style.opacity = '0';
-            setTimeout(() => {
-                loadingScreen.style.display = 'none';
-            }, 500);
-        }, 2000);
-    }
+    document.getElementById('home').classList.add('active');
 });
 </script>
 
