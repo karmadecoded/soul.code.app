@@ -316,10 +316,10 @@ body {
 
             <div class="card-section">
                 <h2>Card of the Day</h2>
-                <div class="card-spinner" onclick="spinCard()">
+                <div class="card-spinner" onclick="app.spinCard()">
                     <div class="card-content">
                         <div style="font-size: 40px;">🔮</div>
-                        <p>Tap to reveal your today's message </p>
+                        <p>Tap to reveal your daily guidance</p>
                     </div>
                 </div>
                 <div id="card-result"></div>
@@ -710,69 +710,7 @@ body {
     </div>
 
     <!-- Scripts -->
-    <script>
-let usedMessages = [];
-let allMessages = [];
-
-// Load messages from JSON file
-async function loadMessages() {
-    try {
-        const response = await fetch('messages.json');
-        const data = await response.json();
-        allMessages = data.messages;
-    } catch (error) {
-        console.log('Could not load messages, using fallback');
-        allMessages = ["Trust your intuition today.", "New opportunities await you., "Pause and breathe deeply. Within stillness lies the clarity you seek."];
-    }
-}
-
-function spinCard() {
-    const spinner = document.querySelector('.card-spinner');
-    const result = document.getElementById('card-result');
-    
-    spinner.classList.add('spinning');
-    
-    setTimeout(() => {
-        spinner.classList.remove('spinning');
-        
-        // Get random message
-        let randomMessage = getRandomMessage();
-        
-        if (result) {
-            result.classList.add('show');
-            result.innerHTML = `<h3>🌟 Soul Reminder of the Day</h3><p>${randomMessage}</p>`;
-        }
-    }, 2000);
-}
-
-function getRandomMessage() {
-    if (allMessages.length === 0) return "Loading messages...";
-    
-    // Reset if all messages used
-    if (usedMessages.length >= allMessages.length) {
-        usedMessages = [];
-    }
-    
-    // Get unused message
-    let availableMessages = allMessages.filter((msg, index) => !usedMessages.includes(index));
-    let randomIndex = Math.floor(Math.random() * availableMessages.length);
-    let selectedMessage = availableMessages[randomIndex];
-    
-    // Mark as used
-    let originalIndex = allMessages.indexOf(selectedMessage);
-    usedMessages.push(originalIndex);
-    
-    return selectedMessage;
-}
-
-// Load messages when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    loadMessages();
-    document.getElementById('home').classList.add('active');
-});
-
-</script>
-
+    <script src="app.js"></script>
     <script>
         // Register service worker for PWA
         if ('serviceWorker' in navigator) {
@@ -871,4 +809,6 @@ document.addEventListener('DOMContentLoaded', function() {
     </script>
 </body>
 </html>
+
+
 
