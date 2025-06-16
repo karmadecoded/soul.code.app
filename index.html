@@ -711,6 +711,13 @@ body {
 
     <!-- Scripts -->
     <script> 
+        function showPage(pageId) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+    
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    event.target.closest('.nav-item').classList.add('active');
+}
     let usedMessages = [];
 let allMessages = [];
 
