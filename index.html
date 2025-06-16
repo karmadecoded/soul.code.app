@@ -711,21 +711,66 @@ body {
 
     <!-- Scripts -->
     <script>
-function showPage(pageId) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById(pageId).classList.add('active');
-    
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    event.target.closest('.nav-item').classList.add('active');
+let usedMessages = [];
+let allMessages = [];
+
+// Load messages from JSON file
+async function loadMessages() {
+    try {
+        const response = await fetch('messages.json');
+        const data = await response.json();
+        allMessages = data.messages;
+    } catch (error) {
+        console.log('Could not load messages, using fallback');
+        allMessages = ["Trust your intuition today.", "New opportunities await you."];
+    }
 }
 
 function spinCard() {
-    alert('Card feature coming soon!');
+    const spinner = document.querySelector('.card-spinner');
+    const result = document.getElementById('card-result');
+    
+    spinner.classList.add('spinning');
+    
+    setTimeout(() => {
+        spinner.classList.remove('spinning');
+        
+        // Get random message
+        let randomMessage = getRandomMessage();
+        
+        if (result) {
+            result.classList.add('show');
+            result.innerHTML = `<h3>🌟 Your Daily Message</h3><p>${randomMessage}</p>`;
+        }
+    }, 2000);
 }
 
+function getRandomMessage() {
+    if (allMessages.length === 0) return "Loading messages...";
+    
+    // Reset if all messages used
+    if (usedMessages.length >= allMessages.length) {
+        usedMessages = [];
+    }
+    
+    // Get unused message
+    let availableMessages = allMessages.filter((msg, index) => !usedMessages.includes(index));
+    let randomIndex = Math.floor(Math.random() * availableMessages.length);
+    let selectedMessage = availableMessages[randomIndex];
+    
+    // Mark as used
+    let originalIndex = allMessages.indexOf(selectedMessage);
+    usedMessages.push(originalIndex);
+    
+    return selectedMessage;
+}
+
+// Load messages when page loads
 document.addEventListener('DOMContentLoaded', function() {
+    loadMessages();
     document.getElementById('home').classList.add('active');
 });
+
 </script>
 
     <script>
