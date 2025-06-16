@@ -7,7 +7,75 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4c135d">
     <meta name="description" content="Your personal spiritual wellness companion with meditations, affirmations, and daily guidance">
-    <link rel="stylesheet" href="styles.css">
+   <style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #4c135d 0%, #6b2c91 100%);
+    color: white;
+    min-height: 100vh;
+}
+
+#app {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    padding-bottom: 100px;
+}
+
+.page {
+    display: none;
+    padding: 20px;
+}
+
+.page.active {
+    display: block;
+}
+
+.btn {
+    background: linear-gradient(45deg, #ccae79, #e6c896);
+    color: #4c135d;
+    border: none;
+    padding: 15px 25px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    margin: 10px 0;
+}
+
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(76, 19, 93, 0.95);
+    padding: 15px 0;
+    display: flex;
+    justify-content: space-around;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.nav-item {
+    color: #ccae79;
+    text-align: center;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.nav-icon {
+    font-size: 24px;
+    margin-bottom: 5px;
+}
+</style>
+
     <link rel="apple-touch-icon" href="icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
