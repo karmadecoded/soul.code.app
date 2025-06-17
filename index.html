@@ -945,12 +945,7 @@ function spinCard() {
     }, 2000);
 }
 
-        function startMeditation(type) {
-    alert(`Starting ${type} meditation...`);
-    // Later we'll add actual meditation functionality
-}
-
-// Meditation URLs mapping
+        // Meditation URLs mapping
 const meditationUrls = {
     'selflove': 'https://youtu.be/YIS7HskL4fU?si=2XdNB4tllHQpzoaV',
     'stress': 'https://youtu.be/g7wRuSJSkyQ?si=EzWoIyviB40giWt1',
@@ -993,6 +988,7 @@ function startMeditation(type) {
             <button class="btn" onclick="openFullVideo('${url}')">🔗 Open Full Video</button>
         `;
     }
+}
 
 function startPersonalizedMeditation(arcanaNumber) {
     const videoContainer = document.querySelector('.video-placeholder');
