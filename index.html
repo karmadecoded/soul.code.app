@@ -939,6 +939,32 @@ function spinCard() {
     }, 2000);
 }
 
+        function startMeditation(type) {
+    alert(`Starting ${type} meditation...`);
+    // Later we'll add actual meditation functionality
+}
+
+function showMeditationPlayer(title, duration) {
+    const result = document.getElementById('meditation-player');
+    if (result) {
+        result.innerHTML = `
+            <h3>🧘‍♀️ ${title}</h3>
+            <p>Duration: ${duration}</p>
+            <button class="btn" onclick="playMeditation()">▶️ Play</button>
+            <button class="btn" onclick="pauseMeditation()">⏸️ Pause</button>
+        `;
+        result.style.display = 'block';
+    }
+}
+
+function playMeditation() {
+    alert('Meditation playing...');
+}
+
+function pauseMeditation() {
+    alert('Meditation paused...');
+}
+        
 function getRandomMessage() {
     if (allMessages.length === 0) return "Loading messages...";
     
