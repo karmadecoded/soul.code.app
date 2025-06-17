@@ -950,26 +950,74 @@ function spinCard() {
     // Later we'll add actual meditation functionality
 }
 
-function showMeditationPlayer(title, duration) {
-    const result = document.getElementById('meditation-player');
-    if (result) {
-        result.innerHTML = `
-            <h3>🧘‍♀️ ${title}</h3>
-            <p>Duration: ${duration}</p>
-            <button class="btn" onclick="playMeditation()">▶️ Play</button>
-            <button class="btn" onclick="pauseMeditation()">⏸️ Pause</button>
+// Meditation URLs mapping
+const meditationUrls = {
+    'selflove': 'https://youtu.be/YIS7HskL4fU?si=2XdNB4tllHQpzoaV',
+    'stress': 'https://youtu.be/g7wRuSJSkyQ?si=EzWoIyviB40giWt1',
+    'breath': 'https://youtu.be/j-UTeboCPno?si=Qapkj480WmszaA0X',
+    'depression': 'https://youtu.be/77EjxZeTefQ?si=VRkpG4X3oNmXNTvu',
+    'mindfulness': 'https://youtu.be/vjzDC_PNW14?si=dRYLgqVzcQOKw_TF'
+};
+
+// Add click listeners for meditation cards
+document.addEventListener('DOMContentLoaded', function() {
+    // Meditation cards click listeners
+    document.querySelectorAll('.meditation-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const meditationType = this.getAttribute('data-meditation');
+            startMeditation(meditationType);
+        });
+    });
+    
+    // Arcana cards click listeners
+    document.querySelectorAll('.arcana-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const arcanaNumber = this.getAttribute('data-arcana');
+            startPersonalizedMeditation(arcanaNumber);
+        });
+    });
+});
+
+function startMeditation(type) {
+    const videoContainer = document.querySelector('.video-placeholder');
+    const url = meditationUrls[type];
+    
+    if (url) {
+        // Convert YouTube URL to embed format
+        const videoId = url.split('youtu.be/')[1].split('?')[0];
+        const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+        
+        videoContainer.innerHTML = `
+            <iframe width="100%" height="250" src="${embedUrl}" 
+                    frameborder="0" allowfullscreen></iframe>
+            <button class="btn" onclick="openFullVideo('${url}')">🔗 Open Full Video</button>
         `;
-        result.style.display = 'block';
     }
+
+function startPersonalizedMeditation(arcanaNumber) {
+    const videoContainer = document.querySelector('.video-placeholder');
+    const url = 'https://youtu.be/vjzDC_PNW14?si=dRYLgqVzcQOKw_TF';
+    const videoId = url.split('youtu.be/')[1].split('?')[0];
+    const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+    
+    videoContainer.innerHTML = `
+        <h3>🔮 ${arcanaNumber}${getOrdinalSuffix(arcanaNumber)} Arcana Meditation</h3>
+        <iframe width="100%" height="250" src="${embedUrl}" 
+                frameborder="0" allowfullscreen></iframe>
+        <button class="btn" onclick="openFullVideo('${url}')">🔗 Open Full Video</button>
+    `;
 }
 
-function playMeditation() {
-    alert('Meditation playing...');
+function openFullVideo(url) {
+    window.open(url, '_blank');
 }
 
-function pauseMeditation() {
-    alert('Meditation paused...');
+function getOrdinalSuffix(num) {
+    const suffixes = ['th', 'st', 'nd', 'rd'];
+    const v = num % 100;
+    return suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0];
 }
+
         
 function getRandomMessage() {
     if (allMessages.length === 0) return "Loading messages...";
