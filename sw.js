@@ -1,3 +1,45 @@
+importScripts('https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js');
+importScripts('https://www.gstatic.com/firebasejs/11.9.1/firebase-messaging.js');
+
+firebase.initializeApp({
+  apiKey: "AIzaSyAPCFjjC6SqtQEauTQ6Hs7Ex-B2tj6PuXM",
+  authDomain: "soul-code-app.firebaseapp.com",
+  projectId: "soul-code-app",
+  storageBucket: "soul-code-app.firebasestorage.app",
+  messagingSenderId: "339179205157",
+  appId: "1:339179205157:web:e801c0ad054cbc6a1c05cc",
+  measurementId: "G-C1K5PGZJB7"
+});
+
+const messaging = firebase.messaging();
+
+messaging.onBackgroundMessage(function(payload) {
+  console.log('[firebase-messaging-sw.js] Received background message ', payload);
+
+  const notificationTitle = payload.notification?.title || 'SoulCode Affirmation';
+  const notificationOptions = {
+    body: payload.notification?.body || 'Your daily affirmation is ready!',
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
+    vibrate: [200, 100, 200],
+    data: payload.data || {},
+    actions: [
+      {
+        action: 'explore',
+        title: 'Open App',
+        icon: '/icon-192.png'
+      },
+      {
+        action: 'close',
+        title: 'Close',
+        icon: '/icon-192.png'
+      }
+    ]
+  };
+
+  self.registration.showNotification(notificationTitle, notificationOptions);
+});
+
 const CACHE_NAME = 'soulcode-v1.0.0';
 const urlsToCache = [
     '/',
@@ -92,38 +134,6 @@ self.addEventListener('sync', event => {
     if (event.tag === 'affirmation-sync') {
         event.waitUntil(sendScheduledAffirmations());
     }
-});
-
-// Push notifications
-self.addEventListener('push', event => {
-    console.log('Service Worker: Push received');
-    
-    const options = {
-        body: event.data ? event.data.text() : 'Your daily affirmation is ready!',
-        icon: '/icon-192.png',
-        badge: '/icon-192.png',
-        vibrate: [100, 50, 100],
-        data: {
-            dateOfArrival: Date.now(),
-            primaryKey: 1
-        },
-        actions: [
-            {
-                action: 'explore',
-                title: 'Open App',
-                icon: '/icon-192.png'
-            },
-            {
-                action: 'close',
-                title: 'Close',
-                icon: '/icon-192.png'
-            }
-        ]
-    };
-
-    event.waitUntil(
-        self.registration.showNotification('SoulCode Affirmation', options)
-    );
 });
 
 // Notification click handling
@@ -320,7 +330,7 @@ self.addEventListener('message', event => {
     }
 });
 
-// Handle failed network requests
+// Handle failed network requests for images
 self.addEventListener('fetch', event => {
     if (event.request.destination === 'image') {
         event.respondWith(
@@ -328,7 +338,7 @@ self.addEventListener('fetch', event => {
                 return response || fetch(event.request).catch(() => {
                     // Return placeholder image if image fails to load
                     return new Response(
-                        '<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#cdb2e3"/><text x="50" y="50" text-anchor="middle" dy=".3em" fill="#4c135d">✨</text></svg>',
+                        '<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><rect fill="#ccc" width="100" height="100"/><text x="50" y="50" font-size="12" text-anchor="middle" fill="#555" dy=".3em">Image not found</text></svg>',
                         { headers: { 'Content-Type': 'image/svg+xml' } }
                     );
                 });
@@ -336,5 +346,3 @@ self.addEventListener('fetch', event => {
         );
     }
 });
-
-console.log('Service Worker: Loaded successfully');
