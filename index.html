@@ -2369,7 +2369,7 @@ input:checked + .toggle-slider:before {
   
   
   // Call this after the user selects their categories & times
-async function saveUserPreferences(userId, categories, schedule) {
+window.saveUserPreferences = async function(userId, categories, schedule) {
   const token = await getToken(messaging, {
     vapidKey: 'BFeiQnMxZlXHXxtQrAPvWSJ_1XnTklpH2IEcPAG_qjoxKKwHICnJOaEjzK3rq5zNMyaD02_gjJPqtBA6WYGu20U'
   });
@@ -3916,7 +3916,7 @@ class AffirmationsManager {
         };
         
         localStorage.setItem('affirmationSettings', JSON.stringify(settingsData));
-        await saveUserPreferences(userId, settingsData.categories, {
+        await window.saveUserPreferences(userId, settingsData.categories, {
   days: settingsData.days,
   frequency: settingsData.frequency,
   startTime: settingsData.startTime
