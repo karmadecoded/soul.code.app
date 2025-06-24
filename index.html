@@ -12,11 +12,41 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+
 }
+/* UNIVERSAL PWA MOBILE CONTAINER - HIGHEST PRIORITY */
+.page.active {
+    max-width: 400px !important;
+    margin: 0 auto !important;
+    padding: 20px 15px 100px 15px !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+}
+
+.page.active * {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.page.active img {
+    max-width: 100% !important;
+    height: auto !important;
+    object-fit: contain !important;
+}
+
+.page.active .grid,
+.page.active .categories-grid,
+.page.active .quick-actions,
+.page.active .calculators-grid {
+    max-width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
 
 body {
     font-family: 'Georgia', serif;
-    background: linear-gradient(135deg, #4c135d 0%, #6b2c91 100%);
+    background: linear-gradient(135deg, #350c48 0%, #2e0c3e 100%);
     color: white;
     min-height: 100vh;
     overflow-x: hidden;
@@ -36,13 +66,14 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, #4c135d 0%, #6b2c91 100%);
+    background: linear-gradient(135deg, #4c135d 0%, #350c48 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 9999;
     transition: opacity 0.5s ease;
 }
+
 
 .loading-content {
     text-align: center;
@@ -68,6 +99,14 @@ body {
 .page.active {
     display: block;
 }
+#calculators-page {
+    display: none !important;
+}
+
+#calculators-page.active {
+    display: block !important;
+}
+
 
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(20px); }
@@ -82,19 +121,6 @@ body {
     margin-bottom: 30px;
 }
 
-.profile-circle {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: linear-gradient(45deg, #ccae79, #e6c896);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    cursor: pointer;
-    transition: transform 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-}
 
 .profile-circle:hover {
     transform: scale(1.1);
@@ -173,9 +199,13 @@ body {
 .quick-actions {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
+    gap: 8px;
     margin-bottom: 30px;
+    max-width: 320px;
+    margin-left: auto;
+    margin-right: auto;
 }
+
 
 .action-card {
     background: rgba(255,255,255,0.1);
@@ -203,10 +233,44 @@ body {
     font-weight: bold;
     color: #ccae79;
 }
+.action-card {
+    cursor: pointer;
+    pointer-events: auto;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.action-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.action-card:active {
+    transform: translateY(0);
+}
+
+.quick-actions {
+    pointer-events: auto;
+}
+
+.quick-actions .action-card {
+    pointer-events: auto;
+}
+
+
+#access-code-input {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    margin: 15px 0;
+    box-sizing: border-box;
+}
+
 
 .btn {
-    background: linear-gradient(45deg, #ccae79, #e6c896);
-    color: #4c135d;
+
+    background: linear-gradient(135deg, #ccae79 0%, #caafe0 100%);
+    color: white;
     border: none;
     padding: 15px 25px;
     border-radius: 25px;
@@ -222,6 +286,7 @@ body {
 .btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    background: linear-gradient(135deg, #b8a06b 0%, #b49dd4 100%);
 }
 
 .bottom-nav {
@@ -299,421 +364,2687 @@ body {
         height: 220px;
     }
 }
-</style>
+/* Add this to your CSS section */
+.meditation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
 
+.meditation-card {
+    background: linear-gradient(135deg, #4c135d, #8b5a2b);
+    border-radius: 15px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 15px rgba(76, 19, 93, 0.3);
+}
+
+.meditation-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(76, 19, 93, 0.5);
+}
+
+.meditation-image {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+
+.meditation-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(76, 19, 93, 0.4), rgba(139, 90, 43, 0.4));
+}
+
+.meditation-card h3 {
+    color: #ccae79;
+    padding: 15px;
+    margin: 0;
+    font-size: 1.1em;
+}
+
+.meditation-card p {
+    color: #e6d7ff;
+    padding: 0 15px 15px;
+    margin: 0;
+    font-size: 0.9em;
+}
+#meditation-player {
+    display: none !important;
+}
+
+#meditation-player.active {
+    display: block !important;
+}
+/* Beautiful Golden Meditation Player */
+.meditation-player {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #1a0d1f, #2d1b3d);
+    z-index: 1000;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.player-container {
+    max-width: 500px;
+    margin: 50px auto;
+    background: linear-gradient(135deg, #4c135d, #8b5a2b);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(76, 19, 93, 0.5);
+    text-align: center;
+}
+
+.player-image {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    margin: 0 auto 30px;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+    border: 4px solid #ccae79;
+}
+
+.player-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.play-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(76, 19, 93, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s ease;
+}
+
+.play-button {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #ccae79, #cdb2e3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+}
+
+.play-button:hover {
+    transform: scale(1.1);
+}
+
+.player-controls h3 {
+    color: #ccae79;
+    font-size: 1.5em;
+    margin-bottom: 30px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.control-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.control-btn {
+    background: linear-gradient(135deg, #ccae79, #cdb2e3);
+    color: #4c135d;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+    font-size: 1em;
+}
+
+.control-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5);
+}
+
+.control-btn:active {
+    transform: translateY(0);
+}
+
+/* Modal for Arcana Selection */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #4c135d, #8b5a2b);
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 30px;
+    color: #ccae79;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.close:hover {
+    color: #cdb2e3;
+}
+
+.modal-content h2 {
+    color: #ccae79;
+    text-align: center;
+    margin-bottom: 25px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.arcana-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.arcana-item {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 237, 78, 0.1));
+    border: 2px solid #ccae79;
+    border-radius: 10px;
+    padding: 15px;
+    color: #ccae79;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    font-weight: bold;
+}
+
+.arcana-item:hover {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 237, 78, 0.2));
+    transform: translateX(5px);
+}
+/* Update your existing categories-grid to ensure 3 per row */
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+    padding: 0 20px;
+}
+
+/* Add styles for the category images */
+.category-image {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    transition: transform 0.3s ease;
+}
+
+/* Update category card to accommodate images */
+.category-card {
+    position: relative;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.category-card:hover .category-image {
+    transform: scale(1.05);
+}
+
+/* Selected state styling */
+.category-card.selected {
+    background: linear-gradient(135deg, #caafe0 0%, #ccae79 100%);
+    color: white;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+}
+
+.category-card.selected .category-image {
+    border: 3px solid white;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive design for mobile */
+@media (max-width: 768px) {
+    .categories-grid {
+        grid-template-columns: 1fr;
+        padding: 0 10px;
+    }
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+    .categories-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+/* Category Selection Styles */
+.category-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 15px;
+    position: relative;
+}
+
+.category-card.selected {
+    background-color: #caafe0 !important;
+    border-color: #9b59b6;
+    transform: scale(1.02);
+}
+
+.category-card .checkbox {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.category-card.selected .checkbox {
+    background: #9b59b6;
+    border-color: #9b59b6;
+}
+
+.category-card.selected .checkbox::after {
+    content: '✓';
+    color: white;
+    font-size: 12px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Selected Categories Display */
+.selected-categories {
+    margin: 30px 0;
+    padding: 20px;
+    background:#ccae79;
+    border-radius: 12px;
+    display: none;
+}
+
+.selected-categories.show {
+    display: block;
+}
+
+#selected-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.selected-tag {
+    background: #caafe0;
+    color: #333;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.selected-tag .remove {
+    cursor: pointer;
+    font-weight: bold;
+    color: #666;
+}
+
+/* Notification Setup Styles */
+.notification-setup {
+    background:
+    /* Additional styles for the new functionality */
+.selected-categories {
+    margin: 30px 0;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    display: none;
+}
+
+.selected-categories.show {
+    display: block;
+}
+
+#selected-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.selected-tag {
+    background: #caafe0;
+    color: #333;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.selected-tag .remove {
+    cursor: pointer;
+    font-weight: bold;
+    color: #666;
+    font-size: 16px;
+}
+
+.selected-tag .remove:hover {
+    color: #333;
+}
+
+/* Days selection */
+.days-selection {
+    margin: 20px 0;
+}
+
+.days-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.day-checkbox {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 10px 15px;
+    border: 2px solid #ddd;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+}
+
+.day-checkbox input {
+    display: none;
+}
+
+.day-checkbox span {
+    font-weight: 500;
+}
+
+.day-checkbox:has(input:checked) {
+    background: #caafe0;
+    border-color: #9b59b6;
+}
+
+/* Frequency and time selection */
+.frequency-selection,
+.start-time-selection {
+    margin: 20px 0;
+}
+
+#frequency-select,
+#start-time {
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+/* Save button */
+.save-btn {
+    background: linear-gradient(135deg, #caafe0 0%, #ccae79 100%);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    margin: 20px 0;
+}
+
+.save-btn:hover {
+    transform: translateY(-2px);
+}
+
+/* Schedule preview */
+.schedule-preview {
+    margin-top: 30px;
+    padding: 20px;
+    background: #e8f5e8;
+    border-radius: 12px;
+    display: none;
+}
+
+.schedule-preview h4 {
+    color: #caafe0;
+    margin-bottom: 15px;
+}
+
+#preview-content p {
+    margin: 8px 0;
+    color: #ccae79;
+}
+
+/* Success/Error messages */
+.settings-message {
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+    font-weight: 500;
+}
+
+.settings-message.success {
+    background: #ccae79;
+    color: #511c62;
+    border: 1px solid #c3e6cb;
+}
+
+.settings-message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Category card selected state */
+.category-card.selected {
+    background-color: #caafe0 !important;
+    border-color: #9b59b6 !important;
+    transform: scale(1.02);
+}
+
+.category-card.selected .checkbox::after {
+    content: '✓';
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Keep your existing categories-grid as is - 3 per row */
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+    padding: 0 20px;
+}
+
+/* Keep your existing category card styles */
+.category-card {
+    position: relative;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.category-card:hover .category-image {
+    transform: scale(1.05);
+}
+
+/* Add these mobile optimizations */
+@media (max-width: 768px) {
+    .categories-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        padding: 0 15px;
+    }
+    
+    .category-card {
+        padding: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .categories-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        padding: 0 10px;
+    }
+    
+    .category-card {
+        padding: 10px;
+    }
+    
+    .category-card h3 {
+        font-size: 0.85rem;
+        line-height: 1.2;
+    }
+    #affirmations-page .notification-setup {
+    display: none !important;
+}
+
+#affirmations-page .notification-setup.show {
+    display: block !important;
+}
+.days-selection,
+.frequency-selection, 
+.start-time-selection,
+#save-settings,
+#schedule-preview {
+    display: none !important;
+}
+
+.days-selection.show,
+.frequency-selection.show, 
+.start-time-selection.show,
+#save-settings.show,
+#schedule-preview.show {
+    display: block !important;
+}
+.embedded-calculator {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 1000;
+    display: none;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.calculator-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    margin-bottom: 20px;
+}
+
+.close-calculator {
+    background: #ccae79;
+    color: #4c135d;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.calculator-iframe-container {
+    background: white;
+    border-radius: 10px;
+    height: calc(100% - 80px);
+}
+/* Mobile-friendly calculator styles */
+@media (max-width: 768px) {
+    .calculators-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        padding: 0 10px;
+    }
+    
+    .calculator-card {
+        margin-bottom: 20px;
+    }
+    
+    .calculator-image img {
+        height: 150px;
+        object-fit: cover;
+    }
+    
+    .calculator-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .calculator-buttons .btn {
+        width: 100%;
+        padding: 12px;
+        font-size: 14px;
+    }
+    
+    /* Mobile-friendly embedded calculator */
+    .embedded-calculator {
+        padding: 10px;
+    }
+    
+    .calculator-header h2 {
+        font-size: 18px;
+    }
+    
+    .close-calculator {
+        width: 35px;
+        height: 35px;
+        font-size: 20px;
+    }
+    
+    .calculator-iframe-container {
+        height: calc(100vh - 100px);
+    }
+    
+    .calculator-iframe-container iframe {
+        height: 100%;
+    }
+    
+    /* Code modal mobile */
+    #code-modal .modal-content {
+        width: 90%;
+        margin: 20% auto;
+        padding: 20px;
+    }
+.calculators-section {
+    padding: 20px;
+}
+
+.calculators-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.calculator-card {
+    background: rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 25px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    position: relative;
+}
+
+.calculator-title {
+    color: #ccae79;
+    font-size: 24px;
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.calculator-image {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.calculator-image img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 15px;
+}
+
+.calculator-description {
+    margin-bottom: 25px;
+    line-height: 1.6;
+}
+
+.calculator-description p {
+    margin-bottom: 15px;
+    color: #e6d7ff;
+}
+
+.calculator-description strong {
+    color: #ccae79;
+}
+
+.calculator-description ul {
+    margin: 15px 0;
+    padding-left: 20px;
+}
+
+.calculator-description li {
+    margin-bottom: 8px;
+    color: #e6d7ff;
+}
+
+.calculator-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+@media (max-width: 768px) {
+    .calculators-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .calculator-title {
+        font-size: 20px;
+    }
+.calculators-section {
+    padding: 20px;
+}
+
+.calculators-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.calculator-card {
+    background: rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 25px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    position: relative;
+}
+
+.calculator-title {
+    color: #ccae79;
+    font-size: 24px;
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.calculator-image {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.calculator-image img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 15px;
+}
+
+.calculator-description {
+    margin-bottom: 25px;
+    line-height: 1.6;
+}
+
+.calculator-description p {
+    margin-bottom: 15px;
+    color: #e6d7ff;
+}
+
+.calculator-description strong {
+    color: #ccae79;
+}
+
+.calculator-description ul {
+    margin: 15px 0;
+    padding-left: 20px;
+}
+
+.calculator-description li {
+    margin-bottom: 8px;
+    color: #e6d7ff;
+}
+
+.calculator-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+@media (max-width: 768px) {
+    .calculators-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .calculator-title {
+        font-size: 20px;
+    }
+
+.title-with-lock {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.lock-overlay {
+    background: rgba(0,0,0,0.7);
+    border-radius: 8px;
+    padding: 4px 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    position: static;
+}
+
+.lock-icon {
+    font-size: 14px;
+    color: white;
+}
+
+.unlock-text {
+    font-size: 8px !important;
+    color: white !important;
+    margin: 0 !important;
+    white-space: nowrap;
+}
+
+.modal-content button.btn {
+  width: 48%;
+  display: inline-block;
+}
+
+
+/* NUCLEAR OPTION - Maximum specificity */
+html body #app #lifemap-page.page.active {
+    position: relative !important;
+    top: 0 !important;
+    left: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 auto !important;
+    padding: 20px 15px 100px 15px !important;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+    background: linear-gradient(135deg, #4c135d 0%, #6b2c91 100%) !important;
+    z-index: 9999 !important;
+    overflow-y: auto !important;
+    transform: none !important;
+    max-width: 400px !important;
+    box-sizing: border-box !important;
+}
+
+
+/* Force header to top */
+html body #app #lifemap-page.page.active > * {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+html body #app #lifemap-page.page.active > *:first-child {
+    margin-top: 0 !important;
+    padding-top: 20px !important;
+}
+
+/* Target all possible header classes */
+html body #app #lifemap-page.page.active .page-header,
+html body #app #lifemap-page.page.active .header,
+html body #app #lifemap-page.page.active h1,
+html body #app #lifemap-page.page.active h2 {
+    padding: 20px 20px 10px 20px !important;
+    margin: 0 !important;
+    text-align: center !important;
+    position: relative !important;
+    top: 0 !important;
+}
+
+/* Target all possible content classes */
+html body #app #lifemap-page.page.active .lifemap-content,
+html body #app #lifemap-page.page.active .content,
+html body #app #lifemap-page.page.active .page-content {
+    padding: 0 20px 100px 20px !important;
+    margin: 0 !important;
+    text-align: center !important;
+    min-height: auto !important;
+    box-sizing: border-box !important;
+}
+
+/* Target all possible button classes */
+html body #app #lifemap-page.page.active .lifemap-button,
+html body #app #lifemap-page.page.active button,
+html body #app #lifemap-page.page.active .btn,
+html body #app #lifemap-page.page.active .button {
+    margin: 30px 0 150px 0 !important;
+    position: relative !important;
+    z-index: 10000 !important;
+    clear: both !important;
+}
+
+
+
+/* Mobile overrides */
+@media screen and (max-width: 480px) {
+    html body #app #lifemap-page.page.active {
+        width: 100vw !important;
+        left: 0 !important;
+        transform: none !important;
+    }
+    
+    html body #app #lifemap-page.page.active .page-header,
+    html body #app #lifemap-page.page.active .header,
+    html body #app #lifemap-page.page.active h1,
+    html body #app #lifemap-page.page.active h2 {
+        padding: 15px 15px 5px 15px !important;
+        font-size: 24px !important;
+    }
+    
+    html body #app #lifemap-page.page.active .lifemap-content,
+    html body #app #lifemap-page.page.active .content,
+    html body #app #lifemap-page.page.active .page-content {
+        padding: 0 15px 350px 15px !important;
+    }
+}
+* Force bottom nav to always be visible */
+.bottom-nav {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Simple approach - just add lots of bottom padding to lifemap */
+#lifemap-page.active {
+    padding-bottom: 150px !important;
+}
+
+#lifemap-page.active button:last-child {
+    margin-bottom: 200px !important;
+}
+.bottom-nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background: #fff;
+    border-top: 1px solid #e0e0e0;
+    padding: 8px 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 10000;
+    pointer-events: auto;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    pointer-events: auto;
+    user-select: none;
+}
+
+.nav-item:hover {
+    background-color: #f5f5f5;
+    border-radius: 8px;
+}
+
+.nav-item.active {
+    color: #6b2c91;
+}
+
+.nav-item.active .nav-icon {
+    transform: scale(1.1);
+}
+
+.nav-icon {
+    font-size: 20px;
+    margin-bottom: 4px;
+}
+
+.nav-label {
+    font-size: 12px;
+    font-weight: 500;
+}
+/* Profile Settings Button */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    position: relative;
+}
+
+.profile-settings-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.profile-settings-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.settings-icon {
+    font-size: 18px;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 20000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+    background: linear-gradient(135deg, #6b2c91 0%, #4c135d 100%);
+    color: white;
+    border-radius: 15px 15px 0 0;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.close-btn {
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    color: white;
+    opacity: 0.8;
+}
+
+.close-btn:hover {
+    opacity: 1;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+/* Settings Sections */
+.settings-section {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.settings-section:last-child {
+    border-bottom: none;
+}
+
+.settings-section h3 {
+    margin: 0 0 15px 0;
+    color: #6b2c91;
+    font-size: 18px;
+}
+
+
+/* Progress Stats */
+.progress-stats {
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
+}
+
+.stat-item {
+    text-align: center;
+    flex: 1;
+    padding: 15px;
+    background: linear-gradient(135deg, #f8f9ff 0%, #e8f0ff 100%);
+    border-radius: 10px;
+}
+
+.stat-number {
+    font-size: 24px;
+    font-weight: bold;
+    color: #6b2c91;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Affirmation Settings */
+.affirmation-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.affirmation-item {
+    padding: 15px;
+    background: #f8f9ff;
+    border-radius: 10px;
+    border-left: 4px solid #6b2c91;
+}
+
+.affirmation-category {
+    font-weight: bold;
+    color: #6b2c91;
+    margin-bottom: 5px;
+}
+
+.affirmation-text {
+    color: #333;
+    margin-bottom: 8px;
+    font-style: italic;
+}
+
+.affirmation-schedule {
+    font-size: 12px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.no-affirmations {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-style: italic;
+}
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    width: 100%;
+    max-width: 100%;
+}
+
+.action-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.action-image img {
+    width: 35px;
+    height: 35px;
+    object-fit: cover;
+}
+/* HOME PAGE CENTER ALIGNMENT AND MOBILE FIXES - HIGH SPECIFICITY */
+body #app #home-page.page.active {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    padding: 20px 15px 100px 15px !important;
+    max-width: 400px !important;
+    margin: 0 auto !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+}
+
+body #app #home-page.page.active .header {
+    width: 100% !important;
+    max-width: 360px !important;
+}
+
+body #app #home-page.page.active .card-section {
+    width: 100% !important;
+    max-width: 320px !important;
+}
+
+body #app #home-page.page.active .quick-actions {
+    width: 100% !important;
+    max-width: 320px !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 6px !important;
+    margin: 20px 0 !important;
+    padding: 0 !important;
+}
+
+body #app #home-page.page.active .action-card {
+    padding: 8px 4px !important;
+    min-height: 80px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+}
+
+body #app #home-page.page.active .action-image {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    margin-bottom: 5px !important;
+}
+
+body #app #home-page.page.active .action-image img {
+    width: 30px !important;
+    height: 30px !important;
+    object-fit: contain !important;
+}
+/* Profile Circle & Menu */
+.profile-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+}
+
+.profile-circle:hover {
+    transform: scale(1.05);
+}
+
+.profile-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-menu.hidden {
+    display: none;
+}
+
+.profile-menu-content {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 400px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.profile-menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    color: white;
+}
+
+.close-menu {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.menu-item {
+    display: flex !important;
+    align-items: center !important;
+    padding: 15px !important;
+    margin: 10px 0 !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    color: white !important;
+    user-select: none !important;
+}
+
+.menu-item:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    transform: translateX(5px) !important;
+}
+
+.menu-icon {
+    font-size: 20px !important;
+    margin-right: 15px !important;
+    width: 30px !important;
+    pointer-events: none !important;
+}
+
+
+/* Modal Styles */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+/* Wishes Modal */
+#wishes-text {
+    width: 100%;
+    min-height: 200px;
+    padding: 15px;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    font-size: 16px;
+    font-family: inherit;
+    resize: vertical;
+    margin-bottom: 20px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.modal-actions button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.modal-actions button:first-child {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.modal-actions button:last-child {
+    background: #f0f0f0;
+    color: #333;
+}
+.profile-circle {
+    width: 60px !important;
+    height: 60px !important;
+    border-radius: 50% !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-circle img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 50% !important;
+}
+
+#profile-image {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 50% !important;
+}
+
+
+/* Wishes List */
+.wishes-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.wish-item {
+    padding: 15px;
+    margin: 10px 0;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border-left: 4px solid #667eea;
+}
+
+.wish-date {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.wish-text {
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Notification Settings */
+.notification-settings h4 {
+    margin: 20px 0 10px 0;
+    color: #333;
+}
+
+.progress-stats {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 12px;
+    margin: 15px 0;
+}
+
+.progress-stats p {
+    margin: 8px 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+.category-tag {
+    display: inline-block;
+    background: #667eea;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    margin: 5px;
+}
+
+/* Success Message */
+.success-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #4CAF50;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 25px;
+    z-index: 1002;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .profile-menu-content {
+        padding: 20px;
+        margin: 20px;
+    }
+    
+    .modal-content {
+        padding: 20px;
+        margin: 20px;
+    }
+
+
+/* Category Selection Styles */
+.category-card {
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.category-card.selected {
+    border-color: #667eea;
+    transform: scale(1.02);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.checkbox {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.checkbox.checked {
+    background: #667eea;
+    border-color: #667eea;
+}
+
+.checkbox.checked::after {
+    content: '✓';
+    color: white;
+    font-size: 12px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.selected-category {
+    display: inline-block;
+    background: #667eea;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    margin: 5px;
+}
+
+.preview-item {
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.preview-item:last-child {
+    border-bottom: none;
+}
+.profile-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #667eea;
+}
+
+.profile-circle:hover {
+    transform: scale(1.05);
+}
+
+.profile-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* Default emoji when no image */
+.profile-circle .default-avatar {
+    font-size: 24px;
+    color: white;
+}
+
+.profile-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-menu.hidden {
+    display: none;
+}
+
+.profile-menu-content {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 400px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.profile-menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    color: #333;
+}
+
+.close-menu {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-menu:hover {
+    background: #f0f0f0;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    margin: 10px 0;
+    background: #f8f9fa;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #333;
+    border: 1px solid #e9ecef;
+}
+
+.menu-item:hover {
+    background: #e9ecef;
+    transform: translateX(5px);
+}
+/* Notification Toggle Styles */
+.notification-toggle-section {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+    background-color: #667eea;
+}
+
+input:checked + .toggle-slider:before {
+    transform: translateX(26px);
+}
+
+#notification-status {
+    font-size: 14px;
+    color: #666;
+    flex: 1;
+}
+
+.divider {
+    height: 1px;
+    background: #e9ecef;
+    margin: 20px 0;
+}
+
+.action-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+    background: #5a67d8;
+    transform: translateY(-1px);
+}
+/* FORCE CIRCULAR PROFILE - FINAL FIX */
+.profile-circle {
+    width: 60px !important;
+    height: 60px !important;
+    border-radius: 50% !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.profile-circle img,
+#profile-image {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 50% !important;
+    display: block !important;
+}
+.profile-menu-content {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 400px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+#wishes-modal .modal-content {
+    max-width: 600px !important;
+    width: 95% !important;
+    min-height: 500px !important;
+}
+
+#wishes-text {
+    width: 100% !important;
+    min-height: 300px !important;
+    padding: 20px !important;
+    font-size: 16px !important;
+    border: 2px solid #ddd !important;
+    border-radius: 12px !important;
+    margin: 20px 0 !important;
+    box-sizing: border-box !important;
+}
+
+.modal-actions {
+    display: flex !important;
+    gap: 15px !important;
+    margin-top: 20px !important;
+}
+
+.modal-actions .btn {
+    flex: 1 !important;
+    margin: 0 !important;
+}
+#profile-menu {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 400px; /* Match your app's max width */
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+#profile-menu .modal-content {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    width: 100%;
+    max-width: 350px; /* Slightly smaller than container */
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+#profile-modal .modal-content {
+    max-width: 360px !important;
+    width: 90% !important;
+    margin: 0 auto !important;
+}
+
+#wishes-modal .modal-content {
+    max-width: 380px !important;
+    width: 90% !important;
+    margin: 0 auto !important;
+}
+
+#wishes-text {
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+#profile-menu .modal-content,
+#wishes-modal .modal-content {
+  max-width: 400px !important; /* Limit to app-safe width */
+  width: 90vw !important;      /* Responsive for all screens */
+  margin: 0 auto;              /* Center horizontally */
+  box-sizing: border-box;
+}
+
+#wishes-modal textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+}
+
+.modal-content {
+  box-sizing: border-box;
+}
+.modal-content {
+    outline: 2px solid limegreen; /* Visual debugging */
+  }
+  #wishes-modal textarea {
+    outline: 2px solid orange;
+  }
+
+</style>
     <link rel="apple-touch-icon" href="icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- Firebase SDKs -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
+  import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-messaging.js";
+  import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAPCFjjC6SqtQEauTQ6Hs7Ex-B2tj6PuXM",
+    authDomain: "soul-code-app.firebaseapp.com",
+    projectId: "soul-code-app",
+    storageBucket: "soul-code-app.firebasestorage.app",
+    messagingSenderId: "339179205157",
+    appId: "1:339179205157:web:e801c0ad054cbc6a1c05cc",
+    measurementId: "G-C1K5PGZJB7"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const messaging = getMessaging(app);
+  const db = getFirestore(app);
+  
+  // Call this after the user selects their categories & times
+async function saveUserPreferences(userId, categories, schedule) {
+  const token = await getToken(messaging, {
+    vapidKey: 'BFeiQnMxZlXHXxtQrAPvWSJ_1XnTklpH2IEcPAG_qjoxKKwHICnJOaEjzK3rq5zNMyaD02_gjJPqtBA6WYGu20U'
+  });
+
+  await setDoc(doc(db, "users", userId), {
+    selectedCategories: categories,
+    schedule: schedule,
+    pushToken: token,
+  });
+
+  console.log("Preferences saved to Firestore.");
+}
+  // Step 1: Request permission and get FCM token
+async function requestNotificationPermissionAndGetToken() {
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      console.log('Notification permission not granted.');
+      return;
+    }
+
+    const currentToken = await getToken(messaging, {
+      vapidKey: 'BFeiQnMxZlXHXxtQrAPvWSJ_1XnTklpH2IEcPAG_qjoxKKwHICnJOaEjzK3rq5zNMyaD02_gjJPqtBA6WYGu20U'
+    });
+
+    if (currentToken) {
+      console.log('FCM Token:', currentToken);
+      // TODO: Send this token to your server
+    } else {
+      console.log('No registration token available. Request permission to generate one.');
+    }
+  } catch (error) {
+    console.error('An error occurred while retrieving token.', error);
+  }
+}
+  async function getFcmToken() {
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        console.log('Notification permission not granted.');
+        return;
+      }
+
+      const currentToken = await getToken(messaging, {
+  vapidKey: 'BFeiQnMxZlXHXxtQrAPvWSJ_1XnTklpH2IEcPAG_qjoxKKwHICnJOaEjzK3rq5zNMyaD02_gjJPqtBA6WYGu20U'
+});
+
+if (currentToken) {
+  console.log('FCM Token:', currentToken);
+  // Send this token to your server or save it for push notifications
+} else {
+  console.log('No registration token available. Request permission to generate one.');
+}
+
+    } catch (err) {
+      console.error('An error occurred while retrieving token.', err);
+    }
+  }
+
+  getFcmToken();
+  
+  onMessage(messaging, (payload) => {
+  console.log('Message received. ', payload);
+  
+  // Customize how you want to show the notification
+  
+  if (Notification.permission === 'granted') {
+    new Notification('SoulCode', {
+      body: payload.notification.body,
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
+      vibrate: [200, 100, 200],
+      // You can add more options here if needed
+    });
+  }
+});
+
+  
+</script>
+
+
 </head>
 <body>
     <div id="app">
         <!-- HOME PAGE -->
-        <div id="home-page" class="page active">
-            <div class="header">
-                <div class="profile-circle">✨</div>
-                <div class="welcome-text">Good Evening, Soul Seeker</div>
-            </div>
+<div id="home-page" class="page active">
+    <div class="header">
+        
+        <div class="profile-circle" onclick="toggleProfileMenu()" style="width: 60px; height: 60px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+    <img id="profile-image" src="https://i.imgur.com/kT5du7E.png" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;" />
+</div>
 
-            <div class="card-section">
-                <h2>Card of the Day</h2>
-                <div class="card-spinner" onclick="spinCard()">
-                    <div class="card-content">
-                        <div style="font-size: 40px;">🔮</div>
-                        <p>Tap to reveal your today's message </p>
-                    </div>
-                </div>
-                <div id="card-result"></div>
-            </div>
 
-            <div class="quick-actions">
-                <div class="action-card" data-page="meditations">
-                    <div class="action-icon">🧘‍♀️</div>
-                    <div class="action-title">Meditations</div>
+        <div class="welcome-text"> Welcome Home, Soul Seeker</div>
+    </div>
+
+    <!-- Profile Menu Modal -->
+<div id="profile-menu" class="modal hidden" style="position: fixed !important; left: 50% !important; transform: translateX(-50%) !important; width: 400px !important; max-width: 400px !important;">
+
+        <div class="modal-content">
+        <div class="modal-header">
+            <h2>Profile Menu</h2>
+            <span class="close-btn" onclick="closeProfileMenu()" style="position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #fff;">&times;</span>
+
+        </div>
+        <div class="modal-body">
+            <div class="menu-item" onclick="changeProfilePicture()" style="display: flex; align-items: center; padding: 15px; margin: 10px 0; background: rgba(255, 255, 255, 0.1); border-radius: 12px; cursor: pointer; transition: all 0.3s ease; color: white;" onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.transform='translateX(5px)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.transform='translateX(0)'">
+
+    <span class="menu-icon">📷</span>
+    <span>Change Profile Picture</span>
+</div>
+<div class="menu-item" onclick="openWishesModal()" style="display: flex; align-items: center; padding: 15px; margin: 10px 0; background: rgba(255, 255, 255, 0.1); border-radius: 12px; cursor: pointer; transition: all 0.3s ease; color: white;" onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.transform='translateX(5px)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.transform='translateX(0)'">
+🌟</span>
+    <span>Write and Save Wishes & Desires</span>
+</div>
+<div class="menu-item" onclick="showNotificationModal()" style="display: flex; align-items: center; padding: 15px; margin: 10px 0; background: rgba(255, 255, 255, 0.1); border-radius: 12px; cursor: pointer; transition: all 0.3s ease; color: white;" onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.transform='translateX(5px)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.transform='translateX(0)'">
+🔔</span>
+    <span>Notification Settings</span>
+</div>
+
+
+        </div>
+    </div>
+</div>
+    <!-- Wishes Whiteboard Modal -->
+<div id="wishes-modal" class="modal hidden" style="position: fixed !important; left: 50% !important; transform: translateX(-50%) !important; width: 400px !important; max-width: 400px !important;">
+
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>✨ Write Your Wishes & Desires</h3>
+            <p>Now is the best time to write your wish down. Write it here and we'll keep it safe.</p>
+            <button class="close-modal" onclick="closeWishesModal()" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color: #fff;">×</button>
+
+        </div>
+        <textarea id="wishes-text" placeholder="Write your deepest desires and wishes here..."></textarea>
+        <div class="modal-actions">
+            <button class="btn" onclick="saveWish()">Save Wish</button>
+            <button class="btn" onclick="viewSavedWishes()">View Saved Wishes</button>
+        </div>
+    </div>
+</div>
+
+    <div class="card-section">
+        <h2>Card of the Day</h2>
+        <h5>Set an intention or ask a question you'd like clarity on.</h5>
+        <div class="card-spinner" onclick="spinCard()">
+            <div class="card-content">
+                <div class="card-image">
+                    <img src="https://i.imgur.com/gtt7sBW.png" alt="Mystical Cards" />
                 </div>
-                <div class="action-card" data-page="affirmations">
-                    <div class="action-icon">💫</div>
-                    <div class="action-title">Affirmations</div>
-                </div>
-                <div class="action-card" data-page="calculators">
-                    <div class="action-icon">🔢</div>
-                    <div class="action-title">Calculators</div>
-                </div>
-                <div class="action-card" data-page="energy">
-                    <div class="action-icon">⚡</div>
-                    <div class="action-title">Energy Discovery</div>
-                </div>
+                <p>Tap Here</p>
             </div>
         </div>
+        <div id="card-result"></div>
+    </div>
+    
+    <div class="quick-actions">
+        <div class="action-card" data-page="meditations">
+            <div class="action-image">
+                <img src="https://i.imgur.com/jgzqQji.png" />
+            </div>
+            <div class="action-title">Meditations</div>
+        </div>
+        <div class="action-card" data-page="affirmations">
+            <div class="action-image">
+                <img src="https://i.imgur.com/WYN9CEQ.png" alt="Affirmations" />
+            </div>
+            <div class="action-title">Affirmations</div>
+        </div>
+        <div class="action-card" data-page="calculators">
+            <div class="action-image">
+                <img src="https://i.imgur.com/nhX7zTJ.png" alt="Calculators" />
+            </div>
+            <div class="action-title">Calculators</div>
+        </div>
+        <div class="action-card" data-page="lifemap">
+            <div class="action-image">
+                <img src="https://i.imgur.com/4SYPpLZ.png" alt="Calculators" />
+            </div>
+            <div class="action-title">Your Life Map</div>
+        </div>
+        <!-- Free Resources Card - Lifted Above Footer -->
 
-        <!-- MEDITATIONS PAGE -->
+<div class="action-card" onclick="openFreeResources()" style="width: 190px; max-width: 190px; grid-column: span 2; justify-self: center; margin-top: 20px;">
+    <div class="action-image" style="height: 200px;">
+        <img src="https://i.imgur.com/4SYPpLZ.png" alt="Free Resources" style="width: 100%; height: 100%; object-fit: cover;" />
+    </div>
+    <div class="action-title" style="font-size: 16px; padding: 12px; text-align: center;">Free Resources</div>
+</div>
+    </div>
+</div>
+
+
+       <!-- MEDITATIONS PAGE -->
 <div id="meditations-page" class="page">
     <div class="page-header">
-        <h1>🧘‍♀️ Guided Meditations</h1>
-        <p>Find your inner peace with our curated meditation sessions</p>
+        <h1> Guided Meditations</h1>
+        <p>Find your inner peace with this guided neural practices</p>
     </div>
-    <div class="video-container">
-        <div class="video-placeholder">
-            <div style="font-size: 60px;">🎵</div>
-            <p>Select a meditation below to begin</p>
-        </div>
-    </div>
+    
     <div class="meditation-grid">
         <div class="meditation-card" data-meditation="selflove">
-            <div class="meditation-icon">💖</div>
+            <div class="meditation-image">
+                <img src="https://i.imgur.com/FlIjV2R.jpeg" alt="Self Love Meditation">
+                <div class="image-overlay"></div>
+            </div>
             <h3>3D Self Love Neural Practice</h3>
             <p>Transform your self-relationship</p>
         </div>
+        
         <div class="meditation-card" data-meditation="stress">
-            <div class="meditation-icon">🌿</div>
+            <div class="meditation-image">
+                <img src="https://i.imgur.com/ta2QosF.jpeg" alt="Stress Relief">
+                <div class="image-overlay"></div>
+            </div>
             <h3>Stress Relief Neural Practice</h3>
             <p>Release tension and find calm</p>
         </div>
         <div class="meditation-card" data-meditation="breath">
-            <div class="meditation-icon">🌬️</div>
+            <div class="meditation-image">
+                <img src="https://i.imgur.com/nezmJQ1.jpeg" alt="Breathing Technique">
+                <div class="image-overlay"></div>
+            </div>
             <h3>3 Deep Breath Technique</h3>
             <p>Alleviate stress with breathing</p>
         </div>
+        
         <div class="meditation-card" data-meditation="depression">
-            <div class="meditation-icon">🌅</div>
+            <div class="meditation-image">
+                <img src="https://i.imgur.com/IQs6ZfI.jpeg" alt="Mental Wellness">
+                <div class="image-overlay"></div>
+            </div>
             <h3>Relieve Depression & Anxiety</h3>
             <p>Neural practice for mental wellness</p>
         </div>
+        
         <div class="meditation-card" data-meditation="mindfulness">
-            <div class="meditation-icon">🧠</div>
+            <div class="meditation-image">
+                <img src="https://i.imgur.com/UwOlv9r.jpeg" alt="Mindfulness">
+                <div class="image-overlay"></div>
+            </div>
             <h3>Mindfulness Relaxation Guided</h3>
             <p>Neural practice for awareness</p>
         </div>
+        
+        <div class="meditation-card" data-meditation="personalized" onclick="showArcanaSelection()">
+            <div class="meditation-image">
+                <img src="https://i.imgur.com/yibBjxT.jpeg" alt="Personalized Meditations">
+                <div class="image-overlay"></div>
+            </div>
+            <h3>Personalized Meditations</h3>
+            <p>Based on your birth arcana</p>
+        </div>
     </div>
-    <div class="personalized-section">
-        <h2>🔮 Personalized Arcana Meditations</h2>
-        <p>Choose your birth arcana for customized guidance:</p>
-        <div class="arcana-grid">
-            <div class="arcana-card" data-arcana="1">
-                <div class="arcana-number">1</div>
-                <div class="arcana-name">1st Arcana Meditation</div>
-                <div class="arcana-subtitle">The Magician</div>
-            </div>
-            <div class="arcana-card" data-arcana="2">
-                <div class="arcana-number">2</div>
-                <div class="arcana-name">2nd Arcana Meditation</div>
-                <div class="arcana-subtitle">The High Priestess</div>
-            </div>
-            <div class="arcana-card" data-arcana="3">
-                <div class="arcana-number">3</div>
-                <div class="arcana-name">3rd Arcana Meditation</div>
-                <div class="arcana-subtitle">The Empress</div>
-            </div>
-            <div class="arcana-card" data-arcana="4">
-                <div class="arcana-number">4</div>
-                <div class="arcana-name">4th Arcana Meditation</div>
-                <div class="arcana-subtitle">The Emperor</div>
-            </div>
-            <div class="arcana-card" data-arcana="5">
-                <div class="arcana-number">5</div>
-                <div class="arcana-name">5th Arcana Meditation</div>
-                <div class="arcana-subtitle">The Hierophant</div>
-            </div>
-            <div class="arcana-card" data-arcana="6">
-                <div class="arcana-number">6</div>
-                <div class="arcana-name">6th Arcana Meditation</div>
-                <div class="arcana-subtitle">The Lovers</div>
-            </div>
-            <div class="arcana-card" data-arcana="7">
-                <div class="arcana-number">7</div>
-                <div class="arcana-name">7th Arcana Meditation</div>
-                <div class="arcana-subtitle">The Chariot</div>
-            </div>
-            <div class="arcana-card" data-arcana="8">
-                <div class="arcana-number">8</div>
-                <div class="arcana-name">8th Arcana Meditation</div>
-                <div class="arcana-subtitle">Strength</div>
-            </div>
-            <div class="arcana-card" data-arcana="9">
-                <div class="arcana-number">9</div>
-                <div class="arcana-name">9th Arcana Meditation</div>
-                <div class="arcana-subtitle">The Hermit</div>
+    
+    <!-- Meditation Player -->
+    <div id="meditation-player" class="meditation-player" style="display: none;">
+        <!-- Player content will be inserted here -->
+    </div>
+    
+    <!-- Arcana Selection Modal -->
+    <div id="arcana-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeArcanaModal()">&times;</span>
+            <h2>🔮 Choose Your Birth Arcana</h2>
+            <div class="arcana-list">
+                <div class="arcana-item" onclick="startArcanaMediation(1)">1st Arcana - The Magician</div>
+                <div class="arcana-item" onclick="startArcanaMediation(2)">2nd Arcana - The High Priestess</div>
+                <div class="arcana-item" onclick="startArcanaMediation(3)">3rd Arcana - The Empress</div>
+                <div class="arcana-item" onclick="startArcanaMediation(4)">4th Arcana - The Emperor</div>
+                <div class="arcana-item" onclick="startArcanaMediation(5)">5th Arcana - The Hierophant</div>
+                <div class="arcana-item" onclick="startArcanaMediation(6)">6th Arcana - The Lovers</div>
+                <div class="arcana-item" onclick="startArcanaMediation(7)">7th Arcana - The Chariot</div>
+                <div class="arcana-item" onclick="startArcanaMediation(8)">8th Arcana - Strength</div>
+                <div class="arcana-item" onclick="startArcanaMediation(9)">9th Arcana - The Hermit</div>
             </div>
         </div>
     </div>
 </div>
 
-        <!-- AFFIRMATIONS PAGE -->
-        <div id="affirmations-page" class="page">
-            <div class="page-header">
-                <h1>💫 Daily Affirmations</h1>
-                <p>Choose categories that resonate with your soul</p>
-            </div>
 
-            <div class="categories-grid">
-                <div class="category-card" data-category="Think Positively">
-                    <div class="checkbox"></div>
-                    <div class="category-icon">🌟</div>
-                    <h3>Think Positively</h3>
-                    <p>Cultivate optimism and positive mindset</p>
-                </div>
-                <div class="category-card" data-category="Build Self-Confidence">
-                    <div class="checkbox"></div>
-                    <div class="category-icon">💪</div>
-                    <h3>Build Self-Confidence</h3>
-                    <p>Strengthen your inner power and belief</p>
-                </div>
-                <div class="category-card" data-category="Attract Love">
-                    <div class="checkbox"></div>
-                    <div class="category-icon">💖</div>
-                    <h3>Attract Love</h3>
-                    <p>Open your heart to love and connection</p>
-                </div>
-                <div class="category-card" data-category="Manifest Abundance">
-                    <div class="checkbox"></div>
-                    <div class="category-icon">🌈</div>
-                    <h3>Manifest Abundance</h3>
-                    <p>Attract prosperity and success</p>
-                </div>
-                <div class="category-card" data-category="Find Inner Peace">
-                    <div class="checkbox"></div>
-                    <div class="category-icon">🕊️</div>
-                    <h3>Find Inner Peace</h3>
-                    <p>Cultivate calm and tranquility</p>
-                </div>
-                <div class="category-card" data-category="Spiritual Growth">
-                    <div class="checkbox"></div>
-                    <div class="category-icon">🌱</div>
-                    <h3>Spiritual Growth</h3>
-                    <p>Expand consciousness and awareness</p>
-                </div>
-            </div>
-
-            <div class="selected-categories"></div>
-
-            <div class="notification-setup">
-                <h3>⏰ Set Notification Times</h3>
-                <form id="time-form">
-                    <input type="time" id="notification-time" required>
-                    <button type="submit" class="btn">Add Time</button>
-                </form>
-                <div class="current-times"></div>
-            </div>
+    <!-- AFFIRMATIONS PAGE -->
+<div id="affirmations-page" class="page">
+    <div class="page-header">
+        <h1>Daily Affirmations</h1>
+        <p>Please choose one or more category of affirmation you want to receive daily.</p>
+    </div>
+        
+    <div class="categories-grid">
+        <div class="category-card" data-category="Think Positively">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/AkdKjxW.png" alt="Think Positively" class="category-image">
+            <h3>Think Positively</h3>
         </div>
-
-        <!-- CALCULATORS PAGE -->
-        <div id="calculators-page" class="page">
-            <div class="page-header">
-                <h1>🔢 Spiritual Calculators</h1>
-                <p>Discover your spiritual numbers and their meanings</p>
-            </div>
-
-            <div class="calculators-grid">
-                <div class="calculator-card" data-calculator="Life Path">
-                    <div class="lock-icon">🔒</div>
-                    <div class="calculator-icon">🛤️</div>
-                    <h3>Life Path Number</h3>
-                    <p>Discover your life's purpose and direction</p>
-                    <div class="status">Locked</div>
-                </div>
-                <div class="calculator-card" data-calculator="Soul Number">
-                    <div class="lock-icon">🔒</div>
-                    <div class="calculator-icon">👤</div>
-                    <h3>Soul Number</h3>
-                    <p>Understand your inner desires and motivations</p>
-                    <div class="status">Locked</div>
-                </div>
-                <div class="calculator-card" data-calculator="Destiny Number">
-                    <div class="lock-icon">🔒</div>
-                    <div class="calculator-icon">⭐</div>
-                    <h3>Destiny Number</h3>
-                    <p>Learn about your life's mission and goals</p>
-                    <div class="status">Locked</div>
-                </div>
-                <div class="calculator-card" data-calculator="Personality Number">
-                    <div class="lock-icon">🔒</div>
-                    <div class="calculator-icon">🎭</div>
-                    <h3>Personality Number</h3>
-                    <p>Discover how others perceive you</p>
-                    <div class="status">Locked</div>
-                </div>
-            </div>
-
-            <div class="unlock-info">
-                <div class="info-card">
-                    <h3>🔓 Unlock All Calculators</h3>
-                    <p>Connect with our Telegram bot to unlock all spiritual calculators and receive personalized readings!</p>
-                    <button class="btn" onclick="app.openTelegram()">Connect to Telegram</button>
-                </div>
-            </div>
+        <div class="category-card" data-category="Build Self-Confidence">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/5DPMF8f.jpeg" alt="Build Self-Confidence" class="category-image">
+            <h3>Build Self-Confidence</h3>
         </div>
-
-        <!-- ENERGY DISCOVERY PAGE -->
-        <div id="energy-page" class="page">
-            <div class="page-header">
-                <h1>⚡ Energy Discovery</h1>
-                <p>Discover your unique birth energy and spiritual essence</p>
-            </div>
-
-            <div class="energy-content">
-                <div class="energy-intro">
-                    <div class="energy-icon">🌟</div>
-                    <h2>What is Birth Energy?</h2>
-                    <p>Your birth energy is the unique spiritual frequency you carry from the moment you entered this world. It influences your personality, life path, and spiritual gifts.</p>
-                </div>
-
-                <div class="energy-calculator">
-                    <h3>Calculate Your Birth Energy</h3>
-                    <form id="energy-form">
-                        <div class="form-group">
-                            <label for="birth-date">Birth Date:</label>
-                            <input type="date" id="birth-date" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="birth-time">Birth Time (optional):</label>
-                            <input type="time" id="birth-time">
-                        </div>
-                        <button type="submit" class="btn">Discover My Energy</button>
-                    </form>
-                </div>
-
-                <div class="energy-types">
-                    <h3>Energy Types</h3>
-                    <div class="energy-grid">
-                        <div class="energy-type">
-                            <div class="type-icon">🔥</div>
-                            <h4>Fire Energy</h4>
-                            <p>Passionate, dynamic, and transformative</p>
-                        </div>
-                        <div class="energy-type">
-                            <div class="type-icon">🌊</div>
-                            <h4>Water Energy</h4>
-                            <p>Intuitive, emotional, and healing</p>
-                        </div>
-                        <div class="energy-type">
-                            <div class="type-icon">🌍</div>
-                            <h4>Earth Energy</h4>
-                            <p>Grounded, practical, and nurturing</p>
-                        </div>
-                        <div class="energy-type">
-                            <div class="type-icon">💨</div>
-                            <h4>Air Energy</h4>
-                            <p>Intellectual, communicative, and free</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="category-card" data-category="Calm Your Anxiety">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/Pys0ekT.jpeg" alt="Calm Your Anxiety" class="category-image">
+            <h3>Calm Your Anxiety</h3>
         </div>
-
-        <!-- PROFILE PAGE -->
-        <div id="profile-page" class="page">
-            <div class="page-header">
-                <h1>👤 Your Profile</h1>
-                <p>Personalize your spiritual journey</p>
-            </div>
-
-            <div class="profile-content">
-                <form id="profile-form">
-                    <div class="form-group">
-                        <label for="user-name">Your Name:</label>
-                        <input type="text" id="user-name" placeholder="Enter your name">
-                    </div>
-                    <div class="form-group">
-                        <label for="user-avatar">Choose Avatar:</label>
-                        <select id="user-avatar">
-                            <option value="✨">✨ Sparkles</option>
-                            <option value="🌟">🌟 Star</option>
-                            <option value="🔮">🔮 Crystal Ball</option>
-                            <option value="🌙">🌙 Moon</option>
-                                                        <option value="☀️">☀️ Sun</option>
-                            <option value="🦋">🦋 Butterfly</option>
-                            <option value="🌸">🌸 Blossom</option>
-                            <option value="💎">💎 Diamond</option>
-                            <option value="🕊️">🕊️ Dove</option>
-                            <option value="🌈">🌈 Rainbow</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn">Save Profile</button>
-                </form>
-
-                <div class="profile-stats">
-                    <h3>Your Journey</h3>
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-icon">🎴</div>
-                            <div class="stat-number">0</div>
-                            <div class="stat-label">Cards Drawn</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon">🧘‍♀️</div>
-                            <div class="stat-number">0</div>
-                            <div class="stat-label">Meditations</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon">💫</div>
-                            <div class="stat-number">0</div>
-                            <div class="stat-label">Affirmations</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="unlocked-list"></div>
-
-                <div class="settings-section">
-                    <h3>⚙️ Settings</h3>
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="dark-mode"> Dark Mode
-                        </label>
-                    </div>
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="notifications" checked> Push Notifications
-                        </label>
-                    </div>
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="sound-effects" checked> Sound Effects
-                        </label>
-                    </div>
-                </div>
-
-                <div class="app-info">
-                    <h3>📱 App Information</h3>
-                    <p><strong>Version:</strong> 1.0.0</p>
-                    <p><strong>Last Updated:</strong> Today</p>
-                    <p><strong>Developer:</strong> SoulCode Team</p>
-                </div>
-            </div>
+        <div class="category-card" data-category="Nurture Self-Love">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/S49sBat.jpeg" alt="Nurture Self-Love" class="category-image">
+            <h3>Nurture Self-Love</h3>
+        </div>
+        <div class="category-card" data-category="Express Gratitude">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/YI3fNAs.jpeg" alt="Express Gratitude" class="category-image">
+            <h3>Express Gratitude</h3>
+        </div>
+        <div class="category-card" data-category="Achieve Success">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/JrbdKrS.jpeg" alt="Achieve Success" class="category-image">
+            <h3>Achieve Success</h3>
+        </div>
+        <div class="category-card" data-category="Ignite Motivation">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/XWiENhI.jpeg" alt="Ignite Motivation" class="category-image">
+            <h3>Ignite Motivation</h3>
+        </div>
+        <div class="category-card" data-category="Accept Yourself">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/m1Zq5I3.jpeg" alt="Accept Yourself" class="category-image">
+            <h3>Accept Yourself</h3>
+        </div>
+        <div class="category-card" data-category="Love Your Body">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/3Rm5Tra.jpeg" alt="Love Your Body" class="category-image">
+            <h3>Love Your Body</h3>
+        </div>
+        <div class="category-card" data-category="Accept Your Parents and Ancestral Bloodline Power">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/fApnskW.jpeg" alt="Accept Your Parents" class="category-image">
+            <h3>Accept Your Parents and Ancestral Bloodline Power</h3>
+        </div>
+        <div class="category-card" data-category="Embrace Changes">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/ZQDMPvc.jpeg" alt="Embrace Changes" class="category-image">
+            <h3>Embrace Changes</h3>
+        </div>
+        <div class="category-card" data-category="Gain Balance in Life">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/5KErJTv.jpeg" alt="Gain Balance in Life" class="category-image">
+            <h3>Gain Balance in Life</h3>
+        </div>
+        <div class="category-card" data-category="Build Wealth">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/znv21C7.jpeg" alt="Build Wealth" class="category-image">
+            <h3>Build Wealth</h3>
+        </div>
+        <div class="category-card" data-category="Lose Weight">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/TWPDy6i.jpeg" alt="Lose Weight" class="category-image">
+            <h3>Lose Weight</h3>
+        </div>
+        <div class="category-card" data-category="Quit Smoking">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/X1Zdht4.jpeg" alt="Quit Smoking" class="category-image">
+            <h3>Quit Smoking</h3>
+        </div>
+        <div class="category-card" data-category="Fight with Depression">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/AK1dx9Z.jpeg" alt="Fight with Depression" class="category-image">
+            <h3>Fight with Depression</h3>
+        </div>
+        <div class="category-card" data-category="Forgive and Let Go">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/suadq1Y.jpeg" alt="Forgive and Let Go" class="category-image">
+            <h3>Forgive and Let Go</h3>
+        </div>
+        <div class="category-card" data-category="Conquer Loneliness">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/KGGbMNT.jpeg" alt="Conquer Loneliness" class="category-image">
+            <h3>Conquer Loneliness</h3>
+        </div>
+        <div class="category-card" data-category="Overcome Toxic Relationships">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/Wd0ebGW.jpeg" alt="Overcome Toxic Relationships" class="category-image">
+            <h3>Overcome Toxic Relationships</h3>
+        </div>
+        <div class="category-card" data-category="Forge New Connections">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/XZYEVmQ.jpeg" alt="Forge New Connections" class="category-image">
+            <h3>Forge New Connections</h3>
+        </div>
+        <div class="category-card" data-category="Nurture Sexuality">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/vbDoQpg.jpeg" alt="Nurture Sexuality" class="category-image">
+            <h3>Nurture Sexuality</h3>
+        </div>
+        <div class="category-card" data-category="Manifest New Love">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/DSziwpW.jpeg" alt="Manifest New Love" class="category-image">
+            <h3>Manifest New Love</h3>
+        </div>
+        <div class="category-card" data-category="Deal with Postpartum">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/x38RPSD.jpeg" alt="Deal with Postpartum" class="category-image">
+            <h3>Deal with Postpartum</h3>
+        </div>
+        <div class="category-card" data-category="Awaken Spiritually">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/esmpWoH.jpeg" alt="Awaken Spiritually" class="category-image">
+            <h3>Awaken Spiritually</h3>
+        </div>
+        <div class="category-card" data-category="Heal From Grief">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/q4hZU8P.jpeg" alt="Heal From Grief" class="category-image">
+            <h3>Heal From Grief</h3>
+        </div>
+        <div class="category-card" data-category="Harness the Law of Attraction">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/znv21C7.jpeg" alt="Harness the Law of Attraction" class="category-image">
+            <h3>Harness the Law of Attraction</h3>
+        </div>
+        <div class="category-card" data-category="Fuel Vitality">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/HDNgClm.jpeg" alt="Fuel Vitality" class="category-image">
+            <h3>Fuel Vitality</h3>
+        </div>
+        <div class="category-card" data-category="Adopt Stoic Mindset">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/xYpvoOK.jpeg" alt="Adopt Stoic Mindset" class="category-image">
+            <h3>Adopt Stoic Mindset</h3>
+        </div>
+        <div class="category-card" data-category="Inspire as a Leader">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/eIaaYZy.jpeg" alt="Inspire as a Leader" class="category-image">
+            <h3>Inspire as a Leader</h3>
+        </div>
+        <div class="category-card" data-category="Elevate Career">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/0AFAi2K.jpeg" alt="Elevate Career" class="category-image">
+            <h3>Elevate Career</h3>
         </div>
     </div>
+</div>
 
-    <!-- BOTTOM NAVIGATION -->
-    <nav class="bottom-nav">
-        <div class="nav-item menu-item" data-page="home">
-            <div class="nav-icon">🏠</div>
-            <div class="nav-label">Home</div>
+<div class="selected-categories">
+    <h3>Selected Categories:</h3>
+    <div id="selected-list"></div>
+</div>
+
+<div class="setup-button-container" style="display: none;">
+    <button id="setup-reminders-btn" class="btn primary-btn">📱 Setup Reminders</button>
+</div>
+
+   
+       <div class="notification-setup" style="display: none;">
+    <h3>⏰ Set Up Your Reminders</h3>
+            
+    <!-- Days Selection -->
+    <div class="days-selection">
+        <h4>Select Days:</h4>
+        <div class="days-grid">
+            <label class="day-checkbox">
+                <input type="checkbox" value="monday" id="day-monday">
+                <span>Mon</span>
+            </label>
+            <label class="day-checkbox">
+                <input type="checkbox" value="tuesday" id="day-tuesday">
+                <span>Tue</span>
+            </label>
+            <label class="day-checkbox">
+                <input type="checkbox" value="wednesday" id="day-wednesday">
+                <span>Wed</span>
+            </label>
+            <label class="day-checkbox">
+                <input type="checkbox" value="thursday" id="day-thursday">
+                <span>Thu</span>
+            </label>
+            <label class="day-checkbox">
+                <input type="checkbox" value="friday" id="day-friday">
+                <span>Fri</span>
+            </label>
+            <label class="day-checkbox">
+                <input type="checkbox" value="saturday" id="day-saturday">
+                <span>Sat</span>
+            </label>
+            <label class="day-checkbox">
+                <input type="checkbox" value="sunday" id="day-sunday">
+                <span>Sun</span>
+            </label>
         </div>
-        <div class="nav-item menu-item" data-page="meditations">
-            <div class="nav-icon">🧘‍♀️</div>
-            <div class="nav-label">Meditate</div>
+    </div>
+    
+    <!-- Frequency Selection -->
+    <div class="frequency-selection">
+        <h4>How often do you want to receive affirmations?</h4>
+        <select id="frequency-select">
+            <option value="1">Every hour</option>
+            <option value="2">Every 2 hours</option>
+            <option value="3">Every 3 hours</option>
+            <option value="4">Every 4 hours</option>
+            <option value="5">Every 5 hours</option>
+        </select>
+    </div>
+    
+    <!-- Start Time Selection -->
+    <div class="start-time-selection">
+        <h4>What time should the first affirmation be sent?</h4>
+        <input type="time" id="start-time" value="09:00">
+    </div>
+    
+    <!-- Save Button -->
+    <button id="save-settings" class="btn save-btn">Save and Grant Permission </button>
+            
+    <!-- Preview Schedule -->
+    <div id="schedule-preview" class="schedule-preview">
+        <h4>Your Schedule Preview:</h4>
+        <div id="preview-content"></div>
+    </div>
+</div>
+
+
+      <!-- CALCULATORS PAGE -->
+<div id="calculators-page" class="page">
+    <div class="page-header">
+        <h1>Calculators</h1>
+        <p>Unlock your spiritual insights with our premium calculators</p>
+    </div>
+    <div class="calculators-section">
+        <div class="calculators-grid">
+
+        <!-- Money Code Calculator -->
+<div class="title-with-lock" data-calculator="money-code" onclick="showCodeInput('money-code')">
+    <h3 class="calculator-title">MONEY CODE CALCULATOR</h3>
+    <div class="lock-overlay">
+        <div class="lock-icon">🔒</div>
+        <p class="unlock-text">Unlock with Access Code</p>
+    </div>
+</div>
+
+<div class="calculator-image">
+    <img src="https://i.imgur.com/I7CUbj8.png" alt="Money Code Calculator">
+</div>
+
+
+
+
+            </div>
+            <div class="calculator-description">
+                <p><strong>What's Your Money Code? Unlock the Energy Behind Your Wealth</strong></p>
+                <p>Your birth date carries a unique money blueprint — a personal energy pattern that reveals how you naturally attract wealth, where your financial power lies, and what may be quietly blocking your abundance.</p>
+                <p>With just one click, this calculator decodes your Money Triangle: six powerful financial energies based on ancient Arcana wisdom. You'll uncover:</p>
+                <ul>
+                    <li>✔ Your natural paths to generating income</li>
+                    <li>✔ The hidden blocks that may be limiting your financial flow</li>
+                    <li>✔ Personalized ways to grow your wealth in alignment with your energy</li>
+                    <li>✔ How to use money as a tool for purpose, growth, and freedom</li>
+                </ul>
+                <p>Whether you're feeling stuck or ready to thrive, this is your first step to a more conscious, empowered relationship with money.</p>
+            </div>
+            <div class="calculator-buttons">
+                <button class="btn get-access-btn" onclick="window.open('https://payhip.com/b/fPRZK', '_blank')">Get Access Here</button>
+                <button class="btn unlock-btn" onclick="showCodeInput('money-code')">I Have Access Code</button>
+            </div>
         </div>
-        <div class="nav-item menu-item" data-page="affirmations">
-            <div class="nav-icon">💫</div>
-            <div class="nav-label">Affirm</div>
+<!-- Forecast Calculator -->
+<div class="calculator-card" data-calculator="forecast">
+    <div class="title-with-lock">
+        <h3 class="calculator-title"> FORECAST CALCULATOR</h3>
+        <div class="lock-overlay">
+            <div class="lock-icon">🔒</div>
+            <p class="unlock-text">Unlock with Access Code</p>
         </div>
-        <div class="nav-item menu-item" data-page="calculators">
-            <div class="nav-icon">🔢</div>
-            <div class="nav-label">Calculate</div>
+    </div>
+    <div class="calculator-image">
+        <img src="https://i.imgur.com/8ZfupjB.png" alt="Forecast Calculator">
+    </div>
+    <div class="calculator-description">
+        <p><strong>Your Personal Energy Forecast — Aligned Guidance for Your Day, Month & Year</strong></p>
+        <p>Imagine waking up and knowing exactly what kind of energy surrounds you — and how to make the most of it. This calculator reveals your unique daily, monthly, and yearly forecasts, based on your date of birth.</p>
+        <p>Get practical and intuitive guidance tailored to your personal rhythm:</p>
+        <ul>
+            <li>✔ The energetic tone of your day, month, and year</li>
+            <li>✔ Personalized tips for your health, money, and relationships</li>
+            <li>✔ What to embrace — and what to avoid — to stay aligned</li>
+            <li>✔ How to navigate challenges with more clarity and confidence</li>
+        </ul>
+        <p>Whether you're planning your day or realigning your year, this tool helps you work with your energy, not against it.</p>
+    </div>
+    <div class="calculator-buttons">
+        <button class="btn get-access-btn" onclick="window.open('https://payhip.com/b/KOfjY', '_blank')">Get Access Here</button>
+        <button class="btn unlock-btn" onclick="showCodeInput('forecast')">I Have Access Code</button>
+    </div>
+</div>
+ </div>
+</div>
+
+        <!-- YOUR LIFE MAP PAGE -->
+<div id="lifemap-page" class="page">
+    <div class="page-header">
+        <h1>️ Your Life Map</h1>
+        <p>Discover the hidden energies that shape your destiny.</p> Absolutely FREE 💜 </p>
+    </div>
+    
+    <div class="lifemap-content">
+        <div class="lifemap-description">
+            <p>Curious about your true potential? Discover the hidden energies that shape your <strong>Personality, Spiritual Path, Financial Abundance, Relationships, Health, and Soul Mission</strong> — all based on your unique date of birth.</p>
+            
+            <p>This free, instant tool reveals your core life energies and their positive aspects, helping you understand how to harness your strengths for greater clarity, success, and fulfillment. No waiting, no cost — just powerful insight right at your fingertips.</p>
         </div>
-        <div class="nav-item menu-item" data-page="profile">
-            <div class="nav-icon">👤</div>
-            <div class="nav-label">Profile</div>
+        
+        <div class="lifemap-image">
+            <img src="https://i.imgur.com/XMp5RbU.png" alt="Life Map Discovery" />
         </div>
-    </nav>
+        
+        <div class="lifemap-message">
+            <p><strong>What if the answers you've been searching for were already written in your energy from the moment you were born?</strong></p>
+            
+            <p>You'll discover what's supporting you, what may be blocking you, and how to turn your unique energy into your greatest strength.</p>
+            
+            <p><em>It's not just insight — it's a mirror to your soul.</em></p>
+            
+            <p><strong>No guesswork. No cost. Just clarity and direction, starting right now.</strong></p>
+        </div>
+        
+        <div class="lifemap-button">
+            <button class="btn lifemap-btn" onclick="window.open('https://t.me/decoded_dob_bot?start=w40258673', '_blank')">
+                 Show Me My Path
+            </button>
+        </div>
+    </div>
+</div>
+
+
+
+   <!-- BOTTOM NAVIGATION -->
+<nav class="bottom-nav">
+    <div class="nav-item menu-item" data-page="home">
+        <div class="nav-icon">⾕</div>
+        <div class="nav-label">Home</div>
+    </div>
+    <div class="nav-item menu-item" data-page="meditations">
+        <div class="nav-icon">☪︎</div>
+        <div class="nav-label">Meditate</div>
+    </div>
+    <div class="nav-item menu-item" data-page="lifemap">
+        <div class="nav-icon">༺☆༻️</div>
+        <div class="nav-label">Decode</div>
+    </div>
+    <div class="nav-item menu-item" data-page="affirmations">
+        <div class="nav-icon">⛥</div>
+        <div class="nav-label">Affirm</div>
+    </div>
+    <div class="nav-item menu-item" data-page="calculators">
+        <div class="nav-icon">🀙</div>
+        <div class="nav-label">Calculate</div>
+    </div>
+</nav>
 
     <!-- Loading Screen -->
     <div id="loading-screen" class="loading-screen">
         <div class="loading-content">
-            <div class="loading-spinner">✨</div>
-            <h2>SoulCode</h2>
+                       <h2>SoulCode</h2>
             <p>Connecting to your spiritual journey...</p>
         </div>
     </div>
+    
+   <!-- Access Code Modal -->
+<div id="code-modal" style="display:none; position: fixed; top:0; left:0; width:100%; height:100%; 
+    background: rgba(0,0,0,0.5); z-index: 1000;">
+  <div class="modal-content" style="background:#fff; padding: 20px; max-width: 400px; margin: 10% auto; border-radius: 8px;">
+    <h2>Enter Access Code</h2>
+    <input id="access-code-input" type="text" placeholder="Enter your code here" style="width: 100%; padding: 8px; font-size: 16px; margin-bottom: 10px;"/>
+    <div>
+      <button class="btn" onclick="validateCode()">Submit</button>
+      <button class="btn" onclick="closeCodeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 
     <!-- Scripts -->
     <script>
@@ -940,12 +3271,12 @@ function spinCard() {
         
         if (result) {
             result.classList.add('show');
-            result.innerHTML = `<h3>🌟 Soul Reminder of the Day</h3><p>${randomMessage}</p>`;
+            result.innerHTML = `<h3>⚝ </h3><p>${randomMessage}</p>`;
         }
     }, 2000);
 }
 
-        // Meditation URLs mapping
+    // Meditation URLs
 const meditationUrls = {
     'selflove': 'https://youtu.be/YIS7HskL4fU?si=2XdNB4tllHQpzoaV',
     'stress': 'https://youtu.be/g7wRuSJSkyQ?si=EzWoIyviB40giWt1',
@@ -954,58 +3285,176 @@ const meditationUrls = {
     'mindfulness': 'https://youtu.be/vjzDC_PNW14?si=dRYLgqVzcQOKw_TF'
 };
 
-// Add click listeners for meditation cards
+// Add meditation card click listeners
 document.addEventListener('DOMContentLoaded', function() {
-    // Meditation cards click listeners
-    document.querySelectorAll('.meditation-card').forEach(card => {
+    document.querySelectorAll('.meditation-card[data-meditation]').forEach(card => {
         card.addEventListener('click', function() {
             const meditationType = this.getAttribute('data-meditation');
-            startMeditation(meditationType);
-        });
-    });
-    
-    // Arcana cards click listeners
-    document.querySelectorAll('.arcana-card').forEach(card => {
-        card.addEventListener('click', function() {
-            const arcanaNumber = this.getAttribute('data-arcana');
-            startPersonalizedMeditation(arcanaNumber);
+            if (meditationType !== 'personalized') {
+                startMeditation(meditationType);
+            }
         });
     });
 });
 
+// Global audio player variable
+let currentAudio = null;
+
 function startMeditation(type) {
-    const videoContainer = document.querySelector('.video-placeholder');
+    const player = document.getElementById('meditation-player');
     const url = meditationUrls[type];
     
-    if (url) {
-        // Convert YouTube URL to embed format
-        const videoId = url.split('youtu.be/')[1].split('?')[0];
-        const embedUrl = `https://www.youtube.com/embed/${videoId}`;
-        
-        videoContainer.innerHTML = `
-            <iframe width="100%" height="250" src="${embedUrl}" 
-                    frameborder="0" allowfullscreen></iframe>
-            <button class="btn" onclick="openFullVideo('${url}')">🔗 Open Full Video</button>
-        `;
+    player.innerHTML = `
+        <div class="player-container">
+            <div class="player-image">
+                <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop" alt="Meditation">
+                <div class="play-overlay">
+                    <div class="play-button" onclick="playMeditation('${url}')">▶️</div>
+                </div>
+            </div>
+            <div class="player-controls">
+                <h3>${getReadableName(type)}</h3>
+                <div class="control-buttons">
+                    <button class="control-btn" onclick="playMeditation('${url}')">▶️ Play</button>
+                    <button class="control-btn" onclick="pauseMeditation()">⏸️ Pause</button>
+                    <button class="control-btn" onclick="stopMeditation()">⏹️ Stop</button>
+                </div>
+            </div>
+        </div>
+    `;
+    player.classList.add('active');
+}
+
+function startArcanaMediation(arcanaNumber) {
+    closeArcanaModal();
+    const player = document.getElementById('meditation-player');
+    const url = 'https://youtu.be/vjzDC_PNW14?si=dRYLgqVzcQOKw_TF';
+    
+    player.innerHTML = `
+        <div class="player-container">
+            <div class="player-image">
+                <img src="https://i.imgur.com/9j6rJ83.jpeg" alt="Arcana Meditation">
+                <div class="play-overlay">
+                    <div class="play-button" onclick="playMeditation('${url}')">▶️</div>
+                </div>
+            </div>
+            <div class="player-controls">
+                <h3>${arcanaNumber}${getOrdinalSuffix(arcanaNumber)} Arcana Meditation</h3>
+                <div class="control-buttons">
+                    <button class="control-btn" onclick="playMeditation('${url}')">▶️ Play</button>
+                    <button class="control-btn" onclick="pauseMeditation()">⏸️ Pause</button>
+                    <button class="control-btn" onclick="stopMeditation()">⏹️ Stop</button>
+                </div>
+            </div>
+        </div>
+    `;
+    player.classList.add('active');
+}
+
+function extractVideoId(url) {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+}
+
+function playMeditation(url) {
+    const videoId = extractVideoId(url);
+    if (!videoId) {
+        alert('Invalid YouTube URL');
+        return;
+    }
+    
+    // Stop any currently playing audio
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+    }
+    
+    // Create hidden audio element to play YouTube audio
+    const audioUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1`;
+    
+    // Create invisible iframe for audio playback
+    if (!document.getElementById('hidden-audio-player')) {
+        const hiddenPlayer = document.createElement('iframe');
+        hiddenPlayer.id = 'hidden-audio-player';
+        hiddenPlayer.style.display = 'none';
+        hiddenPlayer.style.position = 'absolute';
+        hiddenPlayer.style.left = '-9999px';
+        hiddenPlayer.width = '1';
+        hiddenPlayer.height = '1';
+        hiddenPlayer.allow = 'autoplay';
+        document.body.appendChild(hiddenPlayer);
+    }
+    
+    const hiddenPlayer = document.getElementById('hidden-audio-player');
+    hiddenPlayer.src = audioUrl;
+    
+    // Update UI to show playing state
+    updatePlayerUI(true);
+}
+
+function pauseMeditation() {
+    const hiddenPlayer = document.getElementById('hidden-audio-player');
+    if (hiddenPlayer) {
+        hiddenPlayer.src = '';
+    }
+    updatePlayerUI(false);
+}
+
+function stopMeditation() {
+    const hiddenPlayer = document.getElementById('hidden-audio-player');
+    if (hiddenPlayer) {
+        hiddenPlayer.src = '';
+    }
+    
+    const player = document.getElementById('meditation-player');
+    player.classList.remove('active');
+    
+    updatePlayerUI(false);
+}
+
+function updatePlayerUI(isPlaying) {
+    const playOverlay = document.querySelector('.play-overlay');
+    const playButtons = document.querySelectorAll('.control-btn');
+    
+    if (isPlaying) {
+        if (playOverlay) playOverlay.style.display = 'none';
+        // Update button states to show playing
+        playButtons.forEach(btn => {
+            if (btn.textContent.includes('Play')) {
+                btn.innerHTML = '⏸️ Playing...';
+                btn.style.opacity = '0.7';
+            }
+        });
+    } else {
+        if (playOverlay) playOverlay.style.display = 'flex';
+        // Reset button states
+        playButtons.forEach(btn => {
+            if (btn.textContent.includes('Playing')) {
+                btn.innerHTML = '▶️ Play';
+                btn.style.opacity = '1';
+            }
+        });
     }
 }
 
-function startPersonalizedMeditation(arcanaNumber) {
-    const videoContainer = document.querySelector('.video-placeholder');
-    const url = 'https://youtu.be/vjzDC_PNW14?si=dRYLgqVzcQOKw_TF';
-    const videoId = url.split('youtu.be/')[1].split('?')[0];
-    const embedUrl = `https://www.youtube.com/embed/${videoId}`;
-    
-    videoContainer.innerHTML = `
-        <h3>🔮 ${arcanaNumber}${getOrdinalSuffix(arcanaNumber)} Arcana Meditation</h3>
-        <iframe width="100%" height="250" src="${embedUrl}" 
-                frameborder="0" allowfullscreen></iframe>
-        <button class="btn" onclick="openFullVideo('${url}')">🔗 Open Full Video</button>
-    `;
+function getReadableName(type) {
+    const names = {
+        'selflove': '3D Self Love Neural Practice',
+        'stress': 'Stress Relief Neural Practice',
+        'breath': '3 Deep Breath Technique',
+        'depression': 'Relieve Depression & Anxiety',
+        'mindfulness': 'Mindfulness Relaxation Guided'
+    };
+    return names[type] || type;
 }
 
-function openFullVideo(url) {
-    window.open(url, '_blank');
+function showArcanaSelection() {
+    document.getElementById('arcana-modal').style.display = 'block';
+}
+
+function closeArcanaModal() {
+    document.getElementById('arcana-modal').style.display = 'none';
 }
 
 function getOrdinalSuffix(num) {
@@ -1014,7 +3463,7 @@ function getOrdinalSuffix(num) {
     return suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0];
 }
 
-        
+
 function getRandomMessage() {
     if (allMessages.length === 0) return "Loading messages...";
     
@@ -1034,17 +3483,90 @@ function getRandomMessage() {
     
     return selectedMessage;
 }
+function showPage(pageId) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const page = document.getElementById(pageId);
+if (page) {
+  page.classList.add('active');
+} else {
+  console.warn(`showPage: No element with id "${pageId}" found.`);
+}
+        
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    // Remove the nav-item activation line since action cards aren't nav items
+}
+
+// Helper function to convert display name to key - REPLACE THE ENTIRE FUNCTION
+function getAffirmationKey(displayName) {
+    const keyMap = {
+        "Think Positively": "think-positively",
+        "Build Self-Confidence": "build-self-confidence", 
+        "Calm Your Anxiety": "calm-your-anxiety",
+        "Nurture Self-Love": "nurture-self-love",
+        "Express Gratitude": "express-gratitude",
+        "Achieve Success": "achieve-success",
+        "Ignite Motivation": "ignite-motivation",
+        "Accept Yourself": "accept-yourself",
+        "Love Your Body": "love-your-body",
+        "Accept Your Parents and Ancestral Bloodline Power": "embrace-ancestry",
+        "Embrace Changes": "embrace-changes",
+        "Gain Balance in Life": "gain-balance",
+        "Build Wealth": "build-wealth",
+        "Lose Weight": "lose-weight",
+        "Quit Smoking": "quit-smoking",
+        "Fight with Depression": "fight-depression",
+        "Forgive and Let Go": "forgive-and-let-go",
+        "Conquer Loneliness": "conquer-loneliness",
+        "Overcome Toxic Relationships": "overcome-toxic-relationships",
+        "Forge New Connections": "forge-new-connections",
+        "Nurture Sexuality": "nurture-sexuality",
+        "Manifest New Love": "manifest-new-love",
+        "Deal with Postpartum": "cherish-your-pregnancy",
+        "Awaken Spiritually": "awaken-spiritually",
+        "Harness the Law of Attraction": "harness-law-of-attraction",
+        "Heal From Grief": "heal-from-grief",
+        "Fuel Vitality": "fuel-vitality",
+        "Adopt Stoic Mindset": "adopt-stoic-mindset",
+        "Inspire as a Leader": "inspire-as-leader",
+        "Elevate Career": "elevate-career"
+    };
+    return keyMap[displayName];
+}
+
 
 // Load messages when page loads
 document.addEventListener('DOMContentLoaded', function() {
     loadMessages();
-    document.getElementById('home').classList.add('active');
+    document.getElementById('home-page').classList.add('active');
+
 });
 
+// Navigation for action cards and footer menu
+document.addEventListener('DOMContentLoaded', function() {
+    // Action cards on home page
+    document.querySelectorAll('.action-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const pageId = this.getAttribute('data-page');
+            if (pageId) {
+                showPage(pageId + '-page');
+            }
+        });
+    });
+    
+    // Footer navigation
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const pageId = this.getAttribute('data-page');
+            if (pageId) {
+                showPage(pageId);
+            }
+        });
+    });
+});
 </script>
+<script>
+    // Register service worker for PWA
 
-    <script>
-        // Register service worker for PWA
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
@@ -1070,28 +3592,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 2000);
         });
 
-        // Handle energy form submission
-        document.addEventListener('DOMContentLoaded', () => {
-            const energyForm = document.getElementById('energy-form');
-            if (energyForm) {
-                energyForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    const birthDate = document.getElementById('birth-date').value;
-                    const birthTime = document.getElementById('birth-time').value;
-                    
-                    if (birthDate) {
-                        // Simple energy calculation
-                        const date = new Date(birthDate);
-                        const energyTypes = ['Fire', 'Water', 'Earth', 'Air'];
-                        const energyIndex = (date.getDate() + date.getMonth()) % 4;
-                        const energy = energyTypes[energyIndex];
-                        
-                        alert(`Your Birth Energy is: ${energy} Energy! ✨`);
-                    }
-                });
-            }
-        });
-
+        
         // Install prompt
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
@@ -1138,8 +3639,1708 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         `;
         document.head.appendChild(style);
-    </script>
+        
+        // Affirmations functionality
+class AffirmationsManager {
+    constructor() {
+        this.selectedCategories = new Set();
+        this.settings = {
+            days: [],
+            frequency: 1,
+            startTime: '09:00'
+        };
+        this.init();
+    }
+
+    init() {
+        this.loadSavedSettings();
+        this.bindEvents();
+        this.updateSelectedDisplay();
+        
+        // Check immediately and after DOM is ready
+        this.checkAndHideCompletedSetup();
+        
+        // Add longer delay to ensure all elements are loaded
+        setTimeout(() => {
+            this.checkAndHideCompletedSetup();
+        }, 500);
+    }
+
+    loadSavedSettings() {
+        const saved = localStorage.getItem('affirmationSettings');
+        if (saved) {
+            const data = JSON.parse(saved);
+            
+            // Load categories
+            data.categories.forEach(category => {
+                this.selectedCategories.add(category);
+                const categoryCard = document.querySelector(`[data-category="${category}"]`);
+                if (categoryCard) {
+                    categoryCard.classList.add('selected');
+                }
+            });
+            
+            // Load days
+            data.days.forEach(day => {
+                const checkbox = document.getElementById(`day-${day}`);
+                if (checkbox) checkbox.checked = true;
+            });
+            this.settings.days = data.days;
+            
+            // Load frequency and start time
+            this.settings.frequency = data.frequency;
+            this.settings.startTime = data.startTime;
+            
+            const frequencySelect = document.getElementById('frequency-select');
+            const startTimeInput = document.getElementById('start-time');
+            
+            if (frequencySelect) frequencySelect.value = data.frequency;
+            if (startTimeInput) startTimeInput.value = data.startTime;
+            
+            this.updatePreview();
+        }
+    }
+
+    bindEvents() {
+        // Category selection
+        document.querySelectorAll('.category-card').forEach(card => {
+            card.addEventListener('click', (e) => this.toggleCategory(e));
+        });
+        
+        // Day checkboxes
+        document.querySelectorAll('.day-checkbox input').forEach(checkbox => {
+            checkbox.addEventListener('change', () => this.updateDays());
+        });
+        
+        // Frequency selection
+        const frequencySelect = document.getElementById('frequency-select');
+        if (frequencySelect) {
+            frequencySelect.addEventListener('change', (e) => {
+                this.settings.frequency = parseInt(e.target.value);
+                this.updatePreview();
+            });
+        }
+        
+        // Start time
+        const startTimeInput = document.getElementById('start-time');
+        if (startTimeInput) {
+            startTimeInput.addEventListener('change', (e) => {
+                this.settings.startTime = e.target.value;
+                this.updatePreview();
+            });
+        }
+        
+        // Save button
+        const saveButton = document.getElementById('save-settings');
+        if (saveButton) {
+            saveButton.addEventListener('click', () => this.saveSettings());
+        }
+        
+        // Setup reminders button
+        const setupButton = document.getElementById('setup-reminders-btn');
+        if (setupButton) {
+            setupButton.addEventListener('click', () => {
+                const notificationSetup = document.querySelector('.notification-setup');
+                if (notificationSetup) {
+                    notificationSetup.style.display = 'block';
+                }
+            });
+        }
+    }
+
+  toggleCategory(e) {
+    const card = e.currentTarget;
+    const category = card.dataset.category;
+    
+    if (!category) return;
+    
+    if (this.selectedCategories.has(category)) {
+        this.selectedCategories.delete(category);
+        card.classList.remove('selected');
+    } else {
+        this.selectedCategories.add(category);
+        card.classList.add('selected');
+    }
+    
+    this.updateSelectedDisplay();
+    this.saveToLocalStorage();
+
+    // SHOW the buttons **ONLY** when user changes selections
+    const setupButtonContainer = document.querySelector('.setup-button-container');
+    if (setupButtonContainer) {
+        setupButtonContainer.style.display = 'block';
+    }
+    const notificationSetup = document.querySelector('.notification-setup');
+    if (notificationSetup) {
+        notificationSetup.style.display = 'block';
+    }
+}
+
+    updateSelectedDisplay() {
+        const selectedList = document.getElementById('selected-list');
+        const selectedContainer = document.querySelector('.selected-categories');
+        const setupButtonContainer = document.querySelector('.setup-button-container');
+        const notificationElements = [
+            document.querySelector('.days-selection'),
+            document.querySelector('.frequency-selection'),
+            document.querySelector('.start-time-selection'),
+            document.getElementById('save-settings'),
+            document.getElementById('schedule-preview')
+        ];
+
+        if (this.selectedCategories.size > 0) {
+            if (selectedContainer) selectedContainer.classList.add('show');
+            if (setupButtonContainer) setupButtonContainer.style.display = 'show';
+
+            // Show all notification setup elements
+            notificationElements.forEach(el => {
+                if (el) el.classList.add('show');
+            });
+            
+            if (selectedList) {
+                selectedList.innerHTML = '';
+                
+                this.selectedCategories.forEach(category => {
+                    const tag = document.createElement('div');
+                    tag.className = 'selected-tag';
+                    tag.innerHTML = `
+                        ${category}
+                        <span class="remove" data-category="${category}">×</span>
+                    `;
+                    
+                    tag.querySelector('.remove').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.removeCategory(category);
+                    });
+                    
+                    selectedList.appendChild(tag);
+                });
+            }
+        } else {
+            if (selectedContainer) selectedContainer.classList.remove('show');
+            if (setupButtonContainer) setupButtonContainer.style.display = 'show';
+
+            // Hide all notification setup elements
+            notificationElements.forEach(el => {
+                if (el) el.classList.remove('show');
+            });
+        }
+    }
+
+    removeCategory(category) {
+        this.selectedCategories.delete(category);
+        const categoryCard = document.querySelector(`[data-category="${category}"]`);
+        if (categoryCard) {
+            categoryCard.classList.remove('selected');
+        }
+        this.updateSelectedDisplay();
+        this.saveToLocalStorage();
+        
+        // Hide notification setup if no categories selected
+        if (this.selectedCategories.size === 0) {
+            const notificationSetup = document.querySelector('.notification-setup');
+            if (notificationSetup) {
+                notificationSetup.classList.remove('show');
+            }
+        }
+    }
+
+    updateDays() {
+        this.settings.days = [];
+        document.querySelectorAll('.day-checkbox input:checked').forEach(checkbox => {
+            this.settings.days.push(checkbox.value);
+        });
+        this.updatePreview();
+    }
+
+    updatePreview() {
+        const previewContent = document.getElementById('preview-content');
+        const schedulePreview = document.getElementById('schedule-preview');
+        
+        if (this.settings.days.length > 0 && this.selectedCategories.size > 0) {
+            if (schedulePreview) schedulePreview.style.display = 'block';
+            
+            const times = this.generateScheduleTimes();
+            const daysText = this.settings.days.join(', ');
+            const categoriesText = Array.from(this.selectedCategories).join(', ');
+            
+            if (previewContent) {
+                previewContent.innerHTML = `
+                    <p><strong>Days:</strong> ${daysText}</p>
+                    <p><strong>Categories:</strong> ${categoriesText}</p>
+                    <p><strong>Times:</strong> ${times.join(', ')}</p>
+                    <p><strong>Frequency:</strong> Every ${this.settings.frequency} hour(s)</p>
+                `;
+            }
+        } else {
+            if (schedulePreview) schedulePreview.style.display = 'none';
+        }
+    }
+
+    generateScheduleTimes() {
+        const times = [];
+        const [startHour, startMinute] = this.settings.startTime.split(':').map(Number);
+        let currentHour = startHour;
+        
+        // Generate times for a day (max 24 hours)
+        while (currentHour < 24) {
+            const timeString = `${currentHour.toString().padStart(2, '0')}:${startMinute.toString().padStart(2, '0')}`;
+            times.push(timeString);
+            currentHour += this.settings.frequency;
+        }
+        
+        return times;
+    }
+
+    async saveSettings() {
+    // Your existing validation
+    if (this.selectedCategories.size === 0) {
+        this.showMessage('Please select at least one category!', 'error');
+        return;
+    }
+    
+    if (this.settings.days.length === 0) {
+        this.showMessage('Please select at least one day!', 'error');
+        return;
+    }
+        
+        const settingsData = {
+            categories: Array.from(this.selectedCategories),
+            days: this.settings.days,
+            frequency: this.settings.frequency,
+            startTime: this.settings.startTime,
+            setupComplete: true,
+            savedAt: new Date().toISOString()
+        };
+        
+        localStorage.setItem('affirmationSettings', JSON.stringify(settingsData));
+        this.showMessage('Your preferences have been saved successfully! 🎉', 'success');
+        
+        // Schedule notifications if supported
+        this.scheduleNotifications();
+        
+        // Wait 4 seconds before hiding windows so user can see the success message and preview
+        setTimeout(() => {
+            this.hideSetupElements();
+        }, 4000);
+    }
+
+    saveToLocalStorage() {
+        const quickSave = {
+            categories: Array.from(this.selectedCategories)
+        };
+        localStorage.setItem('selectedCategories', JSON.stringify(quickSave));
+    }
+
+    showMessage(message, type = 'success') {
+        // Remove existing messages
+        const existingMessage = document.querySelector('.settings-message');
+        if (existingMessage) {
+            existingMessage.remove();
+        }
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `settings-message ${type}`;
+        messageDiv.innerHTML = message;
+        
+        const saveButton = document.getElementById('save-settings');
+        if (saveButton && saveButton.parentNode) {
+            saveButton.parentNode.insertBefore(messageDiv, saveButton.nextSibling);
+        }
+        
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            messageDiv.remove();
+        }, 3000);
+    }
+
+    async scheduleNotifications() {
+    if ('Notification' in window) {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            console.log('Notification permission granted for:', this.settings);
+
+            // Show a test notification immediately
+            new Notification('Affirmations app', {
+                body: 'Your daily affirmations reminders are set! 🎉',
+                icon: 'icon.png' // optional, add your app icon path
+            });
+
+            // Future: integrate with service worker for scheduling
+            // You can add service worker registration here if you want
+        } else {
+            console.log('Notification permission denied.');
+        }
+    } else {
+        console.log('Notifications not supported in this browser.');
+    }
+
+
+    }
+
+    checkAndHideCompletedSetup() {
+        console.log('Checking for completed setup...');
+        const saved = localStorage.getItem('affirmationSettings');
+        console.log('Saved settings:', saved);
+        
+        if (saved) {
+            try {
+                const parsedSettings = JSON.parse(saved);
+                // Check if settings are actually complete (has days and other required fields)
+                if (parsedSettings.days && parsedSettings.days.length > 0 && parsedSettings.setupComplete) {
+                    console.log('Complete settings found, hiding elements...');
+                    this.hideSetupElements();
+                } else {
+                    console.log('Settings exist but incomplete');
+                }
+            } catch (error) {
+                console.error('Error parsing saved settings:', error);
+            }
+        } else {
+            console.log('No saved settings found');
+        }
+    }
+
+   hideSetupElements() {
+    const setupButtonContainer = document.querySelector('.setup-button-container');
+    if (setupButtonContainer) {
+        // Hide buttons by setting display to none (or use a class)
+        setupButtonContainer.style.display = 'none';
+        console.log('Setup button hidden');
+    }
+
+    // Similarly for notification setup
+    const notificationSetup = document.querySelector('.notification-setup');
+    if (notificationSetup) {
+        notificationSetup.style.display = 'none';
+        console.log('Notification setup hidden');
+    }
+
+    // Hide selected categories container if needed
+    const selectedContainer = document.querySelector('.selected-categories');
+    if (selectedContainer) {
+        selectedContainer.style.display = 'none';
+        console.log('Selected categories hidden');
+    }
+}
+
+
+
+    // Add method to reset setup (for testing)
+    resetSetup() {
+        localStorage.removeItem('affirmationSettings');
+        localStorage.removeItem('selectedCategories');
+        location.reload();
+    }
+
+    // Method to get random affirmation from selected categories
+    getRandomAffirmation() {
+        if (this.selectedCategories.size === 0) return null;
+        
+        const categories = Array.from(this.selectedCategories);
+        const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+        
+        // This will connect to your affirmations data
+        return this.getAffirmationFromCategory(randomCategory);
+    }
+
+    // Placeholder for connecting to your affirmations data
+    getAffirmationFromCategory(category) {
+        // This method will be updated once you share your affirmations.js structure
+        console.log(`Getting affirmation from category: ${category}`);
+        return `Sample affirmation from ${category}`;
+    }
+}
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    window.affirmationsManager = new AffirmationsManager();
+});
+
+
+// Calculator functionality
+let currentCalculator = '';
+
+function showCodeInput(calculatorType) {
+    currentCalculator = calculatorType;
+    document.getElementById('code-modal').style.display = 'block';
+}
+
+function closeCodeModal() {
+    document.getElementById('code-modal').style.display = 'none';
+    document.getElementById('access-code-input').value = '';
+}
+
+function validateCode() {
+    const code = document.getElementById('access-code-input').value.trim();
+    const validCodes = {
+        'money-code': 'wealthcode455',
+        'forecast': 'vision775'
+    };
+
+    if (code === validCodes[currentCalculator]) {
+        unlockCalculator(currentCalculator);
+        closeCodeModal();
+        alert('Calculator unlocked! 🎉');
+    } else {
+        alert('Invalid code. Please try again.');
+    }
+}
+
+function unlockCalculator(calculatorType) {
+    const card = document.querySelector(`[data-calculator="${calculatorType}"]`);
+    if (!card) {
+        console.error(`No card found for calculator type: ${calculatorType}`);
+        return;
+    }
+
+    const lockOverlay = card.querySelector('.lock-overlay');
+    if (lockOverlay) {
+        lockOverlay.style.display = 'none';
+    }
+
+    // Save unlocked status
+    localStorage.setItem(`calculator-${calculatorType}`, 'unlocked');
+
+    // Add click listener once (optional: avoid duplicates)
+    if (!card.dataset.listenerAttached) {
+        card.addEventListener('click', () => showEmbeddedCalculator(calculatorType));
+        card.dataset.listenerAttached = 'true';
+    }
+
+    // Show embedded calculator immediately
+    showEmbeddedCalculator(calculatorType);
+}
+
+function showEmbeddedCalculator(calculatorType) {
+    if (document.getElementById(`embedded-${calculatorType}`)) return;
+
+    const calculatorUrls = {
+        'money-code': 'https://money-code-calculator.vercel.app/',
+        'forecast': 'https://forecast-calculator-ochre.vercel.app/'
+    };
+
+    const calculatorNames = {
+        'money-code': '💰 Money Code Calculator',
+        'forecast': '🔮 Forecast Calculator'
+    };
+
+    const calculatorContainer = document.createElement('div');
+    calculatorContainer.id = `embedded-${calculatorType}`;
+    calculatorContainer.className = 'embedded-calculator';
+    calculatorContainer.innerHTML = `
+        <div class="calculator-header">
+            <h2>${calculatorNames[calculatorType]}</h2>
+            <button class="close-calculator" onclick="closeEmbeddedCalculator('${calculatorType}')">×</button>
+        </div>
+        <div class="calculator-iframe-container">
+            <iframe src="${calculatorUrls[calculatorType]}" 
+                    frameborder="0" 
+                    width="100%" 
+                    height="600px"
+                    style="border-radius: 10px;">
+            </iframe>
+        </div>
+    `;
+
+    document.body.appendChild(calculatorContainer);
+    calculatorContainer.style.display = 'block';
+}
+
+function closeEmbeddedCalculator(calculatorType) {
+    const calculator = document.getElementById(`embedded-${calculatorType}`);
+    if (calculator) {
+        calculator.remove();
+    }
+}
+
+function checkAndHideCompletedSetup() {
+    console.log('Checking for completed setup...');
+    const saved = localStorage.getItem('affirmationSettings');
+    console.log('Saved settings:', saved);
+    
+    if (saved) {
+        console.log('Settings found, hiding elements...');
+        
+        // Hide the setup button container
+        const setupButtonContainer = document.querySelector('.setup-button-container');
+        console.log('Setup button container:', setupButtonContainer);
+       if (setupButtonContainer) {
+    setupButtonContainer.classList.remove('show');
+    console.log('Setup button hidden');
+}
+        
+        // Hide the selected categories container
+        const selectedContainer = document.querySelector('.selected-categories');
+        console.log('Selected container:', selectedContainer);
+        if (selectedContainer) {
+            selectedContainer.style.display = 'none';
+            console.log('Selected categories hidden');
+        }
+        
+        // Hide the notification setup window
+        const notificationSetup = document.querySelector('.notification-setup');
+        console.log('Notification setup:', notificationSetup);
+        if (notificationSetup) {
+            notificationSetup.style.display = 'none';
+            console.log('Notification setup hidden');
+        }
+    } else {
+        console.log('No saved settings found');
+    }
+}
+
+function forceFixLifemap() {
+    console.log('Attempting to fix lifemap...');
+    const lifemapPage = document.getElementById('lifemap-page');
+    const bottomNav = document.querySelector('.bottom-nav');
+    
+    if (lifemapPage && lifemapPage.classList.contains('active')) {
+        // Force page positioning with space for bottom nav
+        lifemapPage.style.position = 'absolute';
+lifemapPage.style.top = '0';
+lifemapPage.style.left = '50%';
+lifemapPage.style.transform = 'translateX(-50%)';
+lifemapPage.style.height = 'auto';
+lifemapPage.style.minHeight = '100vh';
+
+        lifemapPage.style.width = '100%';
+        lifemapPage.style.height = 'auto';
+        lifemapPage.style.maxWidth = '400px';
+        lifemapPage.style.margin = '0 auto';
+lifemapPage.style.zIndex = '9999';
+lifemapPage.style.padding = '0px 15px 120px 15px';
+lifemapPage.style.paddingTop = '0';
+lifemapPage.style.marginTop = '0';
+
+lifemapPage.style.overflowY = 'auto';
+lifemapPage.style.background = 'linear-gradient(135deg, #4c135d 0%, #6b2c91 100%)';
+
+// Force header to top with no gap
+const header = lifemapPage.querySelector('.page-header');
+if (header) {
+    header.style.marginTop = '0';
+    header.style.paddingTop = '20px';
+}
+
+// ADD THIS NEW PART:
+// Force lifemap-content container to have no gap
+const lifemapContent = lifemapPage.querySelector('.lifemap-content');
+if (lifemapContent) {
+    lifemapContent.style.marginTop = '0';
+    lifemapContent.style.paddingTop = '0';
+}
+
+
+// Force all children to have no top margin/padding
+const lifemapChildren = lifemapPage.children;
+for (let i = 0; i < lifemapChildren.length; i++) {
+    if (i === 0) { // First child (header)
+        lifemapChildren[i].style.marginTop = '0';
+        lifemapChildren[i].style.paddingTop = '20px';
+    } else {
+        lifemapChildren[i].style.marginTop = '0';
+        lifemapChildren[i].style.paddingTop = '0';
+    }
+}
+
+
+        
+        // Force the bottom nav to show properly
+        forceShowBottomNav();
+        
+        // Re-initialize navigation to ensure it still works
+        setTimeout(() => {
+            reinitializeAllNavigation();
+        }, 100);
+        
+        console.log('Lifemap styling applied with bottom nav restored');
+    }
+}
+
+
+function forceShowBottomNav() {
+    const bottomNav = document.querySelector('.bottom-nav');
+    if (bottomNav) {
+        // Force all possible ways to show it
+        bottomNav.style.display = 'flex';
+        bottomNav.style.visibility = 'visible';
+        bottomNav.style.opacity = '1';
+        bottomNav.style.transform = 'none';
+        bottomNav.style.pointerEvents = 'auto';
+        bottomNav.style.position = 'fixed';
+        bottomNav.style.bottom = '0';
+        bottomNav.style.left = '0';
+        bottomNav.style.right = '0';
+        bottomNav.style.zIndex = '10000'; // Higher than lifemap page
+        bottomNav.style.background = '#4c135d'; // Add background if needed
+        console.log('Bottom nav forced to show');
+    }
+}
+
+// Auto-run the lifemap fix when page loads and when switching pages
+document.addEventListener('DOMContentLoaded', function() {
+    // Check every 500ms for lifemap page
+    setInterval(function() {
+        const lifemapPage = document.getElementById('lifemap-page');
+        if (lifemapPage && lifemapPage.classList.contains('active')) {
+            forceFixLifemap();
+        }
+    }, 500);
+});
+
+// Also run immediately
+setTimeout(forceFixLifemap, 1000);
+
+// Bottom Navigation Handler
+function initializeBottomNavigation() {
+    const navItems = document.querySelectorAll('.bottom-nav .nav-item');
+    
+    navItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const targetPage = this.getAttribute('data-page');
+            console.log('Nav item clicked:', targetPage);
+            
+            // Remove active class from all nav items
+            navItems.forEach(nav => nav.classList.remove('active'));
+            
+            // Add active class to clicked item
+            this.classList.add('active');
+            
+            // Navigate to the target page
+            navigateToPage(targetPage);
+        });
+    });
+}
+
+// Home Page Action Cards Handler
+function initializeHomePageActions() {
+    const actionCards = document.querySelectorAll('.action-card');
+    
+    actionCards.forEach(card => {
+        card.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const targetPage = this.getAttribute('data-page');
+            console.log('Action card clicked:', targetPage);
+            
+            // Update bottom nav active state
+            const navItems = document.querySelectorAll('.bottom-nav .nav-item');
+            navItems.forEach(nav => nav.classList.remove('active'));
+            
+            const correspondingNavItem = document.querySelector(`.bottom-nav .nav-item[data-page="${targetPage}"]`);
+            if (correspondingNavItem) {
+                correspondingNavItem.classList.add('active');
+            }
+            
+            // Navigate to the target page
+            navigateToPage(targetPage);
+        });
+    });
+}
+
+// Navigation function
+function navigateToPage(pageName) {
+    console.log('Navigating to:', pageName);
+    
+    // Hide all pages first
+    const allPages = document.querySelectorAll('.page');
+    allPages.forEach(page => {
+        page.classList.remove('active');
+        page.style.display = 'none';
+    });
+    
+    // Show the target page
+    let targetPageElement;
+    
+    switch(pageName) {
+        case 'home':
+            targetPageElement = document.getElementById('home-page') || document.querySelector('.page[data-page="home"]');
+            break;
+        case 'meditations':
+            targetPageElement = document.getElementById('meditations-page') || document.querySelector('.page[data-page="meditations"]');
+            break;
+        case 'lifemap':
+            targetPageElement = document.getElementById('lifemap-page') || document.querySelector('.page[data-page="lifemap"]');
+            break;
+        case 'affirmations':
+            targetPageElement = document.getElementById('affirmations-page') || document.querySelector('.page[data-page="affirmations"]');
+            break;
+        case 'calculators':
+            targetPageElement = document.getElementById('calculators-page') || document.querySelector('.page[data-page="calculators"]');
+            break;
+        default:
+            console.log('Page not found:', pageName);
+            return;
+    }
+    
+    if (targetPageElement) {
+        targetPageElement.style.display = 'block';
+        targetPageElement.classList.add('active');
+        console.log('Successfully navigated to:', pageName);
+        
+        // Special handling for lifemap page
+        if (pageName === 'lifemap') {
+            setTimeout(() => {
+                forceFixLifemap();
+            }, 100);
+        }
+    } else {
+        console.error('Target page element not found for:', pageName);
+    }
+}
+
+// Enhanced forceShowBottomNav to ensure clickability
+function forceShowBottomNav() {
+    const bottomNav = document.querySelector('.bottom-nav');
+    if (bottomNav) {
+        // Force all possible ways to show it and make it clickable
+        bottomNav.style.display = 'flex';
+        bottomNav.style.visibility = 'visible';
+        bottomNav.style.opacity = '1';
+        bottomNav.style.transform = 'none';
+        bottomNav.style.pointerEvents = 'auto';
+        bottomNav.style.position = 'fixed';
+        bottomNav.style.bottom = '0';
+        bottomNav.style.left = '0';
+        bottomNav.style.right = '0';
+        bottomNav.style.zIndex = '10000';
+        bottomNav.style.background = '#4c135d';
+        
+        // Ensure nav items are also clickable
+        const navItems = bottomNav.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.style.pointerEvents = 'auto';
+            item.style.cursor = 'pointer';
+        });
+        
+        console.log('Bottom nav forced to show and made clickable');
+    }
+}
+
+// Re-initialize all navigation handlers
+function reinitializeAllNavigation() {
+    console.log('Re-initializing all navigation...');
+    initializeBottomNavigation();
+    initializeHomePageActions();
+}
+
+// Initialize everything when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Initializing navigation systems...');
+    
+    // Initialize both navigation systems
+    initializeBottomNavigation();
+    initializeHomePageActions();
+    
+    // Set home as active by default
+    const homeNavItem = document.querySelector('.nav-item[data-page="home"]');
+    if (homeNavItem) {
+        homeNavItem.classList.add('active');
+    }
+    
+    // Check every 500ms for lifemap page and ensure nav works
+    setInterval(function() {
+        const lifemapPage = document.getElementById('lifemap-page');
+        if (lifemapPage && lifemapPage.classList.contains('active')) {
+            forceFixLifemap();
+        }
+        
+        // Ensure action cards are still clickable
+        const actionCards = document.querySelectorAll('.action-card');
+        actionCards.forEach(card => {
+            if (!card.hasAttribute('data-nav-initialized')) {
+                card.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const targetPage = this.getAttribute('data-page');
+                    navigateToPage(targetPage);
+                });
+                card.setAttribute('data-nav-initialized', 'true');
+            }
+        });
+    }, 500);
+});
+
+// Also run immediately with delay
+setTimeout(() => {
+    reinitializeAllNavigation();
+    forceFixLifemap();
+}, 1000);
+
+// Additional initialization after 2 seconds to catch any delayed elements
+setTimeout(() => {
+    reinitializeAllNavigation();
+}, 2000);
+
+
+// Meditation Progress Functions
+function loadMeditationProgress() {
+    const totalMinutes = parseInt(localStorage.getItem('totalMeditationMinutes') || '0');
+    const totalSessions = parseInt(localStorage.getItem('totalMeditationSessions') || '0');
+    const totalHours = Math.floor(totalMinutes / 60);
+    
+    document.getElementById('meditation-minutes').textContent = totalMinutes;
+    document.getElementById('meditation-hours').textContent = totalHours;
+    document.getElementById('meditation-sessions').textContent = totalSessions;
+}
+
+function updateMeditationProgress(minutes) {
+    const currentMinutes = parseInt(localStorage.getItem('totalMeditationMinutes') || '0');
+    const currentSessions = parseInt(localStorage.getItem('totalMeditationSessions') || '0');
+    
+    localStorage.setItem('totalMeditationMinutes', (currentMinutes + minutes).toString());
+    localStorage.setItem('totalMeditationSessions', (currentSessions + 1).toString());
+    
+    console.log(`Meditation progress updated: +${minutes} minutes`);
+}
+
+// Affirmation Settings Functions
+function loadAffirmationSettings() {
+    const affirmations = JSON.parse(localStorage.getItem('scheduledAffirmations') || '[]');
+    const affirmationList = document.getElementById('affirmation-list');
+    const noAffirmations = document.getElementById('no-affirmations');
+    
+    if (affirmations.length === 0) {
+        affirmationList.style.display = 'none';
+        noAffirmations.style.display = 'block';
+        return;
+    }
+    
+    affirmationList.style.display = 'block';
+    noAffirmations.style.display = 'none';
+    
+    affirmationList.innerHTML = affirmations.map(affirmation => `
+        <div class="affirmation-item">
+            <div class="affirmation-category">${affirmation.category}</div>
+            <div class="affirmation-text">"${affirmation.text}"</div>
+            <div class="affirmation-schedule">
+                <span>⏰</span>
+                <span>${affirmation.schedule || 'Daily reminder set'}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+function saveAffirmationSetting(category, text, schedule) {
+    const affirmations = JSON.parse(localStorage.getItem('scheduledAffirmations') || '[]');
+    
+    // Check if affirmation already exists
+    const existingIndex = affirmations.findIndex(a => a.text === text);
+    
+    if (existingIndex >= 0) {
+        // Update existing
+        affirmations[existingIndex] = { category, text, schedule };
+    } else {
+        // Add new
+        affirmations.push({ category, text, schedule });
+    }
+    
+    localStorage.setItem('scheduledAffirmations', JSON.stringify(affirmations));
+    console.log('Affirmation setting saved:', { category, text, schedule });
+}
+
+// Initialize profile settings
+document.addEventListener('DOMContentLoaded', function() {
+    loadProfilePhoto();
+    
+    // You can call updateMeditationProgress() from your meditation completion functions
+    // You can call saveAffirmationSetting() from your affirmation reminder setup
+});
+
+// Profile Menu Functions
+function toggleProfileMenu() {
+    const menu = document.getElementById('profile-menu'); // This should match now
+    menu.classList.remove('hidden');
+}
+
+function closeProfileMenu() {
+    const menu = document.getElementById('profile-menu'); // This should match now
+    menu.classList.add('hidden');
+}
+
+
+
+
+function changeProfilePicture() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imageUrl = e.target.result;
+                document.getElementById('profile-image').src = imageUrl;
+                localStorage.setItem('profileImage', imageUrl);
+                showMessage('✨ Profile picture updated!');
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+    input.click();
+    closeProfileMenu(); // Updated to use closeProfileMenu
+}
+
+function openNotificationSettings() {
+    closeProfileMenu(); // Updated to use closeProfileMenu
+    showNotificationModal();
+}
+
+
+function closeNotificationModal() {
+    const modal = document.getElementById('notification-modal');
+    if (modal) modal.remove();
+}
+
+function selectAffirmationCategories() {
+    closeNotificationModal();
+    showPage('affirmations');
+}
+
+function loadNotificationSettings() {
+    // Load notification toggle state
+    const notificationsEnabled = localStorage.getItem('notificationsEnabled') === 'true';
+    const toggle = document.getElementById('notifications-enabled');
+    const status = document.getElementById('notification-status');
+    
+    if (toggle) {
+        toggle.checked = notificationsEnabled && Notification.permission === 'granted';
+        
+        if (notificationsEnabled && Notification.permission === 'granted') {
+            status.textContent = '✅ Notifications enabled! You\'ll receive daily affirmations';
+        } else {
+            status.textContent = 'Enable notifications to receive daily affirmations';
+        }
+    }
+    
+    // Load meditation progress
+    const totalMinutes = parseInt(localStorage.getItem('totalMeditationMinutes') || '0');
+    const totalSessions = parseInt(localStorage.getItem('totalMeditationSessions') || '0');
+    const totalHours = Math.floor(totalMinutes / 60);
+    
+    document.getElementById('profile-meditation-hours').textContent = totalHours;
+    document.getElementById('profile-meditation-sessions').textContent = totalSessions;
+    
+    // Load selected categories from affirmation page
+    const selectedCategories = JSON.parse(localStorage.getItem('selectedAffirmationCategories') || '[]');
+    
+    const categoriesDisplay = document.getElementById('selected-categories-display');
+    if (selectedCategories.length > 0) {
+        categoriesDisplay.innerHTML = selectedCategories.map(cat => 
+            `<span class="category-tag">${cat}</span>`
+        ).join('');
+    } else {
+        categoriesDisplay.innerHTML = '<p style="color: #666; font-style: italic;">No categories selected yet. Go to Affirmations page to choose.</p>';
+    }
+    
+    document.getElementById('active-affirmations-count').textContent = selectedCategories.length;
+    
+    // Load wishes count
+    const wishes = JSON.parse(localStorage.getItem('savedWishes') || '[]');
+    document.getElementById('saved-wishes-count').textContent = wishes.length;
+    
+    // Load favorite meditation type
+    const meditationStats = JSON.parse(localStorage.getItem('meditationStats') || '{}');
+    const favorite = Object.keys(meditationStats).length > 0 ? 
+        Object.keys(meditationStats).reduce((a, b) => meditationStats[a] > meditationStats[b] ? a : b) : 
+        'Not set';
+    document.getElementById('favorite-meditation').textContent = favorite;
+    
+    // Calculate days active
+    const firstUse = localStorage.getItem('firstUseDate');
+    if (firstUse) {
+        const daysDiff = Math.floor((new Date() - new Date(firstUse)) / (1000 * 60 * 60 * 24));
+        document.getElementById('days-active').textContent = daysDiff + 1;
+    } else {
+        localStorage.setItem('firstUseDate', new Date().toISOString());
+        document.getElementById('days-active').textContent = '1';
+    }
+}
+
+
+// Wishes Functionality
+function openWishesBoard() {
+    toggleProfileMenu(); // Close profile menu
+    document.getElementById('wishes-modal').classList.remove('hidden');
+    document.getElementById('wishes-text').value = '';
+    document.getElementById('wishes-text').focus();
+}
+
+function closeWishesModal() {
+    document.getElementById('wishes-modal').classList.add('hidden');
+}
+
+function saveWish() {
+    const wishText = document.getElementById('wishes-text').value.trim();
+    if (!wishText) {
+        showMessage('⚠️ Please write your wish first!');
+        return;
+    }
+    
+    const wishes = JSON.parse(localStorage.getItem('savedWishes') || '[]');
+    const newWish = {
+        id: Date.now(),
+        text: wishText,
+        date: new Date().toLocaleDateString(),
+        timestamp: new Date().toISOString()
+    };
+    
+    wishes.unshift(newWish);
+    localStorage.setItem('savedWishes', JSON.stringify(wishes));
+    
+    // Clear the text area for new wish
+    document.getElementById('wishes-text').value = '';
+    
+    // Show success message
+    showMessage('✨ Your wish has been saved safely!');
+}
+
+function viewSavedWishes() {
+    const wishes = JSON.parse(localStorage.getItem('savedWishes') || '[]');
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>✨ Your Saved Wishes</h3>
+                <button class="close-modal" onclick="this.closest('.modal').remove()">×</button>
+            </div>
+            <div class="wishes-list">
+                ${wishes.length === 0 ? 
+                    '<p style="text-align: center; color: #666; font-style: italic;">No wishes saved yet. Write your first wish!</p>' :
+                    wishes.map(wish => `
+                        <div class="wish-item">
+                            <div class="wish-date">${wish.date}</div>
+                            <div class="wish-text">${wish.text}</div>
+                        </div>
+                    `).join('')
+                }
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function openPersonalTools() {
+    toggleProfileMenu();
+    // You can expand this to show additional tools
+    showMessage('🔧 Personal tools coming soon!');
+}
+
+// Meditation Integration
+function trackMeditationCompletion(meditationType) {
+    // Track 7 minutes per session
+    updateMeditationProgress(7);
+    
+    // Track meditation type preferences
+    const stats = JSON.parse(localStorage.getItem('meditationStats') || '{}');
+    stats[meditationType] = (stats[meditationType] || 0) + 1;
+    localStorage.setItem('meditationStats', JSON.stringify(stats));
+    
+    showMessage(`🧘 Great session! +7 minutes logged`);
+}
+
+// Enhanced meditation card click handler (continued)
+document.addEventListener('DOMContentLoaded', function() {
+    // Add click handlers to meditation cards
+    const meditationCards = document.querySelectorAll('.meditation-card');
+    meditationCards.forEach(card => {
+        const originalClick = card.onclick;
+        card.addEventListener('click', function() {
+            const meditationType = this.dataset.meditation;
+            if (meditationType && meditationType !== 'personalized') {
+                // Track that user started this meditation type
+                trackMeditationStart(meditationType);
+            }
+            // Call original click handler if it exists
+            if (originalClick) originalClick.call(this);
+        });
+    });
+
+    // Add click handlers to affirmation category cards
+    const categoryCards = document.querySelectorAll('.category-card');
+    categoryCards.forEach(card => {
+        card.addEventListener('click', function() {
+            toggleCategorySelection(this);
+        });
+    });
+
+    // Initialize profile
+    initializeProfile();
+});
+
+function trackMeditationStart(meditationType) {
+    // Store the start time and type
+    localStorage.setItem('currentMeditation', JSON.stringify({
+        type: meditationType,
+        startTime: new Date().toISOString()
+    }));
+}
+
+// Call this when meditation actually completes
+function completeMeditation() {
+    const current = JSON.parse(localStorage.getItem('currentMeditation') || '{}');
+    if (current.type) {
+        trackMeditationCompletion(current.type);
+        localStorage.removeItem('currentMeditation');
+    }
+}
+
+// Affirmation Categories Integration
+function toggleCategorySelection(card) {
+    const checkbox = card.querySelector('.checkbox');
+    const category = card.dataset.category;
+    
+    // Toggle visual state
+    card.classList.toggle('selected');
+    checkbox.classList.toggle('checked');
+    
+    // Update selected categories
+    updateSelectedCategories();
+}
+
+function updateSelectedCategories() {
+    const selectedCards = document.querySelectorAll('.category-card.selected');
+    const selectedList = document.getElementById('selected-list');
+    const setupButton = document.querySelector('.setup-button-container');
+    
+    if (selectedCards.length > 0) {
+        // Show selected categories
+        selectedList.innerHTML = Array.from(selectedCards).map(card => 
+            `<span class="selected-category">${card.dataset.category}</span>`
+        ).join('');
+        
+        // Show setup button
+        if (setupButton) setupButton.style.display = 'block';
+        
+        // Save to localStorage
+        const categories = Array.from(selectedCards).map(card => card.dataset.category);
+        localStorage.setItem('selectedAffirmationCategories', JSON.stringify(categories));
+        
+    } else {
+        selectedList.innerHTML = '<p>No categories selected</p>';
+        if (setupButton) setupButton.style.display = 'none';
+    }
+}
+
+// Load saved affirmation categories
+function loadSavedCategories() {
+    const savedCategories = JSON.parse(localStorage.getItem('selectedAffirmationCategories') || '[]');
+    
+    savedCategories.forEach(category => {
+        const card = document.querySelector(`[data-category="${category}"]`);
+        if (card) {
+            card.classList.add('selected');
+            card.querySelector('.checkbox').classList.add('checked');
+        }
+    });
+    
+    updateSelectedCategories();
+}
+
+// Enhanced setup reminders functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const setupBtn = document.getElementById('setup-reminders-btn');
+    if (setupBtn) {
+        setupBtn.addEventListener('click', function() {
+            document.querySelector('.notification-setup').style.display = 'block';
+            this.style.display = 'none';
+        });
+    }
+    
+    const saveBtn = document.getElementById('save-settings');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', saveNotificationSettings);
+    }
+    
+    // Load saved categories when on affirmations page
+    if (document.getElementById('affirmations-page')) {
+        loadSavedCategories();
+    }
+});
+
+function saveNotificationSettings() {
+    const selectedCategories = JSON.parse(localStorage.getItem('selectedAffirmationCategories') || '[]');
+    
+    if (selectedCategories.length === 0) {
+        showMessage('⚠️ Please select at least one category first!');
+        return;
+    }
+    
+    // Get selected days
+    const selectedDays = [];
+    ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].forEach(day => {
+        if (document.getElementById(`day-${day}`).checked) {
+            selectedDays.push(day);
+        }
+    });
+    
+    if (selectedDays.length === 0) {
+        showMessage('⚠️ Please select at least one day!');
+        return;
+    }
+    
+    const frequency = document.getElementById('frequency-select').value;
+    const startTime = document.getElementById('start-time').value;
+    
+    // Save notification settings
+    const notificationSettings = {
+        categories: selectedCategories,
+        days: selectedDays,
+        frequency: parseInt(frequency),
+        startTime: startTime,
+        enabled: true,
+        createdAt: new Date().toISOString()
+    };
+    
+    localStorage.setItem('notificationSettings', JSON.stringify(notificationSettings));
+    
+    // Create affirmation entries for each category
+    selectedCategories.forEach(category => {
+        saveAffirmationSetting(category, `Daily ${category} affirmation`, `${selectedDays.join(', ')} at ${startTime}`);
+    });
+    
+    // Show preview
+    showSchedulePreview(notificationSettings);
+    
+    showMessage('🔔 Notification settings saved successfully!');
+}
+
+function showSchedulePreview(settings) {
+    const preview = document.getElementById('schedule-preview');
+    const content = document.getElementById('preview-content');
+    
+    const timeSlots = [];
+    const startHour = parseInt(settings.startTime.split(':')[0]);
+    
+    for (let i = 0; i < Math.floor(12 / settings.frequency); i++) {
+        const hour = (startHour + (i * settings.frequency)) % 24;
+        timeSlots.push(`${hour.toString().padStart(2, '0')}:00`);
+    }
+    
+    content.innerHTML = `
+        <div class="preview-item">
+            <strong>Days:</strong> ${settings.days.join(', ')}
+        </div>
+        <div class="preview-item">
+            <strong>Times:</strong> ${timeSlots.join(', ')}
+        </div>
+        <div class="preview-item">
+            <strong>Categories:</strong> ${settings.categories.length} selected
+        </div>
+        <div class="preview-item">
+            <strong>Daily Affirmations:</strong> ~${timeSlots.length} per day
+        </div>
+    `;
+    
+    preview.style.display = 'block';
+}
+
+// Utility Functions
+function showMessage(message) {
+    // Remove existing messages
+    const existing = document.querySelector('.success-message');
+    if (existing) existing.remove();
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'success-message';
+    messageDiv.textContent = message;
+    document.body.appendChild(messageDiv);
+    
+    setTimeout(() => {
+        if (messageDiv.parentNode) {
+            messageDiv.remove();
+        }
+    }, 3000);
+}
+
+function initializeProfile() {
+    // Load saved profile image
+    const savedImage = localStorage.getItem('profileImage');
+    const profileImg = document.getElementById('profile-image');
+    if (savedImage && profileImg) {
+        profileImg.src = savedImage;
+    }
+    
+    // Initialize first use date if not set
+    if (!localStorage.getItem('firstUseDate')) {
+        localStorage.setItem('firstUseDate', new Date().toISOString());
+    }
+    
+    // Load existing data
+    loadMeditationProgress();
+    loadAffirmationSettings();
+}
+
+// Your existing functions (enhanced)
+function loadMeditationProgress() {
+    const totalMinutes = parseInt(localStorage.getItem('totalMeditationMinutes') || '0');
+    const totalSessions = parseInt(localStorage.getItem('totalMeditationSessions') || '0');
+    const totalHours = Math.floor(totalMinutes / 60);
+    
+    // Update elements if they exist
+    const minutesEl = document.getElementById('meditation-minutes');
+    const hoursEl = document.getElementById('meditation-hours');
+    const sessionsEl = document.getElementById('meditation-sessions');
+    
+    if (minutesEl) minutesEl.textContent = totalMinutes;
+    if (hoursEl) hoursEl.textContent = totalHours;
+    if (sessionsEl) sessionsEl.textContent = totalSessions;
+}
+
+function updateMeditationProgress(minutes) {
+    const currentMinutes = parseInt(localStorage.getItem('totalMeditationMinutes') || '0');
+    const currentSessions = parseInt(localStorage.getItem('totalMeditationSessions') || '0');
+    
+    localStorage.setItem('totalMeditationMinutes', (currentMinutes + minutes).toString());
+    localStorage.setItem('totalMeditationSessions', (currentSessions + 1).toString());
+    
+    console.log(`Meditation progress updated: +${minutes} minutes`);
+    loadMeditationProgress(); // Refresh display
+}
+
+function loadAffirmationSettings() {
+    const affirmations = JSON.parse(localStorage.getItem('scheduledAffirmations') || '[]');
+    const affirmationList = document.getElementById('affirmation-list');
+    const noAffirmations = document.getElementById('no-affirmations');
+    
+    if (!affirmationList) return; // Element doesn't exist on this page
+    
+    if (affirmations.length === 0) {
+        affirmationList.style.display = 'none';
+        if (noAffirmations) noAffirmations.style.display = 'block';
+        return;
+    }
+    
+    affirmationList.style.display = 'block';
+    if (noAffirmations) noAffirmations.style.display = 'none';
+    
+    affirmationList.innerHTML = affirmations.map(affirmation => `
+        <div class="affirmation-item">
+            <div class="affirmation-category">${affirmation.category}</div>
+            <div class="affirmation-text">"${affirmation.text}"</div>
+            <div class="affirmation-schedule">
+                <span>⏰</span>
+                <span>${affirmation.schedule || 'Daily reminder set'}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+function saveAffirmationSetting(category, text, schedule) {
+    const affirmations = JSON.parse(localStorage.getItem('scheduledAffirmations') || '[]');
+    
+    const existingIndex = affirmations.findIndex(a => a.category === category);
+    
+    if (existingIndex >= 0) {
+        affirmations[existingIndex] = { category, text, schedule };
+    } else {
+        affirmations.push({ category, text, schedule });
+    }
+    
+    localStorage.setItem('scheduledAffirmations', JSON.stringify(affirmations));
+    console.log('Affirmation setting saved:', { category, text, schedule });
+    loadAffirmationSettings(); // Refresh display
+}
+
+// Add these functions to connect with your meditation player
+function onMeditationComplete() {
+    // Call this when your meditation audio/timer finishes
+    completeMeditation();
+}
+
+// For manual completion (if user stops early)
+function markMeditationComplete(meditationType) {
+    trackMeditationCompletion(meditationType);
+}
+// Add this to your complete integration
+
+// PWA Notification Functions
+async function requestNotificationPermission() {
+  if (!('Notification' in window)) {
+    showMessage('❌ This browser does not support notifications');
+    return false;
+  }
+
+  if (Notification.permission === 'granted') {
+    await getFcmToken();
+    return true;
+  }
+
+  if (Notification.permission !== 'denied') {
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      await getFcmToken();
+      return true;
+    }
+  }
+
+  return false;
+}
+
+async function getFcmToken() {
+  try {
+    const token = await getToken(messaging, { vapidKey: 'BFeiQnMxZlXHXxtQrAPvWSJ_1XnTklpH2IEcPAG_qjoxKKwHICnJOaEjzK3rq5zNMyaD02_gjJPqtBA6WYGu20U' });
+    if (token) {
+      console.log('FCM Token:', token);
+      // TODO: Save/send token to your backend or localStorage
+    } else {
+      console.log('No registration token available.');
+    }
+  } catch (error) {
+    console.error('Error retrieving FCM token:', error);
+  }
+}
+
+
+function showNotificationModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.id = 'notification-modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🔔 Notification Settings</h3>
+                <button class="close-modal" onclick="closeNotificationModal()" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color: #fff;">×</button>
+
+            </div>
+            <div class="notification-settings">
+                <!-- Notification Toggle -->
+                <div class="notification-toggle-section">
+                    <h4>📱 Push Notifications</h4>
+                    <div class="toggle-container">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="notifications-enabled" onchange="toggleNotifications()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span id="notification-status">Enable notifications to receive daily affirmations</span>
+                    </div>
+                </div>
+                
+                <div class="divider"></div>
+                
+                <h4>✨ Selected Affirmation Categories</h4>
+                <div id="selected-categories-display"></div>
+                <button onclick="selectAffirmationCategories()" 
+                
+                <div class="divider"></div>
+                
+                <h4>🧘 Meditation Progress</h4>
+                <div class="progress-stats">
+                    <p>Total Hours: <span id="profile-meditation-hours">0</span></p>
+                    <p>Sessions: <span id="profile-meditation-sessions">0</span></p>
+                    <p>Favorite Type: <span id="favorite-meditation">Not set</span></p>
+                </div>
+                
+                <h4>📊 Your Activity</h4>
+                <div class="progress-stats">
+                    <p>Active Affirmations: <span id="active-affirmations-count">0</span></p>
+                    <p>Saved Wishes: <span id="saved-wishes-count">0</span></p>
+                    <p>Days Active: <span id="days-active">0</span></p>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    loadNotificationSettings();
+}
+
+async function toggleNotifications() {
+    const toggle = document.getElementById('notifications-enabled');
+    const status = document.getElementById('notification-status');
+    
+    if (toggle.checked) {
+        const granted = await requestNotificationPermission();
+        if (granted) {
+            localStorage.setItem('notificationsEnabled', 'true');
+            status.textContent = '✅ Notifications enabled! You\'ll receive daily affirmations';
+            startNotificationSchedule();
+        } else {
+            toggle.checked = false;
+            status.textContent = '❌ Permission denied. Enable in browser settings';
+        }
+    } else {
+        localStorage.setItem('notificationsEnabled', 'false');
+        status.textContent = 'Enable notifications to receive daily affirmations';
+        stopNotificationSchedule();
+    }
+}
+
+function startNotificationSchedule() {
+    const settings = JSON.parse(localStorage.getItem('notificationSettings') || '{}');
+    if (!settings.enabled || !settings.categories) return;
+    
+    // Clear existing intervals
+    stopNotificationSchedule();
+    
+    // Create notification schedule
+    const intervalId = setInterval(() => {
+        sendRandomAffirmation();
+    }, settings.frequency * 60 * 60 * 1000); // Convert hours to milliseconds
+    
+    localStorage.setItem('notificationIntervalId', intervalId);
+}
+
+function stopNotificationSchedule() {
+    const intervalId = localStorage.getItem('notificationIntervalId');
+    if (intervalId) {
+        clearInterval(parseInt(intervalId));
+        localStorage.removeItem('notificationIntervalId');
+    }
+}
+
+function sendRandomAffirmation() {
+    const settings = JSON.parse(localStorage.getItem('notificationSettings') || '{}');
+    const affirmations = getAffirmationsByCategories(settings.categories);
+    
+    if (affirmations.length > 0 && Notification.permission === 'granted') {
+        const randomAffirmation = affirmations[Math.floor(Math.random() * affirmations.length)];
+        
+        new Notification('✨ Daily Affirmation', {
+            body: randomAffirmation.text,
+            icon: '/icon-192x192.png', // Your PWA icon
+            badge: '/icon-192x192.png',
+            tag: 'daily-affirmation',
+            requireInteraction: false
+        });
+    }
+}
+
+function getAffirmationsByCategories(categories) {
+    // You'll need to create an affirmations database
+    const affirmationsDB = {
+        'Think Positively': [
+            { text: 'I choose to see the good in every situation', category: 'Think Positively' },
+            { text: 'My thoughts create my reality, and I choose positive thoughts', category: 'Think Positively' },
+            { text: 'I am in control of my mindset and choose optimism', category: 'Think Positively' }
+        ],
+        'Build Self-Confidence': [
+            { text: 'I believe in myself and my abilities', category: 'Build Self-Confidence' },
+            { text: 'I am worthy of success and happiness', category: 'Build Self-Confidence' },
+            { text: 'My confidence grows stronger every day', category: 'Build Self-Confidence' }
+        ],
+        // Add more categories and affirmations...
+    };
+    
+    let allAffirmations = [];
+    categories.forEach(category => {
+        if (affirmationsDB[category]) {
+            allAffirmations = allAffirmations.concat(affirmationsDB[category]);
+        }
+    });
+    
+    return allAffirmations;
+}
+
+function openWishesModal() {
+    closeProfileMenu(); // Close the profile menu first
+    const modal = document.getElementById('wishes-modal');
+    modal.classList.remove('hidden'); // Show the wishes modal
+}
+
+function saveWish() {
+    const wishText = document.getElementById('wishes-text').value;
+    if (wishText.trim()) {
+        const wishes = JSON.parse(localStorage.getItem('wishes') || '[]');
+        wishes.push({
+            text: wishText,
+            date: new Date().toLocaleDateString()
+        });
+        localStorage.setItem('wishes', JSON.stringify(wishes));
+        document.getElementById('wishes-text').value = '';
+        
+        // Simple beautiful notification - just replace the alert line
+        const div = document.createElement('div');
+div.innerHTML = '✨ Wish saved!';
+div.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#ccae79;color:white;padding:15px;border-radius:10px;z-index:9999;text-align:center;';
+
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 2000);
+        
+    } else {
+        alert('Please write something first!');
+    }
+}
+
+
+function viewSavedWishes() {
+    const wishes = JSON.parse(localStorage.getItem('wishes') || '[]');
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:2000'; // Higher z-index
+    
+    const content = document.createElement('div');
+    content.className = 'modal-content';
+    content.style.cssText = 'background:white;border-radius:20px;padding:20px;max-width:360px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 10px 30px rgba(0,0,0,0.3)';
+
+    
+    // Create header
+    const header = document.createElement('div');
+    header.innerHTML = `
+        <h3 style="margin:0 0 20px 0;color:#333">✨ Your Saved Wishes</h3>
+        <button onclick="this.closest('[style*=fixed]').remove()" style="position:absolute;top:15px;right:20px;background:none;border:none;font-size:24px;cursor:pointer;color:#666">×</button>
+    `;
+    content.appendChild(header);
+    
+    // Create wishes list
+    const wishesContainer = document.createElement('div');
+    if (wishes.length === 0) {
+        wishesContainer.innerHTML = '<p style="text-align:center;color:#666;font-style:italic;padding:40px">No wishes saved yet!</p>';
+    } else {
+        wishes.forEach((wish, index) => {
+            const wishDiv = document.createElement('div');
+            wishDiv.style.cssText = 'padding:15px;margin:10px 0;background:linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);border-radius:12px;border-left:4px solid #ccae79';
+            wishDiv.innerHTML = `
+                <div style="font-size:12px;color:#666;margin-bottom:8px">${wish.date}</div>
+                <div style="font-size:16px;line-height:1.5;color:#333;font-weight:500">${wish.text}</div>
+            `;
+            wishesContainer.appendChild(wishDiv);
+        });
+    }
+    
+    content.appendChild(wishesContainer);
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+    
+    // Close when clicking outside
+    modal.onclick = (e) => {
+        if (e.target === modal) modal.remove();
+    };
+}
+
+function openFreeResources() {
+    window.open('https://payhip.com/KarmaDecoded/collection/free-resources', '_blank');
+}
+
+
+
+
+
+</script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
