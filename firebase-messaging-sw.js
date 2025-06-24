@@ -7,7 +7,7 @@ firebase.initializeApp({
   apiKey: "AIzaSyAPCFjjC6SqtQEauTQ6Hs7Ex-B2tj6PuXM",
   authDomain: "soul-code-app.firebaseapp.com",
   projectId: "soul-code-app",
-  storageBucket: "soul-code-app.firebasestorage.app",
+  storageBucket: "soul-code-app.appspot.com",
   messagingSenderId: "339179205157",
   appId: "1:339179205157:web:e801c0ad054cbc6a1c05cc",
   measurementId: "G-C1K5PGZJB7"
