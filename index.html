@@ -2365,6 +2365,8 @@ input:checked + .toggle-slider:before {
   const analytics = getAnalytics(app);
   const messaging = getMessaging(app);
   const db = getFirestore(app);
+  const userId = "testUser123"; // temporary, just to store data in Firebase
+  
   
   // Call this after the user selects their categories & times
 async function saveUserPreferences(userId, categories, schedule) {
@@ -3914,6 +3916,12 @@ class AffirmationsManager {
         };
         
         localStorage.setItem('affirmationSettings', JSON.stringify(settingsData));
+        await saveUserPreferences(userId, settingsData.categories, {
+  days: settingsData.days,
+  frequency: settingsData.frequency,
+  startTime: settingsData.startTime
+});
+
         this.showMessage('Your preferences have been saved successfully! 🎉', 'success');
         
         // Schedule notifications if supported
