@@ -1,5 +1,6 @@
-importScripts('https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js');
-importScripts('https://www.gstatic.com/firebasejs/11.9.1/firebase-messaging.js');
+// Use v8 compat versions for service workers
+importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js');
 
 firebase.initializeApp({
   apiKey: "AIzaSyAPCFjjC6SqtQEauTQ6Hs7Ex-B2tj6PuXM",
@@ -289,6 +290,16 @@ async function getUserData() {
         console.error('Service Worker: Error getting user data', error);
         return null;
     }
+}
+
+// Get random affirmation helper function
+function getRandomAffirmation(category) {
+    const affirmations = affirmationCategories[category];
+    if (!affirmations || affirmations.length === 0) {
+        // Default fallback affirmations
+        return "Stay positive and keep going!";
+    }
+    return affirmations[Math.floor(Math.random() * affirmations.length)];
 }
 
 // Get random affirmation helper function
