@@ -3894,6 +3894,7 @@ class AffirmationsManager {
         return times;
     }
 
+
     async saveSettings() {
     // Your existing validation
     if (this.selectedCategories.size === 0) {
@@ -4058,6 +4059,12 @@ class AffirmationsManager {
         console.log(`Getting affirmation from category: ${category}`);
         return `Sample affirmation from ${category}`;
     }
+}
+// Generate and store a unique userId if not already saved
+let userId = localStorage.getItem('userId');
+if (!userId) {
+  userId = 'user_' + Math.random().toString(36).substr(2, 9);
+  localStorage.setItem('userId', userId);
 }
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
