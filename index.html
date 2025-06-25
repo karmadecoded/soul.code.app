@@ -3219,52 +3219,88 @@ input:checked + .toggle-slider:before {
   };
 
   // UPDATED MAIN EMAIL AUTH HANDLER:
-  window.handleEmailAuth = async function() {
-  const email = document.getElementById('auth-email').value.trim();
-  const password = document.getElementById('auth-password').value;
-    
-  console.log('Email:', email, 'Password provided:', !!password);
+ window.handleEmailAuth = async function() {
+  const emailInput = document.getElementById('auth-email');
+  const passwordInput = document.getElementById('auth-password');
+  const email = emailInput.value.trim();
+  
+  console.log('Email:', email);
   
   if (!email) {
     alert('Please enter your email');
     return;
   }
+
+  // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    alert('Please enter a valid email address');
+    return;
+  }
+
+  // First, check if user exists by trying to send password reset
+  try {
+    await sendPasswordResetEmail(auth, email);
+    // If we get here, user exists - now check their password
+    const password = passwordInput.value;
     
-  if (password) {
-    // Try sign in first
+    if (!password) {
+      alert('Please enter your password');
+      return;
+    }
+
+    // Try to sign in with provided password
     try {
       await signInWithEmailAndPassword(auth, email, password);
       console.log('Signed in successfully');
-    } catch (error) {
-      console.log('Sign in failed:', error.code);
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-        // Try creating new account
-        try {
-          await createUserWithEmailAndPassword(auth, email, password);
-          console.log('Account created');
-        } catch (createError) {
-          alert('Error: ' + createError.message);
+    } catch (signInError) {
+      if (signInError.code === 'auth/wrong-password' || signInError.code === 'auth/invalid-credential') {
+        // Show wrong password message with forgot password option
+        const forgotPassword = confirm('Wrong password. Would you like to reset your password via email?');
+        if (forgotPassword) {
+          try {
+            await sendPasswordResetEmail(auth, email);
+            alert('Password reset email sent! Please check your inbox.');
+          } catch (resetError) {
+            alert('Error sending reset email: ' + resetError.message);
+          }
         }
-      } else if (error.code === 'auth/wrong-password') {
-        alert('Wrong password for this email');
       } else {
-        alert('Error: ' + error.message);
+        alert('Sign in error: ' + signInError.message);
       }
     }
-  } else {
-    // No password - auto-generate
-    const autoPassword = generateRandomPassword();
-    const finalPassword = await showPasswordConfirmationModal(email, autoPassword);
-    
-    try {
-      await createUserWithEmailAndPassword(auth, email, finalPassword);
-      console.log('New account created with auto password');
-    } catch (error) {
-      if (error.code === 'auth/email-already-in-use') {
-        alert('Email already exists. Please enter your password.');
-      } else {
-        alert('Error: ' + error.message);
+
+  } catch (resetError) {
+    if (resetError.code === 'auth/user-not-found') {
+      // User doesn't exist - create new account with auto-generated password
+      console.log('New user detected, generating password...');
+      
+      const autoPassword = generateRandomPassword();
+      
+      // Auto-populate the password field
+      passwordInput.value = autoPassword;
+      
+      // Show modal for password confirmation
+      try {
+        const finalPassword = await showPasswordConfirmationModal(email, autoPassword);
+        
+        // Update password field with final choice
+        passwordInput.value = finalPassword;
+        
+        // Create account
+        await createUserWithEmailAndPassword(auth, email, finalPassword);
+        alert('Account successfully created! You are now signed in.');
+        console.log('New account created successfully');
+        
+      } catch (createError) {
+        console.error('Account creation failed:', createError);
+        alert('Failed to create account: ' + createError.message);
+        // Clear the auto-populated password on error
+        passwordInput.value = '';
       }
+    } else {
+      console.error('Unexpected error:', resetError);
+      alert('Error: ' + resetError.message);
     }
   }
 };
