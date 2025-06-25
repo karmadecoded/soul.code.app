@@ -2986,7 +2986,8 @@ input:checked + .toggle-slider:before {
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
   import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-messaging.js";
   import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, onAuthStateChanged, sendPasswordResetEmail, updatePassword } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, onAuthStateChanged, sendPasswordResetEmail, updatePassword, fetchSignInMethodsForEmail } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+
 
   const firebaseConfig = {
     apiKey: "AIzaSyAPCFjjC6SqtQEauTQ6Hs7Ex-B2tj6PuXM",
@@ -3032,130 +3033,185 @@ input:checked + .toggle-slider:before {
     }
     return password;
   }
-
-  function showPasswordConfirmationModal(email, autoPassword) {
-    return new Promise((resolve) => {
-      const modalHTML = `
-        <div id="password-modal" style="
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: rgba(0,0,0,0.5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          z-index: 1000;
+function showPasswordConfirmationModal(email, autoPassword) {
+  return new Promise((resolve, reject) => {
+    const modalHTML = `
+      <div id="password-modal" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+      ">
+        <div style="
+          background: linear-gradient(135deg, #ccae79 0%, #caafe0 100%);
+          padding: 30px;
+          border-radius: 15px;
+          max-width: 450px;
+          width: 90%;
+          text-align: center;
+          box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+          color: white;
+          position: relative;
         ">
+          <button id="close-modal" style="
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            font-weight: bold;
+          ">×</button>
+          
+          <h3 style="margin-top: 0; color: white;">Welcome to SoulCode!</h3>
+          <p>Account created for: <strong>${email}</strong></p>
+          <p>Your auto-generated password is:</p>
           <div style="
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
-          ">
-            <h3>Account Created for ${email}</h3>
-            <p>Your auto-generated password is:</p>
-            <div style="
-              background: #f0f0f0;
-              padding: 15px;
-              border-radius: 5px;
-              font-family: monospace;
-              font-size: 16px;
-              margin: 15px 0;
-              word-break: break-all;
-            ">${autoPassword}</div>
-            <p>Would you like to keep this password or create your own?</p>
-            <div style="margin-top: 20px;">
-              <button id="keep-password" style="
-                background: #4CAF50;
-                color: white;
-                border: none;
-                padding: 10px 20px;
-                margin: 5px;
-                border-radius: 5px;
-                cursor: pointer;
-              ">Keep This Password</button>
-              <button id="create-own" style="
-                background: #2196F3;
-                color: white;
-                border: none;
-                padding: 10px 20px;
-                margin: 5px;
-                border-radius: 5px;
-                cursor: pointer;
-              ">Create My Own</button>
-            </div>
-            <div id="custom-password-section" style="display: none; margin-top: 20px;">
-              <input type="password" id="custom-password" placeholder="Enter your password" style="
-                width: 100%;
-                padding: 10px;
-                margin: 10px 0;
-                border: 1px solid #ddd;
-                border-radius: 5px;
-                box-sizing: border-box;
-              ">
-              <input type="password" id="confirm-password" placeholder="Confirm password" style="
-                width: 100%;
-                padding: 10px;
-                margin: 10px 0;
-                border: 1px solid #ddd;
-                border-radius: 5px;
-                box-sizing: border-box;
-              ">
-              <button id="save-custom" style="
-                background: #4CAF50;
-                color: white;
-                border: none;
-                padding: 10px 20px;
-                margin: 5px;
-                border-radius: 5px;
-                cursor: pointer;
-              ">Save Password</button>
-            </div>
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 14px;
+            margin: 15px 0;
+            word-break: break-all;
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+          ">${autoPassword}</div>
+          <p><strong>Would you like to keep this password or create your own?</strong></p>
+          
+          <div style="margin-top: 20px;">
+            <button id="keep-password" class="btn" style="
+              background: linear-gradient(135deg, #ccae79 0%, #caafe0 100%);
+              color: white;
+              border: 2px solid white;
+              padding: 12px 24px;
+              margin: 5px;
+              border-radius: 25px;
+              cursor: pointer;
+              font-size: 14px;
+              font-weight: bold;
+            ">Keep This Password</button>
+            <button id="create-own" class="btn" style="
+              background: linear-gradient(135deg, #caafe0 0%, #ccae79 100%);
+              color: white;
+              border: 2px solid white;
+              padding: 12px 24px;
+              margin: 5px;
+              border-radius: 25px;
+              cursor: pointer;
+              font-size: 14px;
+              font-weight: bold;
+            ">Create My Own</button>
+          </div>
+          
+          <div id="custom-password-section" style="display: none; margin-top: 20px;">
+            <input type="password" id="custom-password" placeholder="Enter your password (min 6 characters)" style="
+              width: 100%;
+              padding: 12px;
+              margin: 10px 0;
+              border: 2px solid white;
+              border-radius: 25px;
+              box-sizing: border-box;
+              font-size: 14px;
+              text-align: center;
+            ">
+            <input type="password" id="confirm-password" placeholder="Confirm password" style="
+              width: 100%;
+              padding: 12px;
+              margin: 10px 0;
+              border: 2px solid white;
+              border-radius: 25px;
+              box-sizing: border-box;
+              font-size: 14px;
+              text-align: center;
+            ">
+            <button id="save-custom" class="btn" style="
+              background: linear-gradient(135deg, #ccae79 0%, #caafe0 100%);
+              color: white;
+              border: 2px solid white;
+              padding: 12px 24px;
+              margin: 5px;
+              border-radius: 25px;
+              cursor: pointer;
+              font-size: 14px;
+              font-weight: bold;
+            ">Save Password</button>
+            <button id="cancel-custom" class="btn" style="
+              background: linear-gradient(135deg, #caafe0 0%, #ccae79 100%);
+              color: white;
+              border: 2px solid white;
+              padding: 12px 24px;
+              margin: 5px;
+              border-radius: 25px;
+              cursor: pointer;
+              font-size: 14px;
+              font-weight: bold;
+            ">Cancel</button>
           </div>
         </div>
-      `;
+      </div>
+    `;
 
-      document.body.insertAdjacentHTML('beforeend', modalHTML);
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
 
-      document.getElementById('keep-password').onclick = () => {
-        document.getElementById('password-modal').remove();
-        resolve(autoPassword);
-      };
+    // Close modal function
+    const closeModal = () => {
+      document.getElementById('password-modal').remove();
+      reject('Modal closed');
+    };
 
-      document.getElementById('create-own').onclick = () => {
-        document.getElementById('custom-password-section').style.display = 'block';
-        document.getElementById('keep-password').style.display = 'none';
-        document.getElementById('create-own').style.display = 'none';
-      };
+    document.getElementById('close-modal').onclick = closeModal;
+    
+    document.getElementById('keep-password').onclick = () => {
+      document.getElementById('password-modal').remove();
+      resolve(autoPassword);
+    };
 
-      document.getElementById('save-custom').onclick = () => {
-        const customPassword = document.getElementById('custom-password').value;
-        const confirmPassword = document.getElementById('confirm-password').value;
+    document.getElementById('create-own').onclick = () => {
+      document.getElementById('custom-password-section').style.display = 'block';
+      document.getElementById('keep-password').style.display = 'none';
+      document.getElementById('create-own').style.display = 'none';
+    };
 
-        if (!customPassword) {
-          alert('Please enter a password');
-          return;
-        }
+    document.getElementById('cancel-custom').onclick = () => {
+      document.getElementById('custom-password-section').style.display = 'none';
+      document.getElementById('keep-password').style.display = 'inline-block';
+      document.getElementById('create-own').style.display = 'inline-block';
+    };
 
-        if (customPassword !== confirmPassword) {
-          alert('Passwords do not match');
-          return;
-        }
+    document.getElementById('save-custom').onclick = () => {
+      const customPassword = document.getElementById('custom-password').value;
+      const confirmPassword = document.getElementById('confirm-password').value;
 
-        if (customPassword.length < 6) {
-          alert('Password must be at least 6 characters long');
-          return;
-        }
+      if (!customPassword) {
+        alert('Please enter a password');
+        return;
+      }
 
-        document.getElementById('password-modal').remove();
-        resolve(customPassword);
-      };
-    });
-  }
+      if (customPassword !== confirmPassword) {
+        alert('Passwords do not match');
+        return;
+      }
+
+      if (customPassword.length < 6) {
+        alert('Password must be at least 6 characters long');
+        return;
+      }
+
+      document.getElementById('password-modal').remove();
+      resolve(customPassword);
+    };
+  });
+}
+
 
   // UPDATED AUTHENTICATION FUNCTIONS:
   window.signUpWithEmail = async function(email, password) {
@@ -3217,93 +3273,127 @@ input:checked + .toggle-slider:before {
       alert('Failed to send email link: ' + error.message);
     }
   };
-
-  // UPDATED MAIN EMAIL AUTH HANDLER:
- window.handleEmailAuth = async function() {
+  // EMAIL INPUT LISTENER FOR AUTO-POPULATION - FIXED:
+document.addEventListener('DOMContentLoaded', function() {
   const emailInput = document.getElementById('auth-email');
   const passwordInput = document.getElementById('auth-password');
-  const email = emailInput.value.trim();
   
-  console.log('Email:', email);
-  
-  if (!email) {
-    alert('Please enter your email');
-    return;
-  }
-
-  // Validate email format
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    alert('Please enter a valid email address');
-    return;
-  }
-
-  // First, check if user exists by trying to send password reset
-  try {
-    await sendPasswordResetEmail(auth, email);
-    // If we get here, user exists - now check their password
-    const password = passwordInput.value;
-    
-    if (!password) {
-      alert('Please enter your password');
-      return;
-    }
-
-    // Try to sign in with provided password
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      console.log('Signed in successfully');
-    } catch (signInError) {
-      if (signInError.code === 'auth/wrong-password' || signInError.code === 'auth/invalid-credential') {
-        // Show wrong password message with forgot password option
-        const forgotPassword = confirm('Wrong password. Would you like to reset your password via email?');
-        if (forgotPassword) {
+  if (emailInput) {
+    emailInput.addEventListener('input', async function() {
+      const email = this.value.trim();
+      
+      if (email && email.includes('@')) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (emailRegex.test(email)) {
           try {
-            await sendPasswordResetEmail(auth, email);
-            alert('Password reset email sent! Please check your inbox.');
-          } catch (resetError) {
-            alert('Error sending reset email: ' + resetError.message);
+            // PROPER METHOD: Check if email exists without authentication
+            const signInMethods = await fetchSignInMethodsForEmail(auth, email);
+            
+            if (signInMethods.length === 0) {
+              // NEW USER - auto-generate password
+              const autoPassword = generateRandomPassword();
+              passwordInput.value = autoPassword;
+              passwordInput.placeholder = 'Auto-generated password';
+              console.log('New user detected, password auto-populated');
+            } else {
+              // EXISTING USER - clear password field and wait for input
+              passwordInput.value = '';
+              passwordInput.placeholder = 'Enter your password';
+              console.log('Existing user detected, password field cleared');
+            }
+          } catch (error) {
+            console.error('Error checking email:', error);
+            // On error, default to existing user behavior (safer)
+            passwordInput.value = '';
+            passwordInput.placeholder = 'Enter your password';
           }
         }
       } else {
-        alert('Sign in error: ' + signInError.message);
+        // Clear password field if email is invalid/incomplete
+        passwordInput.value = '';
+        passwordInput.placeholder = 'Enter your password';
       }
-    }
+    });
+  }
+});
 
-  } catch (resetError) {
-    if (resetError.code === 'auth/user-not-found') {
-      // User doesn't exist - create new account with auto-generated password
-      console.log('New user detected, generating password...');
-      
-      const autoPassword = generateRandomPassword();
-      
-      // Auto-populate the password field
-      passwordInput.value = autoPassword;
-      
-      // Show modal for password confirmation
+
+
+  // UPDATED MAIN EMAIL AUTH HANDLER:
+// UPDATED MAIN EMAIL AUTH HANDLER - FIXED:
+window.handleEmailAuth = async function() {
+  const emailInput = document.getElementById('auth-email');
+  const passwordInput = document.getElementById('auth-password');
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
+  
+  if (!email || !password) {
+    alert('Please enter email and password');
+    return;
+  }
+
+  try {
+    // STEP 1: Check if user exists using proper Firebase method
+    const signInMethods = await fetchSignInMethodsForEmail(auth, email);
+    
+    if (signInMethods.length === 0) {
+      // NEW USER - Show keep/change modal and create account
+      console.log('New user - showing password confirmation modal');
       try {
-        const finalPassword = await showPasswordConfirmationModal(email, autoPassword);
-        
-        // Update password field with final choice
-        passwordInput.value = finalPassword;
-        
-        // Create account
+        const finalPassword = await showPasswordConfirmationModal(email, password);
         await createUserWithEmailAndPassword(auth, email, finalPassword);
         alert('Account successfully created! You are now signed in.');
-        console.log('New account created successfully');
-        
       } catch (createError) {
-        console.error('Account creation failed:', createError);
+        if (createError === 'Modal closed') {
+          console.log('User closed modal');
+          return;
+        }
         alert('Failed to create account: ' + createError.message);
-        // Clear the auto-populated password on error
-        passwordInput.value = '';
       }
     } else {
-      console.error('Unexpected error:', resetError);
-      alert('Error: ' + resetError.message);
+      // EXISTING USER - Attempt normal sign-in
+      console.log('Existing user - attempting sign-in');
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        console.log('Existing user signed in successfully');
+      } catch (signInError) {
+        // Handle sign-in errors for existing users
+        if (signInError.code === 'auth/wrong-password' || signInError.code === 'auth/invalid-credential') {
+          // Wrong password for existing user
+          const forgotPassword = confirm('Wrong password. Would you like to reset it via email?');
+          if (forgotPassword) {
+            try {
+              await sendPasswordResetEmail(auth, email);
+              alert('Password reset email sent! Check your inbox.');
+            } catch (resetError) {
+              alert('Failed to send reset email: ' + resetError.message);
+            }
+          }
+        } else {
+          // Other sign-in errors
+          let errorMessage = '';
+          switch (signInError.code) {
+            case 'auth/invalid-email':
+              errorMessage = 'Invalid email address.';
+              break;
+            case 'auth/too-many-requests':
+              errorMessage = 'Too many failed attempts. Please try again later.';
+              break;
+            default:
+              errorMessage = signInError.message;
+          }
+          alert('Sign in failed: ' + errorMessage);
+        }
+      }
     }
+  } catch (error) {
+    // Error checking if user exists
+    console.error('Error in handleEmailAuth:', error);
+    alert('Authentication error: ' + error.message);
   }
 };
+
+
 
 
   // KEEP GOOGLE AND APPLE SIGN-IN UNCHANGED:
@@ -3421,6 +3511,7 @@ input:checked + .toggle-slider:before {
       });
     }
   });
+  
 
 </script>
 
@@ -5736,23 +5827,5 @@ function showMainApp() {
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
