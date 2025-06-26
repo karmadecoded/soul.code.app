@@ -2985,7 +2985,8 @@ input:checked + .toggle-slider:before {
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
   import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-messaging.js";
   import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, onAuthStateChanged, sendPasswordResetEmail, updatePassword } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, onAuthStateChanged, sendPasswordResetEmail, updatePassword, GoogleAuthProvider, signInWithPopup, OAuthProvider } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+
 
   const firebaseConfig = {
     apiKey: "AIzaSyAPCFjjC6SqtQEauTQ6Hs7Ex-B2tj6PuXM",
@@ -3353,8 +3354,8 @@ window.handleNewUser = async function() {
         ">
         <button id="continue-btn" class="btn">Continue</button>
         <button id="cancel-new-user" style="
-          background: #ccc;
-          color: #333;
+         background: linear-gradient(135deg, #350c48 0%, #4a1a5c 100%);
+  color: #ccae79;
           border: none;
           padding: 10px 20px;
           margin: 10px;
@@ -3403,16 +3404,30 @@ window.handleNewUser = async function() {
 
 
 
-  // KEEP GOOGLE AND APPLE SIGN-IN UNCHANGED:
   window.signInWithGoogle = async function() {
-    alert('Google sign-in coming soon!');
-    // TODO: Implement Google OAuth
-  };
+  try {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    console.log('Google sign-in successful:', result.user.email);
+    return result;
+  } catch (error) {
+    console.error('Google sign-in error:', error.message);
+    alert('Google sign-in failed: ' + error.message);
+  }
+};
 
-  window.signInWithApple = async function() {
-    alert('Apple sign-in coming soon!');
-    // TODO: Implement Apple OAuth
-  };
+window.signInWithApple = async function() {
+  try {
+    const provider = new OAuthProvider('apple.com');
+    const result = await signInWithPopup(auth, provider);
+    console.log('Apple sign-in successful:', result.user.email);
+    return result;
+  } catch (error) {
+    console.error('Apple sign-in error:', error.message);
+    alert('Apple sign-in failed: ' + error.message);
+  }
+};
+
 
   // UPDATED SCREEN FUNCTIONS:
   function showAuthScreen() {
@@ -5833,11 +5848,3 @@ function showMainApp() {
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
