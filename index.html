@@ -2341,6 +2341,26 @@ input:checked + .toggle-slider:before {
   #wishes-modal textarea {
     outline: 2px solid orange;
   }
+  
+  .message {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 99999 !important;
+    background: #4CAF50 !important;
+    color: white !important;
+    padding: 20px 30px !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important;
+    font-size: 16px !important;
+    font-weight: bold !important;
+    text-align: center !important;
+    min-width: 300px !important;
+}
+
+
+
 
 </style>
 
@@ -2735,18 +2755,31 @@ input:checked + .toggle-slider:before {
             <img src="https://i.imgur.com/eIaaYZy.jpeg" alt="Inspire as a Leader" class="category-image">
             <h3>Inspire as a Leader</h3>
         </div>
-        <div class="category-card" data-category="Elevate Career">
+                <div class="category-card" data-category="Elevate Career">
             <div class="checkbox"></div>
             <img src="https://i.imgur.com/0AFAi2K.jpeg" alt="Elevate Career" class="category-image">
             <h3>Elevate Career</h3>
         </div>
-    </div>
-</div>
+        
+        <div class="category-card" data-category="Cherish Your Pregnancy">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/eIaaYZy.jpeg" alt="Cherish Your Pregnancy" class="category-image">
+            <h3>Cherish Your Pregnancy</h3>
+        </div>
+        
+        <div class="category-card" data-category="Sharpen Focus">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/eIaaYZy.jpeg" alt="Sharpen Focus" class="category-image">
+            <h3>Sharpen Focus</h3>
+        </div>
+    </div> <!-- Close categories-grid -->
+</div> <!-- Close affirmations-page -->
 
 <div class="selected-categories">
     <h3>Selected Categories:</h3>
     <div id="selected-list"></div>
 </div>
+
 
 <div class="setup-button-container" style="display: none;">
     <button id="setup-reminders-btn" class="btn primary-btn">📱 Setup Reminders</button>
@@ -2754,8 +2787,7 @@ input:checked + .toggle-slider:before {
 
    
        <div class="notification-setup" style="display: none;">
-    <h3>⏰ Set Up Your Reminders</h3>
-            
+  
     <!-- Days Selection -->
     <div class="days-selection">
         <h4>Select Days:</h4>
@@ -3034,129 +3066,183 @@ input:checked + .toggle-slider:before {
   }
 
   function showPasswordConfirmationModal(email, autoPassword) {
-    return new Promise((resolve) => {
-      const modalHTML = `
-        <div id="password-modal" style="
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: rgba(0,0,0,0.5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          z-index: 1000;
+  return new Promise((resolve) => {
+    const modalHTML = `
+      <div id="password-modal" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(53, 12, 72, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        backdrop-filter: blur(10px);
+      ">
+        <div style="
+          background: linear-gradient(135deg, #350c48 0%, #4a1a5c 100%);
+          padding: 40px;
+          border-radius: 20px;
+          max-width: 450px;
+          width: 90%;
+          text-align: center;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+          border: 2px solid #ccae79;
         ">
+          <h3 style="color: #ccae79; margin-bottom: 15px; font-size: 24px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">Account Created!</h3>
+          <p style="color: #caafe0; margin-bottom: 10px; font-size: 16px;">for ${email}</p>
+          <p style="color: #caafe0; margin-bottom: 20px;">Your auto-generated password is:</p>
           <div style="
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
-          ">
-            <h3>Account Created for ${email}</h3>
-            <p>Your auto-generated password is:</p>
-            <div style="
-              background: #f0f0f0;
-              padding: 15px;
-              border-radius: 5px;
-              font-family: monospace;
+            background: linear-gradient(135deg, rgba(204, 174, 121, 0.2) 0%, rgba(202, 175, 224, 0.2) 100%);
+            padding: 20px;
+            border-radius: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            margin: 20px 0;
+            word-break: break-all;
+            border: 2px solid #ccae79;
+            color: #ccae79;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+          ">${autoPassword}</div>
+          <p style="color: #caafe0; margin-bottom: 25px;">Would you like to keep this password or create your own?</p>
+          <div style="margin-top: 25px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+            <button id="keep-password" style="
+              background: linear-gradient(135deg, #ccae79 0%, #caafe0 100%);
+              color: #350c48;
+              border: none;
+              padding: 15px 25px;
+              border-radius: 25px;
               font-size: 16px;
-              margin: 15px 0;
-              word-break: break-all;
-            ">${autoPassword}</div>
-            <p>Would you like to keep this password or create your own?</p>
-            <div style="margin-top: 20px;">
-              <button id="keep-password" style="
-                background: #4CAF50;
-                color: white;
-                border: none;
-                padding: 10px 20px;
-                margin: 5px;
-                border-radius: 5px;
-                cursor: pointer;
-              ">Keep This Password</button>
-              <button id="create-own" style="
-                background: #2196F3;
-                color: white;
-                border: none;
-                padding: 10px 20px;
-                margin: 5px;
-                border-radius: 5px;
-                cursor: pointer;
-              ">Create My Own</button>
-            </div>
-            <div id="custom-password-section" style="display: none; margin-top: 20px;">
-              <input type="password" id="custom-password" placeholder="Enter your password" style="
-                width: 100%;
-                padding: 10px;
-                margin: 10px 0;
-                border: 1px solid #ddd;
-                border-radius: 5px;
-                box-sizing: border-box;
-              ">
-              <input type="password" id="confirm-password" placeholder="Confirm password" style="
-                width: 100%;
-                padding: 10px;
-                margin: 10px 0;
-                border: 1px solid #ddd;
-                border-radius: 5px;
-                box-sizing: border-box;
-              ">
-              <button id="save-custom" style="
-                background: #4CAF50;
-                color: white;
-                border: none;
-                padding: 10px 20px;
-                margin: 5px;
-                border-radius: 5px;
-                cursor: pointer;
-              ">Save Password</button>
-            </div>
+              font-weight: bold;
+              cursor: pointer;
+              transition: all 0.3s ease;
+              box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+              min-width: 150px;
+            ">Keep This Password</button>
+            <button id="create-own" style="
+              background: linear-gradient(135deg, #350c48 0%, #4a1a5c 100%);
+              color: #ccae79;
+              border: 2px solid #ccae79;
+              padding: 15px 25px;
+              border-radius: 25px;
+              font-size: 16px;
+              font-weight: bold;
+              cursor: pointer;
+              transition: all 0.3s ease;
+              box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+              min-width: 150px;
+            ">Create My Own</button>
+          </div>
+          <div id="custom-password-section" style="display: none; margin-top: 25px;">
+            <input type="password" id="custom-password" placeholder="Enter your password" style="
+              width: 100%;
+              padding: 15px;
+              margin: 10px 0;
+              border: 2px solid #ccae79;
+              border-radius: 15px;
+              box-sizing: border-box;
+              font-size: 16px;
+              background: rgba(255,255,255,0.1);
+              color: #ccae79;
+            ">
+            <input type="password" id="confirm-password" placeholder="Confirm password" style="
+              width: 100%;
+              padding: 15px;
+              margin: 10px 0;
+              border: 2px solid #ccae79;
+              border-radius: 15px;
+              box-sizing: border-box;
+              font-size: 16px;
+              background: rgba(255,255,255,0.1);
+              color: #ccae79;
+            ">
+            <button id="save-custom" style="
+              background: linear-gradient(135deg, #ccae79 0%, #caafe0 100%);
+              color: #350c48;
+              border: none;
+              padding: 15px 25px;
+              border-radius: 25px;
+              font-size: 16px;
+              font-weight: bold;
+              cursor: pointer;
+              transition: all 0.3s ease;
+              box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+              width: 100%;
+              margin-top: 10px;
+            ">Save Password</button>
           </div>
         </div>
-      `;
+      </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
 
-      document.body.insertAdjacentHTML('beforeend', modalHTML);
-      
+    // Add hover effects
+    document.getElementById('keep-password').onmouseover = function() {
+      this.style.transform = 'translateY(-2px)';
+      this.style.boxShadow = '0 6px 20px rgba(0,0,0,0.4)';
+      this.style.background = 'linear-gradient(135deg, #b8a06b 0%, #b49dd4 100%)';
+    };
+    document.getElementById('keep-password').onmouseout = function() {
+      this.style.transform = 'translateY(0)';
+      this.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
+      this.style.background = 'linear-gradient(135deg, #ccae79 0%, #caafe0 100%)';
+    };
+    document.getElementById('create-own').onmouseover = function() {
+      this.style.transform = 'translateY(-2px)';
+      this.style.boxShadow = '0 6px 20px rgba(0,0,0,0.4)';
+      this.style.background = 'linear-gradient(135deg, #2a0a3a 0%, #3d1548 100%)';
+    };
+    document.getElementById('create-own').onmouseout = function() {
+      this.style.transform = 'translateY(0)';
+      this.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
+      this.style.background = 'linear-gradient(135deg, #350c48 0%, #4a1a5c 100%)';
+    };
+    document.getElementById('save-custom').onmouseover = function() {
+      this.style.transform = 'translateY(-2px)';
+      this.style.boxShadow = '0 6px 20px rgba(0,0,0,0.4)';
+      this.style.background = 'linear-gradient(135deg, #b8a06b 0%, #b49dd4 100%)';
+    };
+    document.getElementById('save-custom').onmouseout = function() {
+      this.style.transform = 'translateY(0)';
+      this.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
+      this.style.background = 'linear-gradient(135deg, #ccae79 0%, #caafe0 100%)';
+    };
 
-      document.getElementById('keep-password').onclick = () => {
-        document.getElementById('password-modal').remove();
-        resolve(autoPassword);
-      };
+    document.getElementById('keep-password').onclick = () => {
+      document.getElementById('password-modal').remove();
+      resolve(autoPassword);
+    };
 
-      document.getElementById('create-own').onclick = () => {
-        document.getElementById('custom-password-section').style.display = 'block';
-        document.getElementById('keep-password').style.display = 'none';
-        document.getElementById('create-own').style.display = 'none';
-      };
+    document.getElementById('create-own').onclick = () => {
+      document.getElementById('custom-password-section').style.display = 'block';
+      document.getElementById('keep-password').style.display = 'none';
+      document.getElementById('create-own').style.display = 'none';
+    };
 
-      document.getElementById('save-custom').onclick = () => {
-        const customPassword = document.getElementById('custom-password').value;
-        const confirmPassword = document.getElementById('confirm-password').value;
-
-        if (!customPassword) {
-          alert('Please enter a password');
-          return;
-        }
-
-        if (customPassword !== confirmPassword) {
-          alert('Passwords do not match');
-          return;
-        }
-
-        if (customPassword.length < 6) {
-          alert('Password must be at least 6 characters long');
-          return;
-        }
-
-        document.getElementById('password-modal').remove();
-        resolve(customPassword);
-      };
-    });
-  }
+    document.getElementById('save-custom').onclick = () => {
+      const customPassword = document.getElementById('custom-password').value;
+      const confirmPassword = document.getElementById('confirm-password').value;
+      if (!customPassword) {
+        alert('Please enter a password');
+        return;
+      }
+      if (customPassword !== confirmPassword) {
+        alert('Passwords do not match');
+        return;
+      }
+      if (customPassword.length < 6) {
+        alert('Password must be at least 6 characters long');
+        return;
+      }
+      document.getElementById('password-modal').remove();
+      resolve(customPassword);
+    };
+  });
+}
 
   // UPDATED AUTHENTICATION FUNCTIONS:
   window.signUpWithEmail = async function(email, password) {
@@ -3454,16 +3540,16 @@ window.signInWithApple = async function() {
   }
 
   // KEEP ALL OTHER FUNCTIONS UNCHANGED:
-  window.saveUserPreferences = async function(categories, schedule) {
-    if (!currentUser) {
-      alert('Please sign in first');
-      return;
-    }
-
+  window.saveUserPreferences = async function(userId, categories, schedule) {
+  if (!currentUser) {
+    alert('Please sign in first');
+    return;
+  }
+  try {
     const token = await getToken(messaging, {
       vapidKey: 'BFeiQnMxZlXHXxtQrAPvWSJ_1XnTklpH2IEcPAG_qjoxKKwHICnJOaEjzK3rq5zNMyaD02_gjJPqtBA6WYGu20U'
     });
-
+    
     await setDoc(doc(db, "users", currentUser.uid), {
       email: currentUser.email,
       selectedCategories: categories,
@@ -3472,7 +3558,11 @@ window.signInWithApple = async function() {
       createdAt: new Date()
     });
     console.log("Preferences saved to Firestore.");
+  } catch (error) {
+    console.error("Error saving preferences:", error);
   }
+}
+
 
   // FCM TOKEN FUNCTIONS - UNCHANGED:
   async function requestNotificationPermissionAndGetToken() {
@@ -5265,13 +5355,31 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Add click handlers to affirmation category cards
+   // Initialize affirmation categories when page loads
+function initializeAffirmationCategories() {
     const categoryCards = document.querySelectorAll('.category-card');
+    console.log('Found category cards:', categoryCards.length); // Debug line
+    
     categoryCards.forEach(card => {
         card.addEventListener('click', function() {
+            console.log('Category clicked:', this.dataset.category); // Debug line
             toggleCategorySelection(this);
         });
     });
+    
+    // Load saved categories
+    loadSavedCategories();
+}
+
+// Call this when navigating to affirmations page
+function showAffirmationsPage() {
+    // Your existing page navigation code
+    // Then add:
+    setTimeout(() => {
+        initializeAffirmationCategories();
+    }, 100);
+}
+
 
     // Initialize profile
     initializeProfile();
@@ -5298,12 +5406,12 @@ function completeMeditation() {
 function toggleCategorySelection(card) {
     const checkbox = card.querySelector('.checkbox');
     const category = card.dataset.category;
-    
+        
     // Toggle visual state
     card.classList.toggle('selected');
     checkbox.classList.toggle('checked');
-    
-    // Update selected categories
+        
+    // Update selected categories and show/hide button
     updateSelectedCategories();
 }
 
@@ -5311,25 +5419,26 @@ function updateSelectedCategories() {
     const selectedCards = document.querySelectorAll('.category-card.selected');
     const selectedList = document.getElementById('selected-list');
     const setupButton = document.querySelector('.setup-button-container');
-    
+        
     if (selectedCards.length > 0) {
         // Show selected categories
-        selectedList.innerHTML = Array.from(selectedCards).map(card => 
+        selectedList.innerHTML = Array.from(selectedCards).map(card =>
             `<span class="selected-category">${card.dataset.category}</span>`
         ).join('');
-        
+                
         // Show setup button
         if (setupButton) setupButton.style.display = 'block';
-        
+                
         // Save to localStorage
         const categories = Array.from(selectedCards).map(card => card.dataset.category);
         localStorage.setItem('selectedAffirmationCategories', JSON.stringify(categories));
-        
+            
     } else {
         selectedList.innerHTML = '<p>No categories selected</p>';
         if (setupButton) setupButton.style.display = 'none';
     }
 }
+
 
 // Load saved affirmation categories
 function loadSavedCategories() {
@@ -5368,7 +5477,9 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function saveNotificationSettings() {
-    const selectedCategories = JSON.parse(localStorage.getItem('selectedAffirmationCategories') || '[]');
+    // FIX: Get selected categories from DOM instead of localStorage
+    const selectedCards = document.querySelectorAll('.category-card.selected');
+    const selectedCategories = Array.from(selectedCards).map(card => card.dataset.category);
     
     if (selectedCategories.length === 0) {
         showMessage('⚠️ Please select at least one category first!');
@@ -5408,11 +5519,20 @@ function saveNotificationSettings() {
         saveAffirmationSetting(category, `Daily ${category} affirmation`, `${selectedDays.join(', ')} at ${startTime}`);
     });
     
-    // Show preview
-    showSchedulePreview(notificationSettings);
+    // Hide all UI elements after save
+    document.querySelector('.notification-setup').style.display = 'none';
+    document.querySelector('.setup-button-container').style.display = 'none';
+    document.querySelector('.selected-categories').style.display = 'none';
     
-    showMessage('🔔 Notification settings saved successfully!');
-}
+    // Clear all selections visually
+    document.querySelectorAll('.category-card.selected').forEach(card => {
+        card.classList.remove('selected');
+        card.querySelector('.checkbox').classList.remove('checked');
+    });
+    
+    // Show success message IN FRONT
+showMessage('🔔 Notification settings saved successfully!');
+ }
 
 function showSchedulePreview(settings) {
     const preview = document.getElementById('schedule-preview');
@@ -5453,6 +5573,26 @@ function showMessage(message) {
     const messageDiv = document.createElement('div');
     messageDiv.className = 'success-message';
     messageDiv.textContent = message;
+    
+    // Apply inline styles directly
+    messageDiv.style.cssText = `
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        z-index: 99999 !important;
+        background: linear-gradient(135deg, #ccae79 0%, #caafe0 100%) !important;
+        color: white !important;
+        padding: 20px 30px !important;
+        border-radius: 15px !important;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3) !important;
+        font-size: 18px !important;
+        font-weight: bold !important;
+        text-align: center !important;
+        min-width: 320px !important;
+        border: 2px solid rgba(255,255,255,0.2) !important;
+    `;
+    
     document.body.appendChild(messageDiv);
     
     setTimeout(() => {
@@ -5461,6 +5601,7 @@ function showMessage(message) {
         }
     }, 3000);
 }
+
 
 function initializeProfile() {
     // Load saved profile image
