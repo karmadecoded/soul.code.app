@@ -499,7 +499,7 @@ function getRandomAffirmation(category) {
             "I welcome peace with open arms.",
             "I am safe, calm, and in control."
         ]
-    }
+    },
 
    
   "accept-yourself": {
@@ -698,7 +698,7 @@ function getRandomAffirmation(category) {
       "My family’s love is a source of empowerment.",
       "I accept and love my parents and ancestors completely."
     ]
-  }
+  },
 
 
   "nurture-self-love": {
@@ -897,7 +897,7 @@ function getRandomAffirmation(category) {
       "I am capable of achieving extraordinary things.",
       "Success comes naturally when I believe in myself."
     ]
-  }
+  },
     
   "gain-balance": {
     name: " Gain Balance in Life ",
@@ -1029,7 +1029,7 @@ function getRandomAffirmation(category) {
       "I am thankful for the financial opportunities that come my way.",
       "I am a magnet for wealth and prosperity."
     ]
-  }
+  },
 
 "embrace-changes": {
   name: "Embrace Changes",
@@ -1095,7 +1095,7 @@ function getRandomAffirmation(category) {
     "I embrace change as a catalyst for personal growth.",
     "I trust that every change is for my highest good."
   ]
-}
+},
 
 "lose-weight": {
   name: " Lose Weight",
@@ -1161,7 +1161,7 @@ function getRandomAffirmation(category) {
     "I am proud of my perseverance and dedication.",
     "My body is becoming healthier and stronger every day."
   ]
-}
+},
 
 "quit-smoking": {
   name: " Quit Smoking",
@@ -1227,7 +1227,8 @@ function getRandomAffirmation(category) {
     "I am committed to my health and happiness.",
     "I am proud to be smoke-free."
   ]
-}
+},
+      
 "fight-depression": {
   name: "Fight with Depression",
   affirmations: [
@@ -1424,7 +1425,7 @@ function getRandomAffirmation(category) {
     "I cherish the love within myself.",
     "I am never alone on my journey."
   ]
-}
+},
 
 "overcome-toxic-relationships": {
   name: "Overcome Toxic Relationships",
@@ -1622,7 +1623,7 @@ function getRandomAffirmation(category) {
     "I am confident in setting boundaries that honor my needs.",
     "I celebrate sexuality as a vital part of my life."
   ]
-}
+},
 
 "manifest-new-love": {
   name: " Manifest New Love",
@@ -1820,7 +1821,7 @@ function getRandomAffirmation(category) {
     "I am grateful for every step on my spiritual path.",
     "I awaken fully to my divine purpose and light."
   ]
-}
+},
 
 "harness-law-of-attraction": {
   name: "Harness the Law of Attraction",
@@ -1952,7 +1953,7 @@ function getRandomAffirmation(category) {
     "I am thankful for the gift of pregnancy.",
     "I celebrate the beautiful life growing inside me."
   ]
-}
+},
 
 "conquer-loneliness": {
   name: " Conquer Loneliness",
@@ -2084,7 +2085,7 @@ function getRandomAffirmation(category) {
     "I am open to healing in every moment.",
     "I am grateful for the resilience of my heart."
   ]
-}
+},
 
 "fuel-vitality": {
   name: " Fuel Vitality",
@@ -2348,7 +2349,7 @@ function getRandomAffirmation(category) {
     "I am grateful for every opportunity to grow professionally.",
     "I am creating a fulfilling and successful career."
   ]
-}
+},
 
 "sharpen-focus": {
   name: " Sharpen Focus",
