@@ -1,2514 +1,5992 @@
-// firebase-messaging-sw.js
-
-importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js');
-
-firebase.initializeApp({
-  apiKey: "AIzaSyAPCFjjC6SqtQEauTQ6Hs7Ex-B2tj6PuXM",
-  authDomain: "soul-code-app.firebaseapp.com",
-  projectId: "soul-code-app",
-  storageBucket: "soul-code-app.appspot.com",
-  messagingSenderId: "339179205157",
-  appId: "1:339179205157:web:e801c0ad054cbc6a1c05cc",
-  measurementId: "G-C1K5PGZJB7"
-});
-
-const messaging = firebase.messaging();
-
-messaging.onBackgroundMessage(function(payload) {
-  console.log('[firebase-messaging-sw.js] Received background message ', payload);
-
-  const notificationTitle = payload.notification?.title || 'SoulCode Affirmation';
-  const notificationOptions = {
-    body: payload.notification?.body || 'Your daily affirmation is ready!',
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
-    vibrate: [200, 100, 200],
-    data: payload.data || {},
-    actions: [
-      { action: 'explore', title: 'Open App', icon: '/icon-192.png' },
-      { action: 'close', title: 'Close', icon: '/icon-192.png' }
-    ]
-  };
-
-  self.registration.showNotification(notificationTitle, notificationOptions);
-});
-
-const CACHE_NAME = 'soulcode-v1.0.0';
-const urlsToCache = [
-    '/',
-    '/index.html',
-    '/app.js',
-    '/styles.css',
-    '/manifest.json',
-    '/icon-192.png',
-    '/icon-512.png'
-];
-
-// Install event - cache resources
-self.addEventListener('install', event => {
-    console.log('Service Worker: Installing...');
-    event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then(cache => {
-                console.log('Service Worker: Caching files');
-                return cache.addAll(urlsToCache);
-            })
-            .catch(err => {
-                console.log('Service Worker: Cache failed', err);
-            })
-    );
-});
-
-// Activate event - clean up old caches
-self.addEventListener('activate', event => {
-    console.log('Service Worker: Activating...');
-    event.waitUntil(
-        caches.keys().then(cacheNames => {
-            return Promise.all(
-                cacheNames.map(cacheName => {
-                    if (cacheName !== CACHE_NAME) {
-                        console.log('Service Worker: Deleting old cache', cacheName);
-                        return caches.delete(cacheName);
-                    }
-                })
-            );
-        })
-    );
-});
-
-// Fetch event - serve cached content when offline
-self.addEventListener('fetch', event => {
-    // Skip cross-origin requests
-    if (!event.request.url.startsWith(self.location.origin)) {
-        return;
-    }
-
-    event.respondWith(
-        caches.match(event.request)
-            .then(response => {
-                // Return cached version or fetch from network
-                if (response) {
-                    console.log('Service Worker: Serving from cache', event.request.url);
-                    return response;
-                }
-                
-                console.log('Service Worker: Fetching from network', event.request.url);
-                return fetch(event.request)
-                    .then(response => {
-                        // Don't cache if not a valid response
-                        if (!response || response.status !== 200 || response.type !== 'basic') {
-                            return response;
-                        }
-
-                        // Clone the response
-                        const responseToCache = response.clone();
-
-                        caches.open(CACHE_NAME)
-                            .then(cache => {
-                                cache.put(event.request, responseToCache);
-                            });
-
-                        return response;
-                    })
-                    .catch(() => {
-                        // Return offline page for navigation requests
-                        if (event.request.destination === 'document') {
-                            return caches.match('/index.html');
-                        }
-                    });
-            })
-    );
-});
-
-// Background sync for notifications
-self.addEventListener('sync', event => {
-    console.log('Service Worker: Background sync', event.tag);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoulCode - Spiritual Wellness App</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4c135d">
+    <meta name="description" content="Your personal spiritual wellness companion with meditations, affirmations, and daily guidance">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
-    if (event.tag === 'affirmation-sync') {
-        event.waitUntil(sendScheduledAffirmations());
-    }
-});
+   <style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 
-// Notification click handling
-self.addEventListener('notificationclick', event => {
-    console.log('Service Worker: Notification clicked', event);
-    
-    event.notification.close();
-
-    if (event.action === 'explore') {
-        // Open the app
-        event.waitUntil(
-            clients.matchAll().then(clientList => {
-                for (const client of clientList) {
-                    if (client.url === '/' && 'focus' in client) {
-                        return client.focus();
-                    }
-                }
-                if (clients.openWindow) {
-                    return clients.openWindow('/');
-                }
-            })
-        );
-    } else if (event.action === 'close') {
-        // Just close the notification
-        return;
-    } else {
-        // Default action - open app
-        event.waitUntil(
-            clients.openWindow('/')
-        );
-    }
-});
-
-// Message handling from main app
-self.addEventListener('message', event => {
-    console.log('Service Worker: Message received', event.data);
-    
-    if (event.data && event.data.type === 'SKIP_WAITING') {
-        self.skipWaiting();
-    }
-    
-    if (event.data && event.data.type === 'SCHEDULE_NOTIFICATION') {
-        scheduleNotification(event.data.payload);
-    }
-    
-    if (event.data && event.data.type === 'CLEAR_NOTIFICATIONS') {
-        clearScheduledNotifications();
-    }
-});
-
-// Schedule notification function
-function scheduleNotification(payload) {
-    const { time, affirmation, category } = payload;
-    const now = new Date();
-    const [hours, minutes] = time.split(':').map(Number);
-    const scheduledTime = new Date();
-    scheduledTime.setHours(hours, minutes, 0, 0);
-    
-    // If time has passed today, schedule for tomorrow
-    if (scheduledTime <= now) {
-        scheduledTime.setDate(scheduledTime.getDate() + 1);
-    }
-    
-    const delay = scheduledTime.getTime() - now.getTime();
-    
-    setTimeout(() => {
-        self.registration.showNotification('SoulCode Affirmation', {
-            body: affirmation,
-            icon: '/icon-192.png',
-            badge: '/icon-192.png',
-            tag: 'soulcode-affirmation',
-            requireInteraction: false,
-            silent: false,
-            data: {
-                category: category,
-                affirmation: affirmation,
-                time: time
-            }
-        });
-        
-        // Schedule for next day
-        setInterval(() => {
-            self.registration.showNotification('SoulCode Affirmation', {
-                body: affirmation,
-                icon: '/icon-192.png',
-                badge: '/icon-192.png',
-                tag: 'soulcode-affirmation',
-                data: {
-                    category: category,
-                    affirmation: affirmation,
-                    time: time
-                }
-            });
-        }, 24 * 60 * 60 * 1000); // 24 hours
-        
-    }, delay);
+}
+/* UNIVERSAL PWA MOBILE CONTAINER - HIGHEST PRIORITY */
+.page.active {
+    max-width: 400px !important;
+    margin: 0 auto !important;
+    padding: 20px 15px 100px 15px !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
 }
 
-// Clear scheduled notifications
-function clearScheduledNotifications() {
-    self.registration.getNotifications().then(notifications => {
-        notifications.forEach(notification => {
-            if (notification.tag === 'soulcode-affirmation') {
-                notification.close();
+.page.active * {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.page.active img {
+    max-width: 100% !important;
+    height: auto !important;
+    object-fit: contain !important;
+}
+
+.page.active .grid,
+.page.active .categories-grid,
+.page.active .quick-actions,
+.page.active .calculators-grid {
+    max-width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+
+body {
+    font-family: 'Georgia', serif;
+    background: linear-gradient(135deg, #350c48 0%, #2e0c3e 100%);
+    color: white;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+#app {
+    max-width: 400px;
+    margin: 0 auto;
+    min-height: 100vh;
+    position: relative;
+    padding-bottom: 80px;
+}
+
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #4c135d 0%, #350c48 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease;
+}
+
+
+.loading-content {
+    text-align: center;
+}
+
+.loading-spinner {
+    font-size: 60px;
+    animation: pulse 2s infinite;
+    margin-bottom: 20px;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.7; }
+}
+
+.page {
+    display: none;
+    padding: 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+.page.active {
+    display: block;
+}
+#calculators-page {
+    display: none !important;
+}
+
+#calculators-page.active {
+    display: block !important;
+}
+
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    margin-bottom: 30px;
+}
+
+
+.profile-circle:hover {
+    transform: scale(1.1);
+}
+
+.welcome-text {
+    font-size: 18px;
+    font-weight: bold;
+    color: #ccae79;
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    font-size: 28px;
+    margin-bottom: 10px;
+    color: #ccae79;
+}
+
+.page-header p {
+    opacity: 0.8;
+    font-size: 16px;
+}
+
+.card-section {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.card-section h2 {
+    color: #ccae79;
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+.card-spinner {
+    width: 200px;
+    height: 280px;
+    margin: 0 auto 20px;
+    background: linear-gradient(45deg, #ccae79, #e6c896);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.card-spinner:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.4);
+}
+
+.card-spinner.spinning {
+    animation: cardSpin 3s ease-out;
+}
+
+@keyframes cardSpin {
+    0% { transform: rotateY(0deg); }
+    50% { transform: rotateY(180deg) scale(1.1); }
+    100% { transform: rotateY(360deg); }
+}
+
+.card-content {
+    text-align: center;
+    color: #4c135d;
+    font-weight: bold;
+}
+
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 30px;
+    max-width: 320px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+.action-card {
+    background: rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 25px 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    backdrop-filter: blur(10px);
+}
+
+.action-card:hover {
+    background: rgba(255,255,255,0.2);
+    transform: translateY(-5px);
+    border-color: #ccae79;
+}
+
+.action-icon {
+    font-size: 40px;
+    margin-bottom: 10px;
+}
+
+.action-title {
+    font-weight: bold;
+    color: #ccae79;
+}
+.action-card {
+    cursor: pointer;
+    pointer-events: auto;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.action-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.action-card:active {
+    transform: translateY(0);
+}
+
+.quick-actions {
+    pointer-events: auto;
+}
+
+.quick-actions .action-card {
+    pointer-events: auto;
+}
+
+
+#access-code-input {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    margin: 15px 0;
+    box-sizing: border-box;
+}
+
+
+.btn {
+
+    background: linear-gradient(135deg, #ccae79 0%, #caafe0 100%);
+    color: white;
+    border: none;
+    padding: 15px 25px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin: 10px 0;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    background: linear-gradient(135deg, #b8a06b 0%, #b49dd4 100%);
+}
+
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(76, 19, 93, 0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding: 10px 0;
+    z-index: 1000;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    min-width: 60px;
+}
+
+.nav-item:hover {
+    background: rgba(255,255,255,0.1);
+    transform: translateY(-2px);
+}
+
+.nav-item.active {
+    background: rgba(204, 174, 121, 0.2);
+    border: 1px solid #ccae79;
+}
+
+.nav-icon {
+    font-size: 24px;
+    margin-bottom: 4px;
+    transition: transform 0.3s ease;
+}
+
+.nav-label {
+    font-size: 11px;
+    color: #ccae79;
+    font-weight: bold;
+    text-align: center;
+}
+
+.hidden {
+    display: none !important;
+}
+
+@media (max-width: 480px) {
+    #app {
+        padding-bottom: 90px;
+    }
+    
+    .page {
+        padding: 15px;
+    }
+    
+    .quick-actions {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .card-spinner {
+        width: 160px;
+        height: 220px;
+    }
+}
+/* Add this to your CSS section */
+.meditation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.meditation-card {
+    background: linear-gradient(135deg, #4c135d, #8b5a2b);
+    border-radius: 15px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 15px rgba(76, 19, 93, 0.3);
+}
+
+.meditation-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(76, 19, 93, 0.5);
+}
+
+.meditation-image {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+
+.meditation-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(76, 19, 93, 0.4), rgba(139, 90, 43, 0.4));
+}
+
+.meditation-card h3 {
+    color: #ccae79;
+    padding: 15px;
+    margin: 0;
+    font-size: 1.1em;
+}
+
+.meditation-card p {
+    color: #e6d7ff;
+    padding: 0 15px 15px;
+    margin: 0;
+    font-size: 0.9em;
+}
+#meditation-player {
+    display: none !important;
+}
+
+#meditation-player.active {
+    display: block !important;
+}
+/* Beautiful Golden Meditation Player */
+.meditation-player {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #1a0d1f, #2d1b3d);
+    z-index: 1000;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.player-container {
+    max-width: 500px;
+    margin: 50px auto;
+    background: linear-gradient(135deg, #4c135d, #8b5a2b);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(76, 19, 93, 0.5);
+    text-align: center;
+}
+
+.player-image {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    margin: 0 auto 30px;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+    border: 4px solid #ccae79;
+}
+
+.player-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.play-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(76, 19, 93, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s ease;
+}
+
+.play-button {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #ccae79, #cdb2e3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+}
+
+.play-button:hover {
+    transform: scale(1.1);
+}
+
+.player-controls h3 {
+    color: #ccae79;
+    font-size: 1.5em;
+    margin-bottom: 30px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.control-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.control-btn {
+    background: linear-gradient(135deg, #ccae79, #cdb2e3);
+    color: #4c135d;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+    font-size: 1em;
+}
+
+.control-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5);
+}
+
+.control-btn:active {
+    transform: translateY(0);
+}
+
+/* Modal for Arcana Selection */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #4c135d, #8b5a2b);
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 30px;
+    color: #ccae79;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.close:hover {
+    color: #cdb2e3;
+}
+
+.modal-content h2 {
+    color: #ccae79;
+    text-align: center;
+    margin-bottom: 25px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.arcana-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.arcana-item {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 237, 78, 0.1));
+    border: 2px solid #ccae79;
+    border-radius: 10px;
+    padding: 15px;
+    color: #ccae79;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    font-weight: bold;
+}
+
+.arcana-item:hover {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 237, 78, 0.2));
+    transform: translateX(5px);
+}
+/* Update your existing categories-grid to ensure 3 per row */
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+    padding: 0 20px;
+}
+
+/* Add styles for the category images */
+.category-image {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    transition: transform 0.3s ease;
+}
+
+/* Update category card to accommodate images */
+.category-card {
+    position: relative;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.category-card:hover .category-image {
+    transform: scale(1.05);
+}
+
+/* Selected state styling */
+.category-card.selected {
+    background: linear-gradient(135deg, #caafe0 0%, #ccae79 100%);
+    color: white;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+}
+
+.category-card.selected .category-image {
+    border: 3px solid white;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive design for mobile */
+@media (max-width: 768px) {
+    .categories-grid {
+        grid-template-columns: 1fr;
+        padding: 0 10px;
+    }
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+    .categories-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+/* Category Selection Styles */
+.category-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 15px;
+    position: relative;
+}
+
+.category-card.selected {
+    background-color: #caafe0 !important;
+    border-color: #9b59b6;
+    transform: scale(1.02);
+}
+
+.category-card .checkbox {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.category-card.selected .checkbox {
+    background: #9b59b6;
+    border-color: #9b59b6;
+}
+
+.category-card.selected .checkbox::after {
+    content: '✓';
+    color: white;
+    font-size: 12px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Selected Categories Display */
+.selected-categories {
+    margin: 30px 0;
+    padding: 20px;
+    background:#ccae79;
+    border-radius: 12px;
+    display: none;
+}
+
+.selected-categories.show {
+    display: block;
+}
+
+#selected-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.selected-tag {
+    background: #caafe0;
+    color: #333;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.selected-tag .remove {
+    cursor: pointer;
+    font-weight: bold;
+    color: #666;
+}
+
+/* Notification Setup Styles */
+.notification-setup {
+    background:
+    /* Additional styles for the new functionality */
+.selected-categories {
+    margin: 30px 0;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    display: none;
+}
+
+.selected-categories.show {
+    display: block;
+}
+
+#selected-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.selected-tag {
+    background: #caafe0;
+    color: #333;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.selected-tag .remove {
+    cursor: pointer;
+    font-weight: bold;
+    color: #666;
+    font-size: 16px;
+}
+
+.selected-tag .remove:hover {
+    color: #333;
+}
+
+/* Days selection */
+.days-selection {
+    margin: 20px 0;
+}
+
+.days-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.day-checkbox {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 10px 15px;
+    border: 2px solid #ddd;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+}
+
+.day-checkbox input {
+    display: none;
+}
+
+.day-checkbox span {
+    font-weight: 500;
+}
+
+.day-checkbox:has(input:checked) {
+    background: #caafe0;
+    border-color: #9b59b6;
+}
+
+/* Frequency and time selection */
+.frequency-selection,
+.start-time-selection {
+    margin: 20px 0;
+}
+
+#frequency-select,
+#start-time {
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+/* Save button */
+.save-btn {
+    background: linear-gradient(135deg, #caafe0 0%, #ccae79 100%);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    margin: 20px 0;
+}
+
+.save-btn:hover {
+    transform: translateY(-2px);
+}
+
+/* Schedule preview */
+.schedule-preview {
+    margin-top: 30px;
+    padding: 20px;
+    background: #e8f5e8;
+    border-radius: 12px;
+    display: none;
+}
+
+.schedule-preview h4 {
+    color: #caafe0;
+    margin-bottom: 15px;
+}
+
+#preview-content p {
+    margin: 8px 0;
+    color: #ccae79;
+}
+
+/* Success/Error messages */
+.settings-message {
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+    font-weight: 500;
+}
+
+.settings-message.success {
+    background: #ccae79;
+    color: #511c62;
+    border: 1px solid #c3e6cb;
+}
+
+.settings-message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Category card selected state */
+.category-card.selected {
+    background-color: #caafe0 !important;
+    border-color: #9b59b6 !important;
+    transform: scale(1.02);
+}
+
+.category-card.selected .checkbox::after {
+    content: '✓';
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Keep your existing categories-grid as is - 3 per row */
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+    padding: 0 20px;
+}
+
+/* Keep your existing category card styles */
+.category-card {
+    position: relative;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.category-card:hover .category-image {
+    transform: scale(1.05);
+}
+
+/* Add these mobile optimizations */
+@media (max-width: 768px) {
+    .categories-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        padding: 0 15px;
+    }
+    
+    .category-card {
+        padding: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .categories-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        padding: 0 10px;
+    }
+    
+    .category-card {
+        padding: 10px;
+    }
+    
+    .category-card h3 {
+        font-size: 0.85rem;
+        line-height: 1.2;
+    }
+    #affirmations-page .notification-setup {
+    display: none !important;
+}
+
+#affirmations-page .notification-setup.show {
+    display: block !important;
+}
+.days-selection,
+.frequency-selection, 
+.start-time-selection,
+#save-settings,
+#schedule-preview {
+    display: none !important;
+}
+
+.days-selection.show,
+.frequency-selection.show, 
+.start-time-selection.show,
+#save-settings.show,
+#schedule-preview.show {
+    display: block !important;
+}
+.embedded-calculator {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 1000;
+    display: none;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.calculator-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    margin-bottom: 20px;
+}
+
+.close-calculator {
+    background: #ccae79;
+    color: #4c135d;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.calculator-iframe-container {
+    background: white;
+    border-radius: 10px;
+    height: calc(100% - 80px);
+}
+/* Mobile-friendly calculator styles */
+@media (max-width: 768px) {
+    .calculators-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        padding: 0 10px;
+    }
+    
+    .calculator-card {
+        margin-bottom: 20px;
+    }
+    
+    .calculator-image img {
+        height: 150px;
+        object-fit: cover;
+    }
+    
+    .calculator-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .calculator-buttons .btn {
+        width: 100%;
+        padding: 12px;
+        font-size: 14px;
+    }
+    
+    /* Mobile-friendly embedded calculator */
+    .embedded-calculator {
+        padding: 10px;
+    }
+    
+    .calculator-header h2 {
+        font-size: 18px;
+    }
+    
+    .close-calculator {
+        width: 35px;
+        height: 35px;
+        font-size: 20px;
+    }
+    
+    .calculator-iframe-container {
+        height: calc(100vh - 100px);
+    }
+    
+    .calculator-iframe-container iframe {
+        height: 100%;
+    }
+    
+    /* Code modal mobile */
+    #code-modal .modal-content {
+        width: 90%;
+        margin: 20% auto;
+        padding: 20px;
+    }
+.calculators-section {
+    padding: 20px;
+}
+
+.calculators-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.calculator-card {
+    background: rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 25px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    position: relative;
+}
+
+.calculator-title {
+    color: #ccae79;
+    font-size: 24px;
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.calculator-image {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.calculator-image img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 15px;
+}
+
+.calculator-description {
+    margin-bottom: 25px;
+    line-height: 1.6;
+}
+
+.calculator-description p {
+    margin-bottom: 15px;
+    color: #e6d7ff;
+}
+
+.calculator-description strong {
+    color: #ccae79;
+}
+
+.calculator-description ul {
+    margin: 15px 0;
+    padding-left: 20px;
+}
+
+.calculator-description li {
+    margin-bottom: 8px;
+    color: #e6d7ff;
+}
+
+.calculator-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+@media (max-width: 768px) {
+    .calculators-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .calculator-title {
+        font-size: 20px;
+    }
+.calculators-section {
+    padding: 20px;
+}
+
+.calculators-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.calculator-card {
+    background: rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 25px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    position: relative;
+}
+
+.calculator-title {
+    color: #ccae79;
+    font-size: 24px;
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.calculator-image {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.calculator-image img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 15px;
+}
+
+.calculator-description {
+    margin-bottom: 25px;
+    line-height: 1.6;
+}
+
+.calculator-description p {
+    margin-bottom: 15px;
+    color: #e6d7ff;
+}
+
+.calculator-description strong {
+    color: #ccae79;
+}
+
+.calculator-description ul {
+    margin: 15px 0;
+    padding-left: 20px;
+}
+
+.calculator-description li {
+    margin-bottom: 8px;
+    color: #e6d7ff;
+}
+
+.calculator-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+@media (max-width: 768px) {
+    .calculators-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .calculator-title {
+        font-size: 20px;
+    }
+
+.title-with-lock {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.lock-overlay {
+    background: rgba(0,0,0,0.7);
+    border-radius: 8px;
+    padding: 4px 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    position: static;
+}
+
+.lock-icon {
+    font-size: 14px;
+    color: white;
+}
+
+.unlock-text {
+    font-size: 8px !important;
+    color: white !important;
+    margin: 0 !important;
+    white-space: nowrap;
+}
+
+.modal-content button.btn {
+  width: 48%;
+  display: inline-block;
+}
+
+
+/* NUCLEAR OPTION - Maximum specificity */
+html body #app #lifemap-page.page.active {
+    position: relative !important;
+    top: 0 !important;
+    left: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 auto !important;
+    padding: 20px 15px 100px 15px !important;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+    background: linear-gradient(135deg, #4c135d 0%, #6b2c91 100%) !important;
+    z-index: 9999 !important;
+    overflow-y: auto !important;
+    transform: none !important;
+    max-width: 400px !important;
+    box-sizing: border-box !important;
+}
+
+
+/* Force header to top */
+html body #app #lifemap-page.page.active > * {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+html body #app #lifemap-page.page.active > *:first-child {
+    margin-top: 0 !important;
+    padding-top: 20px !important;
+}
+
+/* Target all possible header classes */
+html body #app #lifemap-page.page.active .page-header,
+html body #app #lifemap-page.page.active .header,
+html body #app #lifemap-page.page.active h1,
+html body #app #lifemap-page.page.active h2 {
+    padding: 20px 20px 10px 20px !important;
+    margin: 0 !important;
+    text-align: center !important;
+    position: relative !important;
+    top: 0 !important;
+}
+
+/* Target all possible content classes */
+html body #app #lifemap-page.page.active .lifemap-content,
+html body #app #lifemap-page.page.active .content,
+html body #app #lifemap-page.page.active .page-content {
+    padding: 0 20px 100px 20px !important;
+    margin: 0 !important;
+    text-align: center !important;
+    min-height: auto !important;
+    box-sizing: border-box !important;
+}
+
+/* Target all possible button classes */
+html body #app #lifemap-page.page.active .lifemap-button,
+html body #app #lifemap-page.page.active button,
+html body #app #lifemap-page.page.active .btn,
+html body #app #lifemap-page.page.active .button {
+    margin: 30px 0 150px 0 !important;
+    position: relative !important;
+    z-index: 10000 !important;
+    clear: both !important;
+}
+
+
+
+/* Mobile overrides */
+@media screen and (max-width: 480px) {
+    html body #app #lifemap-page.page.active {
+        width: 100vw !important;
+        left: 0 !important;
+        transform: none !important;
+    }
+    
+    html body #app #lifemap-page.page.active .page-header,
+    html body #app #lifemap-page.page.active .header,
+    html body #app #lifemap-page.page.active h1,
+    html body #app #lifemap-page.page.active h2 {
+        padding: 15px 15px 5px 15px !important;
+        font-size: 24px !important;
+    }
+    
+    html body #app #lifemap-page.page.active .lifemap-content,
+    html body #app #lifemap-page.page.active .content,
+    html body #app #lifemap-page.page.active .page-content {
+        padding: 0 15px 350px 15px !important;
+    }
+}
+* Force bottom nav to always be visible */
+.bottom-nav {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Simple approach - just add lots of bottom padding to lifemap */
+#lifemap-page.active {
+    padding-bottom: 150px !important;
+}
+
+#lifemap-page.active button:last-child {
+    margin-bottom: 200px !important;
+}
+.bottom-nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background: #fff;
+    border-top: 1px solid #e0e0e0;
+    padding: 8px 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 10000;
+    pointer-events: auto;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    pointer-events: auto;
+    user-select: none;
+}
+
+.nav-item:hover {
+    background-color: #f5f5f5;
+    border-radius: 8px;
+}
+
+.nav-item.active {
+    color: #6b2c91;
+}
+
+.nav-item.active .nav-icon {
+    transform: scale(1.1);
+}
+
+.nav-icon {
+    font-size: 20px;
+    margin-bottom: 4px;
+}
+
+.nav-label {
+    font-size: 12px;
+    font-weight: 500;
+}
+/* Profile Settings Button */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    position: relative;
+}
+
+.profile-settings-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.profile-settings-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.settings-icon {
+    font-size: 18px;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 20000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+    background: linear-gradient(135deg, #6b2c91 0%, #4c135d 100%);
+    color: white;
+    border-radius: 15px 15px 0 0;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.close-btn {
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    color: white;
+    opacity: 0.8;
+}
+
+.close-btn:hover {
+    opacity: 1;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+/* Settings Sections */
+.settings-section {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.settings-section:last-child {
+    border-bottom: none;
+}
+
+.settings-section h3 {
+    margin: 0 0 15px 0;
+    color: #6b2c91;
+    font-size: 18px;
+}
+
+
+/* Progress Stats */
+.progress-stats {
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
+}
+
+.stat-item {
+    text-align: center;
+    flex: 1;
+    padding: 15px;
+    background: linear-gradient(135deg, #f8f9ff 0%, #e8f0ff 100%);
+    border-radius: 10px;
+}
+
+.stat-number {
+    font-size: 24px;
+    font-weight: bold;
+    color: #6b2c91;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Affirmation Settings */
+.affirmation-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.affirmation-item {
+    padding: 15px;
+    background: #f8f9ff;
+    border-radius: 10px;
+    border-left: 4px solid #6b2c91;
+}
+
+.affirmation-category {
+    font-weight: bold;
+    color: #6b2c91;
+    margin-bottom: 5px;
+}
+
+.affirmation-text {
+    color: #333;
+    margin-bottom: 8px;
+    font-style: italic;
+}
+
+.affirmation-schedule {
+    font-size: 12px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.no-affirmations {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-style: italic;
+}
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    width: 100%;
+    max-width: 100%;
+}
+
+.action-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.action-image img {
+    width: 35px;
+    height: 35px;
+    object-fit: cover;
+}
+/* HOME PAGE CENTER ALIGNMENT AND MOBILE FIXES - HIGH SPECIFICITY */
+body #app #home-page.page.active {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    padding: 20px 15px 100px 15px !important;
+    max-width: 400px !important;
+    margin: 0 auto !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+}
+
+body #app #home-page.page.active .header {
+    width: 100% !important;
+    max-width: 360px !important;
+}
+
+body #app #home-page.page.active .card-section {
+    width: 100% !important;
+    max-width: 320px !important;
+}
+
+body #app #home-page.page.active .quick-actions {
+    width: 100% !important;
+    max-width: 320px !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 6px !important;
+    margin: 20px 0 !important;
+    padding: 0 !important;
+}
+
+body #app #home-page.page.active .action-card {
+    padding: 8px 4px !important;
+    min-height: 80px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+}
+
+body #app #home-page.page.active .action-image {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    margin-bottom: 5px !important;
+}
+
+body #app #home-page.page.active .action-image img {
+    width: 30px !important;
+    height: 30px !important;
+    object-fit: contain !important;
+}
+/* Profile Circle & Menu */
+.profile-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+}
+
+.profile-circle:hover {
+    transform: scale(1.05);
+}
+
+.profile-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-menu.hidden {
+    display: none;
+}
+
+.profile-menu-content {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 400px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.profile-menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    color: white;
+}
+
+.close-menu {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.menu-item {
+    display: flex !important;
+    align-items: center !important;
+    padding: 15px !important;
+    margin: 10px 0 !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    color: white !important;
+    user-select: none !important;
+}
+
+.menu-item:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    transform: translateX(5px) !important;
+}
+
+.menu-icon {
+    font-size: 20px !important;
+    margin-right: 15px !important;
+    width: 30px !important;
+    pointer-events: none !important;
+}
+
+
+/* Modal Styles */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+/* Wishes Modal */
+#wishes-text {
+    width: 100%;
+    min-height: 200px;
+    padding: 15px;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    font-size: 16px;
+    font-family: inherit;
+    resize: vertical;
+    margin-bottom: 20px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.modal-actions button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.modal-actions button:first-child {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.modal-actions button:last-child {
+    background: #f0f0f0;
+    color: #333;
+}
+.profile-circle {
+    width: 60px !important;
+    height: 60px !important;
+    border-radius: 50% !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-circle img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 50% !important;
+}
+
+#profile-image {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 50% !important;
+}
+
+
+/* Wishes List */
+.wishes-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.wish-item {
+    padding: 15px;
+    margin: 10px 0;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border-left: 4px solid #667eea;
+}
+
+.wish-date {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.wish-text {
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Notification Settings */
+.notification-settings h4 {
+    margin: 20px 0 10px 0;
+    color: #333;
+}
+
+.progress-stats {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 12px;
+    margin: 15px 0;
+}
+
+.progress-stats p {
+    margin: 8px 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+.category-tag {
+    display: inline-block;
+    background: #667eea;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    margin: 5px;
+}
+
+/* Success Message */
+.success-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #4CAF50;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 25px;
+    z-index: 1002;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .profile-menu-content {
+        padding: 20px;
+        margin: 20px;
+    }
+    
+    .modal-content {
+        padding: 20px;
+        margin: 20px;
+    }
+
+
+/* Category Selection Styles */
+.category-card {
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.category-card.selected {
+    border-color: #667eea;
+    transform: scale(1.02);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.checkbox {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.checkbox.checked {
+    background: #667eea;
+    border-color: #667eea;
+}
+
+.checkbox.checked::after {
+    content: '✓';
+    color: white;
+    font-size: 12px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.selected-category {
+    display: inline-block;
+    background: #667eea;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    margin: 5px;
+}
+
+.preview-item {
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.preview-item:last-child {
+    border-bottom: none;
+}
+.profile-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #667eea;
+}
+
+.profile-circle:hover {
+    transform: scale(1.05);
+}
+
+.profile-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* Default emoji when no image */
+.profile-circle .default-avatar {
+    font-size: 24px;
+    color: white;
+}
+
+.profile-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-menu.hidden {
+    display: none;
+}
+
+.profile-menu-content {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 400px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.profile-menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    color: #333;
+}
+
+.close-menu {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-menu:hover {
+    background: #f0f0f0;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    margin: 10px 0;
+    background: #f8f9fa;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #333;
+    border: 1px solid #e9ecef;
+}
+
+.menu-item:hover {
+    background: #e9ecef;
+    transform: translateX(5px);
+}
+/* Notification Toggle Styles */
+.notification-toggle-section {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+    background-color: #667eea;
+}
+
+input:checked + .toggle-slider:before {
+    transform: translateX(26px);
+}
+
+#notification-status {
+    font-size: 14px;
+    color: #666;
+    flex: 1;
+}
+
+.divider {
+    height: 1px;
+    background: #e9ecef;
+    margin: 20px 0;
+}
+
+.action-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+    background: #5a67d8;
+    transform: translateY(-1px);
+}
+/* FORCE CIRCULAR PROFILE - FINAL FIX */
+.profile-circle {
+    width: 60px !important;
+    height: 60px !important;
+    border-radius: 50% !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.profile-circle img,
+#profile-image {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 50% !important;
+    display: block !important;
+}
+.profile-menu-content {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 400px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+#wishes-modal .modal-content {
+    max-width: 600px !important;
+    width: 95% !important;
+    min-height: 500px !important;
+}
+
+#wishes-text {
+    width: 100% !important;
+    min-height: 300px !important;
+    padding: 20px !important;
+    font-size: 16px !important;
+    border: 2px solid #ddd !important;
+    border-radius: 12px !important;
+    margin: 20px 0 !important;
+    box-sizing: border-box !important;
+}
+
+.modal-actions {
+    display: flex !important;
+    gap: 15px !important;
+    margin-top: 20px !important;
+}
+
+.modal-actions .btn {
+    flex: 1 !important;
+    margin: 0 !important;
+}
+#profile-menu {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 400px; /* Match your app's max width */
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+#profile-menu .modal-content {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    width: 100%;
+    max-width: 350px; /* Slightly smaller than container */
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+#profile-modal .modal-content {
+    max-width: 360px !important;
+    width: 90% !important;
+    margin: 0 auto !important;
+}
+
+#wishes-modal .modal-content {
+    max-width: 380px !important;
+    width: 90% !important;
+    margin: 0 auto !important;
+}
+
+#wishes-text {
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+#profile-menu .modal-content,
+#wishes-modal .modal-content {
+  max-width: 400px !important; /* Limit to app-safe width */
+  width: 90vw !important;      /* Responsive for all screens */
+  margin: 0 auto;              /* Center horizontally */
+  box-sizing: border-box;
+}
+
+#wishes-modal textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+}
+
+.modal-content {
+  box-sizing: border-box;
+}
+.modal-content {
+    outline: 2px solid limegreen; /* Visual debugging */
+  }
+  #wishes-modal textarea {
+    outline: 2px solid orange;
+  }
+  
+  .message {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 99999 !important;
+    background: #4CAF50 !important;
+    color: white !important;
+    padding: 20px 30px !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important;
+    font-size: 16px !important;
+    font-weight: bold !important;
+    text-align: center !important;
+    min-width: 300px !important;
+}
+
+
+
+
+</style>
+
+<!-- Authentication Screen -->
+<div id="auth-screen" style="display: block;">
+  <div style="max-width: 350px; margin: 100px auto; padding: 30px; text-align: center; background: rgba(255,255,255,0.1); border-radius: 20px; backdrop-filter: blur(10px);">
+    <h1 style="color: white; margin-bottom: 10px;">Welcome to SoulCode</h1>
+    <p style="color: rgba(255,255,255,0.8); margin-bottom: 30px;">Sign in to receive personalized affirmations</p>
+        
+    <!-- Social Login Icons -->
+    <div style="display: flex; justify-content: center; gap: 30px; margin: 20px 0;">
+      <svg width="40" height="40" viewBox="0 0 24 24" style="cursor: pointer; transition: transform 0.2s;"
+            onmouseover="this.style.transform='scale(1.1)'"
+            onmouseout="this.style.transform='scale(1)'"
+           onclick="signInWithGoogle()">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+        
+      <svg width="40" height="40" viewBox="0 0 24 24" style="cursor: pointer; transition: transform 0.2s;"
+            onmouseover="this.style.transform='scale(1.1)'"
+            onmouseout="this.style.transform='scale(1)'"
+           onclick="signInWithApple()">
+        <path fill="#ffffff" d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/> 
+      </svg>
+    </div>
+
+    <div style="margin: 20px 0; color: rgba(255,255,255,0.6);">or</div>
+
+    <!-- Two Separate Buttons -->
+    <button class="btn" onclick="handleReturningUser()">
+      Returning User
+    </button>
+    
+    <button class="btn" onclick="handleNewUser()">
+      New User
+    </button>
+  </div>
+</div>
+
+    
+    
+    <div id="main-app" style="display: none;">
+    <div id="app">
+        <!-- HOME PAGE -->
+        <div id="home-page" class="page active">
+            <div class="header">
+                <div class="profile-circle" onclick="toggleProfileMenu()" style="width: 60px; height: 60px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                    <img id="profile-image" src="https://i.imgur.com/kT5du7E.png" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;" />
+                </div>
+                
+        <div class="welcome-text"> Welcome Home, Soul Seeker</div>
+    </div>
+
+    <!-- Profile Menu Modal -->
+<div id="profile-menu" class="modal hidden" style="position: fixed !important; left: 50% !important; transform: translateX(-50%) !important; width: 400px !important; max-width: 400px !important;">
+
+        <div class="modal-content">
+        <div class="modal-header">
+            <h2>Profile Menu</h2>
+            <span class="close-btn" onclick="closeProfileMenu()" style="position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #fff;">&times;</span>
+
+        </div>
+        <div class="modal-body">
+            <div class="menu-item" onclick="changeProfilePicture()" style="display: flex; align-items: center; padding: 15px; margin: 10px 0; background: rgba(255, 255, 255, 0.1); border-radius: 12px; cursor: pointer; transition: all 0.3s ease; color: white;" onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.transform='translateX(5px)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.transform='translateX(0)'">
+
+    <span class="menu-icon">📷</span>
+    <span>Change Profile Picture</span>
+</div>
+<div class="menu-item" onclick="openWishesModal()" style="display: flex; align-items: center; padding: 15px; margin: 10px 0; background: rgba(255, 255, 255, 0.1); border-radius: 12px; cursor: pointer; transition: all 0.3s ease; color: white;" onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.transform='translateX(5px)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.transform='translateX(0)'">
+🌟</span>
+    <span>Write and Save Wishes & Desires</span>
+</div>
+<div class="menu-item" onclick="showNotificationModal()" style="display: flex; align-items: center; padding: 15px; margin: 10px 0; background: rgba(255, 255, 255, 0.1); border-radius: 12px; cursor: pointer; transition: all 0.3s ease; color: white;" onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.transform='translateX(5px)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.transform='translateX(0)'">
+🔔</span>
+    <span>Notification Settings</span>
+</div>
+
+
+        </div>
+    </div>
+</div>
+    <!-- Wishes Whiteboard Modal -->
+<div id="wishes-modal" class="modal hidden" style="position: fixed !important; left: 50% !important; transform: translateX(-50%) !important; width: 400px !important; max-width: 400px !important;">
+
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>✨ Write Your Wishes & Desires</h3>
+            <p>Now is the best time to write your wish down. Write it here and we'll keep it safe.</p>
+            <button class="close-modal" onclick="closeWishesModal()" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color: #fff;">×</button>
+
+        </div>
+        <textarea id="wishes-text" placeholder="Write your deepest desires and wishes here..."></textarea>
+        <div class="modal-actions">
+            <button class="btn" onclick="saveWish()">Save Wish</button>
+            <button class="btn" onclick="viewSavedWishes()">View Saved Wishes</button>
+        </div>
+    </div>
+</div>
+
+    <div class="card-section">
+        <h2>Card of the Day</h2>
+        <h5>Set an intention or ask a question you'd like clarity on.</h5>
+        <div class="card-spinner" onclick="spinCard()">
+            <div class="card-content">
+                <div class="card-image">
+                    <img src="https://i.imgur.com/gtt7sBW.png" alt="Mystical Cards" />
+                </div>
+                <p>Tap Here</p>
+            </div>
+        </div>
+        <div id="card-result"></div>
+    </div>
+    
+    <div class="quick-actions">
+        <div class="action-card" data-page="meditations">
+            <div class="action-image">
+                <img src="https://i.imgur.com/jgzqQji.png" />
+            </div>
+            <div class="action-title">Meditations</div>
+        </div>
+        <div class="action-card" data-page="affirmations">
+            <div class="action-image">
+                <img src="https://i.imgur.com/WYN9CEQ.png" alt="Affirmations" />
+            </div>
+            <div class="action-title">Affirmations</div>
+        </div>
+        <div class="action-card" data-page="calculators">
+            <div class="action-image">
+                <img src="https://i.imgur.com/nhX7zTJ.png" alt="Calculators" />
+            </div>
+            <div class="action-title">Calculators</div>
+        </div>
+        <div class="action-card" data-page="lifemap">
+            <div class="action-image">
+                <img src="https://i.imgur.com/4SYPpLZ.png" alt="Calculators" />
+            </div>
+            <div class="action-title">Your Life Map</div>
+        </div>
+        <!-- Free Resources Card - Lifted Above Footer -->
+
+<div class="action-card" onclick="openFreeResources()" style="width: 190px; max-width: 190px; grid-column: span 2; justify-self: center; margin-top: 20px;">
+    <div class="action-image" style="height: 200px;">
+        <img src="https://i.imgur.com/4SYPpLZ.png" alt="Free Resources" style="width: 100%; height: 100%; object-fit: cover;" />
+    </div>
+    <div class="action-title" style="font-size: 16px; padding: 12px; text-align: center;">Free Resources</div>
+</div>
+    </div>
+</div>
+
+
+       <!-- MEDITATIONS PAGE -->
+<div id="meditations-page" class="page">
+    <div class="page-header">
+        <h1> Guided Meditations</h1>
+        <p>Find your inner peace with this guided neural practices</p>
+    </div>
+    
+    <div class="meditation-grid">
+        <div class="meditation-card" data-meditation="selflove">
+            <div class="meditation-image">
+                <img src="https://i.imgur.com/FlIjV2R.jpeg" alt="Self Love Meditation">
+                <div class="image-overlay"></div>
+            </div>
+            <h3>3D Self Love Neural Practice</h3>
+            <p>Transform your self-relationship</p>
+        </div>
+        
+        <div class="meditation-card" data-meditation="stress">
+            <div class="meditation-image">
+                <img src="https://i.imgur.com/ta2QosF.jpeg" alt="Stress Relief">
+                <div class="image-overlay"></div>
+            </div>
+            <h3>Stress Relief Neural Practice</h3>
+            <p>Release tension and find calm</p>
+        </div>
+        <div class="meditation-card" data-meditation="breath">
+            <div class="meditation-image">
+                <img src="https://i.imgur.com/nezmJQ1.jpeg" alt="Breathing Technique">
+                <div class="image-overlay"></div>
+            </div>
+            <h3>3 Deep Breath Technique</h3>
+            <p>Alleviate stress with breathing</p>
+        </div>
+        
+        <div class="meditation-card" data-meditation="depression">
+            <div class="meditation-image">
+                <img src="https://i.imgur.com/IQs6ZfI.jpeg" alt="Mental Wellness">
+                <div class="image-overlay"></div>
+            </div>
+            <h3>Relieve Depression & Anxiety</h3>
+            <p>Neural practice for mental wellness</p>
+        </div>
+        
+        <div class="meditation-card" data-meditation="mindfulness">
+            <div class="meditation-image">
+                <img src="https://i.imgur.com/UwOlv9r.jpeg" alt="Mindfulness">
+                <div class="image-overlay"></div>
+            </div>
+            <h3>Mindfulness Relaxation Guided</h3>
+            <p>Neural practice for awareness</p>
+        </div>
+        
+        <div class="meditation-card" data-meditation="personalized" onclick="showArcanaSelection()">
+            <div class="meditation-image">
+                <img src="https://i.imgur.com/yibBjxT.jpeg" alt="Personalized Meditations">
+                <div class="image-overlay"></div>
+            </div>
+            <h3>Personalized Meditations</h3>
+            <p>Based on your birth arcana</p>
+        </div>
+    </div>
+    
+    <!-- Meditation Player -->
+    <div id="meditation-player" class="meditation-player" style="display: none;">
+        <!-- Player content will be inserted here -->
+    </div>
+    
+    <!-- Arcana Selection Modal -->
+    <div id="arcana-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeArcanaModal()">&times;</span>
+            <h2>🔮 Choose Your Birth Arcana</h2>
+            <div class="arcana-list">
+                <div class="arcana-item" onclick="startArcanaMediation(1)">1st Arcana - The Magician</div>
+                <div class="arcana-item" onclick="startArcanaMediation(2)">2nd Arcana - The High Priestess</div>
+                <div class="arcana-item" onclick="startArcanaMediation(3)">3rd Arcana - The Empress</div>
+                <div class="arcana-item" onclick="startArcanaMediation(4)">4th Arcana - The Emperor</div>
+                <div class="arcana-item" onclick="startArcanaMediation(5)">5th Arcana - The Hierophant</div>
+                <div class="arcana-item" onclick="startArcanaMediation(6)">6th Arcana - The Lovers</div>
+                <div class="arcana-item" onclick="startArcanaMediation(7)">7th Arcana - The Chariot</div>
+                <div class="arcana-item" onclick="startArcanaMediation(8)">8th Arcana - Strength</div>
+                <div class="arcana-item" onclick="startArcanaMediation(9)">9th Arcana - The Hermit</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <!-- AFFIRMATIONS PAGE -->
+<div id="affirmations-page" class="page">
+    <div class="page-header">
+        <h1>Daily Affirmations</h1>
+        <p>Please choose one or more category of affirmation you want to receive daily.</p>
+    </div>
+        
+    <div class="categories-grid">
+        <div class="category-card" data-category="Think Positively">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/AkdKjxW.png" alt="Think Positively" class="category-image">
+            <h3>Think Positively</h3>
+        </div>
+        <div class="category-card" data-category="Build Self-Confidence">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/5DPMF8f.jpeg" alt="Build Self-Confidence" class="category-image">
+            <h3>Build Self-Confidence</h3>
+        </div>
+        <div class="category-card" data-category="Calm Your Anxiety">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/Pys0ekT.jpeg" alt="Calm Your Anxiety" class="category-image">
+            <h3>Calm Your Anxiety</h3>
+        </div>
+        <div class="category-card" data-category="Nurture Self-Love">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/S49sBat.jpeg" alt="Nurture Self-Love" class="category-image">
+            <h3>Nurture Self-Love</h3>
+        </div>
+        <div class="category-card" data-category="Express Gratitude">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/YI3fNAs.jpeg" alt="Express Gratitude" class="category-image">
+            <h3>Express Gratitude</h3>
+        </div>
+        <div class="category-card" data-category="Achieve Success">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/JrbdKrS.jpeg" alt="Achieve Success" class="category-image">
+            <h3>Achieve Success</h3>
+        </div>
+        <div class="category-card" data-category="Ignite Motivation">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/XWiENhI.jpeg" alt="Ignite Motivation" class="category-image">
+            <h3>Ignite Motivation</h3>
+        </div>
+        <div class="category-card" data-category="Accept Yourself">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/m1Zq5I3.jpeg" alt="Accept Yourself" class="category-image">
+            <h3>Accept Yourself</h3>
+        </div>
+        <div class="category-card" data-category="Love Your Body">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/3Rm5Tra.jpeg" alt="Love Your Body" class="category-image">
+            <h3>Love Your Body</h3>
+        </div>
+        <div class="category-card" data-category="Accept Your Parents and Ancestral Bloodline Power">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/fApnskW.jpeg" alt="Accept Your Parents" class="category-image">
+            <h3>Accept Your Parents and Ancestral Bloodline Power</h3>
+        </div>
+        <div class="category-card" data-category="Embrace Changes">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/ZQDMPvc.jpeg" alt="Embrace Changes" class="category-image">
+            <h3>Embrace Changes</h3>
+        </div>
+        <div class="category-card" data-category="Gain Balance in Life">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/5KErJTv.jpeg" alt="Gain Balance in Life" class="category-image">
+            <h3>Gain Balance in Life</h3>
+        </div>
+        <div class="category-card" data-category="Build Wealth">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/znv21C7.jpeg" alt="Build Wealth" class="category-image">
+            <h3>Build Wealth</h3>
+        </div>
+        <div class="category-card" data-category="Lose Weight">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/TWPDy6i.jpeg" alt="Lose Weight" class="category-image">
+            <h3>Lose Weight</h3>
+        </div>
+        <div class="category-card" data-category="Quit Smoking">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/X1Zdht4.jpeg" alt="Quit Smoking" class="category-image">
+            <h3>Quit Smoking</h3>
+        </div>
+        <div class="category-card" data-category="Fight with Depression">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/AK1dx9Z.jpeg" alt="Fight with Depression" class="category-image">
+            <h3>Fight with Depression</h3>
+        </div>
+        <div class="category-card" data-category="Forgive and Let Go">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/suadq1Y.jpeg" alt="Forgive and Let Go" class="category-image">
+            <h3>Forgive and Let Go</h3>
+        </div>
+        <div class="category-card" data-category="Conquer Loneliness">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/KGGbMNT.jpeg" alt="Conquer Loneliness" class="category-image">
+            <h3>Conquer Loneliness</h3>
+        </div>
+        <div class="category-card" data-category="Overcome Toxic Relationships">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/Wd0ebGW.jpeg" alt="Overcome Toxic Relationships" class="category-image">
+            <h3>Overcome Toxic Relationships</h3>
+        </div>
+        <div class="category-card" data-category="Forge New Connections">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/XZYEVmQ.jpeg" alt="Forge New Connections" class="category-image">
+            <h3>Forge New Connections</h3>
+        </div>
+        <div class="category-card" data-category="Nurture Sexuality">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/vbDoQpg.jpeg" alt="Nurture Sexuality" class="category-image">
+            <h3>Nurture Sexuality</h3>
+        </div>
+        <div class="category-card" data-category="Manifest New Love">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/DSziwpW.jpeg" alt="Manifest New Love" class="category-image">
+            <h3>Manifest New Love</h3>
+        </div>
+        <div class="category-card" data-category="Deal with Postpartum">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/x38RPSD.jpeg" alt="Deal with Postpartum" class="category-image">
+            <h3>Deal with Postpartum</h3>
+        </div>
+        <div class="category-card" data-category="Awaken Spiritually">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/esmpWoH.jpeg" alt="Awaken Spiritually" class="category-image">
+            <h3>Awaken Spiritually</h3>
+        </div>
+        <div class="category-card" data-category="Heal From Grief">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/q4hZU8P.jpeg" alt="Heal From Grief" class="category-image">
+            <h3>Heal From Grief</h3>
+        </div>
+        <div class="category-card" data-category="Harness the Law of Attraction">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/znv21C7.jpeg" alt="Harness the Law of Attraction" class="category-image">
+            <h3>Harness the Law of Attraction</h3>
+        </div>
+        <div class="category-card" data-category="Fuel Vitality">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/HDNgClm.jpeg" alt="Fuel Vitality" class="category-image">
+            <h3>Fuel Vitality</h3>
+        </div>
+        <div class="category-card" data-category="Adopt Stoic Mindset">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/xYpvoOK.jpeg" alt="Adopt Stoic Mindset" class="category-image">
+            <h3>Adopt Stoic Mindset</h3>
+        </div>
+        <div class="category-card" data-category="Inspire as a Leader">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/eIaaYZy.jpeg" alt="Inspire as a Leader" class="category-image">
+            <h3>Inspire as a Leader</h3>
+        </div>
+                <div class="category-card" data-category="Elevate Career">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/0AFAi2K.jpeg" alt="Elevate Career" class="category-image">
+            <h3>Elevate Career</h3>
+        </div>
+        
+        <div class="category-card" data-category="Cherish Your Pregnancy">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/eIaaYZy.jpeg" alt="Cherish Your Pregnancy" class="category-image">
+            <h3>Cherish Your Pregnancy</h3>
+        </div>
+        
+        <div class="category-card" data-category="Sharpen Focus">
+            <div class="checkbox"></div>
+            <img src="https://i.imgur.com/eIaaYZy.jpeg" alt="Sharpen Focus" class="category-image">
+            <h3>Sharpen Focus</h3>
+        </div>
+    </div> <!-- Close categories-grid -->
+</div> <!-- Close affirmations-page -->
+
+<div class="selected-categories">
+    <h3>Selected Categories:</h3>
+    <div id="selected-list"></div>
+</div>
+
+
+<div class="setup-button-container" style="display: none;">
+    <button id="setup-reminders-btn" class="btn primary-btn">📱 Setup Reminders</button>
+</div>
+
+   
+       <div class="notification-setup" style="display: none;">
+  
+    <!-- Days Selection -->
+    <div class="days-selection">
+        <h4>Select Days:</h4>
+        <div class="days-grid">
+            <label class="day-checkbox">
+                <input type="checkbox" value="monday" id="day-monday">
+                <span>Mon</span>
+            </label>
+            <label class="day-checkbox">
+                <input type="checkbox" value="tuesday" id="day-tuesday">
+                <span>Tue</span>
+            </label>
+            <label class="day-checkbox">
+                <input type="checkbox" value="wednesday" id="day-wednesday">
+                <span>Wed</span>
+            </label>
+            <label class="day-checkbox">
+                <input type="checkbox" value="thursday" id="day-thursday">
+                <span>Thu</span>
+            </label>
+            <label class="day-checkbox">
+                <input type="checkbox" value="friday" id="day-friday">
+                <span>Fri</span>
+            </label>
+            <label class="day-checkbox">
+                <input type="checkbox" value="saturday" id="day-saturday">
+                <span>Sat</span>
+            </label>
+            <label class="day-checkbox">
+                <input type="checkbox" value="sunday" id="day-sunday">
+                <span>Sun</span>
+            </label>
+        </div>
+    </div>
+    
+    <!-- Frequency Selection -->
+    <div class="frequency-selection">
+        <h4>How often do you want to receive affirmations?</h4>
+        <select id="frequency-select">
+            <option value="1">Every hour</option>
+            <option value="2">Every 2 hours</option>
+            <option value="3">Every 3 hours</option>
+            <option value="4">Every 4 hours</option>
+            <option value="5">Every 5 hours</option>
+        </select>
+    </div>
+    
+    <!-- Start Time Selection -->
+    <div class="start-time-selection">
+        <h4>What time should the first affirmation be sent?</h4>
+        <input type="time" id="start-time" value="09:00">
+    </div>
+    
+    <!-- Save Button -->
+    <button id="save-settings" class="btn save-btn">Save and Grant Permission </button>
+            
+    <!-- Preview Schedule -->
+    <div id="schedule-preview" class="schedule-preview">
+        <h4>Your Schedule Preview:</h4>
+        <div id="preview-content"></div>
+    </div>
+</div>
+
+
+      <!-- CALCULATORS PAGE -->
+<div id="calculators-page" class="page">
+    <div class="page-header">
+        <h1>Calculators</h1>
+        <p>Unlock your spiritual insights with our premium calculators</p>
+    </div>
+    <div class="calculators-section">
+        <div class="calculators-grid">
+
+        <!-- Money Code Calculator -->
+<div class="title-with-lock" data-calculator="money-code" onclick="showCodeInput('money-code')">
+    <h3 class="calculator-title">MONEY CODE CALCULATOR</h3>
+    <div class="lock-overlay">
+        <div class="lock-icon">🔒</div>
+        <p class="unlock-text">Unlock with Access Code</p>
+    </div>
+</div>
+
+<div class="calculator-image">
+    <img src="https://i.imgur.com/I7CUbj8.png" alt="Money Code Calculator">
+</div>
+
+
+
+
+            </div>
+            <div class="calculator-description">
+                <p><strong>What's Your Money Code? Unlock the Energy Behind Your Wealth</strong></p>
+                <p>Your birth date carries a unique money blueprint — a personal energy pattern that reveals how you naturally attract wealth, where your financial power lies, and what may be quietly blocking your abundance.</p>
+                <p>With just one click, this calculator decodes your Money Triangle: six powerful financial energies based on ancient Arcana wisdom. You'll uncover:</p>
+                <ul>
+                    <li>✔ Your natural paths to generating income</li>
+                    <li>✔ The hidden blocks that may be limiting your financial flow</li>
+                    <li>✔ Personalized ways to grow your wealth in alignment with your energy</li>
+                    <li>✔ How to use money as a tool for purpose, growth, and freedom</li>
+                </ul>
+                <p>Whether you're feeling stuck or ready to thrive, this is your first step to a more conscious, empowered relationship with money.</p>
+            </div>
+            <div class="calculator-buttons">
+                <button class="btn get-access-btn" onclick="window.open('https://payhip.com/b/fPRZK', '_blank')">Get Access Here</button>
+                <button class="btn unlock-btn" onclick="showCodeInput('money-code')">I Have Access Code</button>
+            </div>
+        </div>
+<!-- Forecast Calculator -->
+<div class="calculator-card" data-calculator="forecast">
+    <div class="title-with-lock">
+        <h3 class="calculator-title"> FORECAST CALCULATOR</h3>
+        <div class="lock-overlay">
+            <div class="lock-icon">🔒</div>
+            <p class="unlock-text">Unlock with Access Code</p>
+        </div>
+    </div>
+    <div class="calculator-image">
+        <img src="https://i.imgur.com/8ZfupjB.png" alt="Forecast Calculator">
+    </div>
+    <div class="calculator-description">
+        <p><strong>Your Personal Energy Forecast — Aligned Guidance for Your Day, Month & Year</strong></p>
+        <p>Imagine waking up and knowing exactly what kind of energy surrounds you — and how to make the most of it. This calculator reveals your unique daily, monthly, and yearly forecasts, based on your date of birth.</p>
+        <p>Get practical and intuitive guidance tailored to your personal rhythm:</p>
+        <ul>
+            <li>✔ The energetic tone of your day, month, and year</li>
+            <li>✔ Personalized tips for your health, money, and relationships</li>
+            <li>✔ What to embrace — and what to avoid — to stay aligned</li>
+            <li>✔ How to navigate challenges with more clarity and confidence</li>
+        </ul>
+        <p>Whether you're planning your day or realigning your year, this tool helps you work with your energy, not against it.</p>
+    </div>
+    <div class="calculator-buttons">
+        <button class="btn get-access-btn" onclick="window.open('https://payhip.com/b/KOfjY', '_blank')">Get Access Here</button>
+        <button class="btn unlock-btn" onclick="showCodeInput('forecast')">I Have Access Code</button>
+    </div>
+</div>
+ </div>
+</div>
+
+        <!-- YOUR LIFE MAP PAGE -->
+<div id="lifemap-page" class="page">
+    <div class="page-header">
+        <h1>️ Your Life Map</h1>
+        <p>Discover the hidden energies that shape your destiny.</p> Absolutely FREE 
+        </p>
+    </div>
+    
+    <div class="lifemap-content">
+        <div class="lifemap-description">
+            <p>Curious about your true potential? Discover the hidden energies that shape your <strong>Personality, Spiritual Path, Financial Abundance, Relationships, Health, and Soul Mission</strong> — all based on your unique date of birth.</p>
+            
+            <p>This free, instant tool reveals your core life energies and their positive aspects, helping you understand how to harness your strengths for greater clarity, success, and fulfillment. No waiting, no cost — just powerful insight right at your fingertips.</p>
+        </div>
+        
+        <div class="lifemap-image">
+            <img src="https://i.imgur.com/XMp5RbU.png" alt="Life Map Discovery" />
+        </div>
+        
+        <div class="lifemap-message">
+            <p><strong>What if the answers you've been searching for were already written in your energy from the moment you were born?</strong></p>
+            
+            <p>You'll discover what's supporting you, what may be blocking you, and how to turn your unique energy into your greatest strength.</p>
+            
+            <p><em>It's not just insight — it's a mirror to your soul.</em></p>
+            
+            <p><strong>No guesswork. No cost. Just clarity and direction, starting right now.</strong></p>
+        </div>
+        
+        <div class="lifemap-button">
+            <button class="btn lifemap-btn" onclick="window.open('https://t.me/decoded_dob_bot?start=w40258673', '_blank')">
+                 Show Me My Path
+            </button>
+        </div>
+    </div>
+</div>
+
+
+
+   <!-- BOTTOM NAVIGATION -->
+<nav class="bottom-nav">
+    <div class="nav-item menu-item" data-page="home">
+        <div class="nav-icon">⾕</div>
+        <div class="nav-label">Home</div>
+    </div>
+    <div class="nav-item menu-item" data-page="meditations">
+        <div class="nav-icon">☪︎</div>
+        <div class="nav-label">Meditate</div>
+    </div>
+    <div class="nav-item menu-item" data-page="lifemap">
+        <div class="nav-icon">༺☆༻️</div>
+        <div class="nav-label">Decode</div>
+    </div>
+    <div class="nav-item menu-item" data-page="affirmations">
+        <div class="nav-icon">⛥</div>
+        <div class="nav-label">Affirm</div>
+    </div>
+    <div class="nav-item menu-item" data-page="calculators">
+        <div class="nav-icon">🀙</div>
+        <div class="nav-label">Calculate</div>
+    </div>
+</nav>
+
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+                       <h2>SoulCode</h2>
+            <p>Connecting to your spiritual journey...</p>
+        </div>
+    </div>
+    
+   <!-- Access Code Modal -->
+<div id="code-modal" style="display:none; position: fixed; top:0; left:0; width:100%; height:100%; 
+    background: rgba(0,0,0,0.5); z-index: 1000;">
+  <div class="modal-content" style="background:#fff; padding: 20px; max-width: 400px; margin: 10% auto; border-radius: 8px;">
+    <h2>Enter Access Code</h2>
+    <input id="access-code-input" type="text" placeholder="Enter your code here" style="width: 100%; padding: 8px; font-size: 16px; margin-bottom: 10px;"/>
+    <div>
+      <button class="btn" onclick="validateCode()">Submit</button>
+      <button class="btn" onclick="closeCodeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDKs -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
+  import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-messaging.js";
+  import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, onAuthStateChanged, sendPasswordResetEmail, updatePassword, GoogleAuthProvider, signInWithPopup, OAuthProvider } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAPCFjjC6SqtQEauTQ6Hs7Ex-B2tj6PuXM",
+    authDomain: "soul-code-app.firebaseapp.com",
+    projectId: "soul-code-app",
+    storageBucket: "soul-code-app.firebasestorage.app",
+    messagingSenderId: "339179205157",
+    appId: "1:339179205157:web:e801c0ad054cbc6a1c05cc",
+    measurementId: "G-C1K5PGZJB7"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const messaging = getMessaging(app);
+  const db = getFirestore(app);
+  let currentUser = null;
+  const auth = getAuth(app);
+
+  // AUTHENTICATION STATE LISTENER - FIXED:
+  onAuthStateChanged(auth, (user) => {
+    console.log('Auth state changed:', user);
+    if (user) {
+      currentUser = user;
+      console.log('User signed in:', user.email);
+      console.log('About to call showMainApp()');
+      // Add small delay to ensure DOM is ready
+      setTimeout(() => {
+        showMainApp();
+      }, 100);
+    } else {
+      currentUser = null;
+      console.log('User signed out');
+      showAuthScreen();
+    }
+  });
+
+  // UTILITY FUNCTIONS:
+  function generateRandomPassword(length = 12) {
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+    let password = "";
+    for (let i = 0; i < length; i++) {
+      password += charset.charAt(Math.floor(Math.random() * charset.length));
+    }
+    return password;
+  }
+
+  function showPasswordConfirmationModal(email, autoPassword) {
+  return new Promise((resolve) => {
+    const modalHTML = `
+      <div id="password-modal" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(53, 12, 72, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        backdrop-filter: blur(10px);
+      ">
+        <div style="
+          background: linear-gradient(135deg, #350c48 0%, #4a1a5c 100%);
+          padding: 40px;
+          border-radius: 20px;
+          max-width: 450px;
+          width: 90%;
+          text-align: center;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+          border: 2px solid #ccae79;
+        ">
+          <h3 style="color: #ccae79; margin-bottom: 15px; font-size: 24px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">Account Created!</h3>
+          <p style="color: #caafe0; margin-bottom: 10px; font-size: 16px;">for ${email}</p>
+          <p style="color: #caafe0; margin-bottom: 20px;">Your auto-generated password is:</p>
+          <div style="
+            background: linear-gradient(135deg, rgba(204, 174, 121, 0.2) 0%, rgba(202, 175, 224, 0.2) 100%);
+            padding: 20px;
+            border-radius: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            margin: 20px 0;
+            word-break: break-all;
+            border: 2px solid #ccae79;
+            color: #ccae79;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+          ">${autoPassword}</div>
+          <p style="color: #caafe0; margin-bottom: 25px;">Would you like to keep this password or create your own?</p>
+          <div style="margin-top: 25px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+            <button id="keep-password" style="
+              background: linear-gradient(135deg, #ccae79 0%, #caafe0 100%);
+              color: #350c48;
+              border: none;
+              padding: 15px 25px;
+              border-radius: 25px;
+              font-size: 16px;
+              font-weight: bold;
+              cursor: pointer;
+              transition: all 0.3s ease;
+              box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+              min-width: 150px;
+            ">Keep This Password</button>
+            <button id="create-own" style="
+              background: linear-gradient(135deg, #350c48 0%, #4a1a5c 100%);
+              color: #ccae79;
+              border: 2px solid #ccae79;
+              padding: 15px 25px;
+              border-radius: 25px;
+              font-size: 16px;
+              font-weight: bold;
+              cursor: pointer;
+              transition: all 0.3s ease;
+              box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+              min-width: 150px;
+            ">Create My Own</button>
+          </div>
+          <div id="custom-password-section" style="display: none; margin-top: 25px;">
+            <input type="password" id="custom-password" placeholder="Enter your password" style="
+              width: 100%;
+              padding: 15px;
+              margin: 10px 0;
+              border: 2px solid #ccae79;
+              border-radius: 15px;
+              box-sizing: border-box;
+              font-size: 16px;
+              background: rgba(255,255,255,0.1);
+              color: #ccae79;
+            ">
+            <input type="password" id="confirm-password" placeholder="Confirm password" style="
+              width: 100%;
+              padding: 15px;
+              margin: 10px 0;
+              border: 2px solid #ccae79;
+              border-radius: 15px;
+              box-sizing: border-box;
+              font-size: 16px;
+              background: rgba(255,255,255,0.1);
+              color: #ccae79;
+            ">
+            <button id="save-custom" style="
+              background: linear-gradient(135deg, #ccae79 0%, #caafe0 100%);
+              color: #350c48;
+              border: none;
+              padding: 15px 25px;
+              border-radius: 25px;
+              font-size: 16px;
+              font-weight: bold;
+              cursor: pointer;
+              transition: all 0.3s ease;
+              box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+              width: 100%;
+              margin-top: 10px;
+            ">Save Password</button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    // Add hover effects
+    document.getElementById('keep-password').onmouseover = function() {
+      this.style.transform = 'translateY(-2px)';
+      this.style.boxShadow = '0 6px 20px rgba(0,0,0,0.4)';
+      this.style.background = 'linear-gradient(135deg, #b8a06b 0%, #b49dd4 100%)';
+    };
+    document.getElementById('keep-password').onmouseout = function() {
+      this.style.transform = 'translateY(0)';
+      this.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
+      this.style.background = 'linear-gradient(135deg, #ccae79 0%, #caafe0 100%)';
+    };
+    document.getElementById('create-own').onmouseover = function() {
+      this.style.transform = 'translateY(-2px)';
+      this.style.boxShadow = '0 6px 20px rgba(0,0,0,0.4)';
+      this.style.background = 'linear-gradient(135deg, #2a0a3a 0%, #3d1548 100%)';
+    };
+    document.getElementById('create-own').onmouseout = function() {
+      this.style.transform = 'translateY(0)';
+      this.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
+      this.style.background = 'linear-gradient(135deg, #350c48 0%, #4a1a5c 100%)';
+    };
+    document.getElementById('save-custom').onmouseover = function() {
+      this.style.transform = 'translateY(-2px)';
+      this.style.boxShadow = '0 6px 20px rgba(0,0,0,0.4)';
+      this.style.background = 'linear-gradient(135deg, #b8a06b 0%, #b49dd4 100%)';
+    };
+    document.getElementById('save-custom').onmouseout = function() {
+      this.style.transform = 'translateY(0)';
+      this.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
+      this.style.background = 'linear-gradient(135deg, #ccae79 0%, #caafe0 100%)';
+    };
+
+    document.getElementById('keep-password').onclick = () => {
+      document.getElementById('password-modal').remove();
+      resolve(autoPassword);
+    };
+
+    document.getElementById('create-own').onclick = () => {
+      document.getElementById('custom-password-section').style.display = 'block';
+      document.getElementById('keep-password').style.display = 'none';
+      document.getElementById('create-own').style.display = 'none';
+    };
+
+    document.getElementById('save-custom').onclick = () => {
+      const customPassword = document.getElementById('custom-password').value;
+      const confirmPassword = document.getElementById('confirm-password').value;
+      if (!customPassword) {
+        alert('Please enter a password');
+        return;
+      }
+      if (customPassword !== confirmPassword) {
+        alert('Passwords do not match');
+        return;
+      }
+      if (customPassword.length < 6) {
+        alert('Password must be at least 6 characters long');
+        return;
+      }
+      document.getElementById('password-modal').remove();
+      resolve(customPassword);
+    };
+  });
+}
+
+  // UPDATED AUTHENTICATION FUNCTIONS:
+  window.signUpWithEmail = async function(email, password) {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      console.log('User created:', userCredential.user.email);
+      return userCredential;
+    } catch (error) {
+      console.error('Sign up error:', error.message);
+      throw error;
+    }
+  };
+
+  window.signInWithEmail = async function(email, password) {
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      console.log('User signed in:', userCredential.user.email);
+      return userCredential;
+    } catch (error) {
+      console.error('Sign in error:', error.message);
+      
+      // Provide specific error messages
+      let errorMessage = '';
+      switch (error.code) {
+        case 'auth/wrong-password':
+        case 'auth/invalid-credential':
+          errorMessage = 'Incorrect password. Please try again.';
+          break;
+        case 'auth/user-not-found':
+          errorMessage = 'No account found with this email address.';
+          break;
+        case 'auth/invalid-email':
+          errorMessage = 'Invalid email address.';
+          break;
+        case 'auth/too-many-requests':
+          errorMessage = 'Too many failed attempts. Please try again later.';
+          break;
+        default:
+          errorMessage = error.message;
+      }
+      
+      alert('Sign in failed: ' + errorMessage);
+      throw error;
+    }
+  };
+
+  window.sendPasswordlessLink = async function(email) {
+    const actionCodeSettings = {
+      url: window.location.href,
+      handleCodeInApp: true,
+    };
+      
+    try {
+      await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+      localStorage.setItem('emailForSignIn', email);
+      alert('Sign-in link sent to your email!');
+    } catch (error) {
+      console.error('Error sending email link:', error.message);
+      alert('Failed to send email link: ' + error.message);
+    }
+  };
+
+  // BUTTON 1 - RETURNING USER FUNCTION
+window.handleReturningUser = async function() {
+  const modalHTML = `
+    <div id="returning-user-modal" style="
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    ">
+      <div style="
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+      ">
+        <h3>Welcome Back!</h3>
+        <input type="email" id="returning-email" placeholder="Enter your email" style="
+          width: 100%;
+          padding: 15px;
+          margin: 10px 0;
+          border: 1px solid #ddd;
+          border-radius: 5px;
+          box-sizing: border-box;
+        ">
+        <input type="password" id="returning-password" placeholder="Enter your password" style="
+          width: 100%;
+          padding: 15px;
+          margin: 10px 0;
+          border: 1px solid #ddd;
+          border-radius: 5px;
+          box-sizing: border-box;
+        ">
+        <button id="login-btn" class="btn">Login</button>
+        <button id="cancel-login" style="
+  background: linear-gradient(135deg, #350c48 0%, #4a1a5c 100%);
+  color: #ccae79;
+  border: 2px solid #ccae79;
+  padding: 15px 25px;
+  margin: 10px;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  min-width: 120px;
+">Cancel</button>
+      </div>
+    </div>
+  `;
+  
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+  
+  document.getElementById('cancel-login').onclick = () => {
+    document.getElementById('returning-user-modal').remove();
+  };
+  
+  document.getElementById('login-btn').onclick = async () => {
+    const email = document.getElementById('returning-email').value.trim();
+    const password = document.getElementById('returning-password').value;
+    
+    if (!email || !password) {
+      alert('Please enter both email and password');
+      return;
+    }
+    
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      document.getElementById('returning-user-modal').remove();
+    } catch (error) {
+      if (error.code === 'auth/user-not-found') {
+        alert('No account found with this email. Please create an account.');
+        document.getElementById('returning-user-modal').remove();
+      } else if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+        const resetPassword = confirm('Wrong password. Would you like to reset your password via email?');
+        if (resetPassword) {
+          try {
+            await sendPasswordResetEmail(auth, email);
+            alert('Password reset email sent! Please check your inbox.');
+            document.getElementById('returning-user-modal').remove();
+          } catch (resetError) {
+            alert('Error sending reset email: ' + resetError.message);
+          }
+        }
+      } else {
+        alert('Login error: ' + error.message);
+      }
+    }
+  };
+};
+
+// BUTTON 2 - NEW USER FUNCTION
+window.handleNewUser = async function() {
+  // Step 1: Email input modal
+  const emailModalHTML = `
+    <div id="new-user-email-modal" style="
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    ">
+      <div style="
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+      ">
+        <h3>Create New Account</h3>
+        <p>Enter your email address to get started</p>
+        <input type="email" id="new-user-email" placeholder="Enter your email" style="
+          width: 100%;
+          padding: 15px;
+          margin: 10px 0;
+          border: 1px solid #ddd;
+          border-radius: 5px;
+          box-sizing: border-box;
+        ">
+        <button id="continue-btn" class="btn">Continue</button>
+        <button id="cancel-new-user" style="
+         background: linear-gradient(135deg, #350c48 0%, #4a1a5c 100%);
+  color: #ccae79;
+          border: none;
+          padding: 10px 20px;
+          margin: 10px;
+          border-radius: 5px;
+          cursor: pointer;
+        ">Cancel</button>
+      </div>
+    </div>
+  `;
+  
+  document.body.insertAdjacentHTML('beforeend', emailModalHTML);
+  
+  document.getElementById('cancel-new-user').onclick = () => {
+    document.getElementById('new-user-email-modal').remove();
+  };
+  
+  document.getElementById('continue-btn').onclick = async () => {
+    const email = document.getElementById('new-user-email').value.trim();
+    
+    if (!email) {
+      alert('Please enter your email');
+      return;
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      alert('Please enter a valid email address');
+      return;
+    }
+    
+    document.getElementById('new-user-email-modal').remove();
+    
+    // Step 2: Password selection modal
+    const autoPassword = generateRandomPassword();
+    const finalPassword = await showPasswordConfirmationModal(email, autoPassword);
+    
+    // Step 3: Create account
+    try {
+      await createUserWithEmailAndPassword(auth, email, finalPassword);
+      alert('Account successfully created! Welcome to SoulCode!');
+    } catch (error) {
+      alert('Failed to create account: ' + error.message);
+    }
+  };
+};
+
+
+
+  window.signInWithGoogle = async function() {
+  try {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    console.log('Google sign-in successful:', result.user.email);
+    return result;
+  } catch (error) {
+    console.error('Google sign-in error:', error.message);
+    alert('Google sign-in failed: ' + error.message);
+  }
+};
+
+window.signInWithApple = async function() {
+  try {
+    const provider = new OAuthProvider('apple.com');
+    const result = await signInWithPopup(auth, provider);
+    console.log('Apple sign-in successful:', result.user.email);
+    return result;
+  } catch (error) {
+    console.error('Apple sign-in error:', error.message);
+    alert('Apple sign-in failed: ' + error.message);
+  }
+};
+
+
+  // UPDATED SCREEN FUNCTIONS:
+  function showAuthScreen() {
+    console.log('Showing auth screen');
+    const authScreen = document.getElementById('auth-screen');
+    const mainApp = document.getElementById('main-app');
+    
+    if (authScreen) authScreen.style.display = 'block';
+    if (mainApp) mainApp.style.display = 'none';
+  }
+
+  function showMainApp() {
+    console.log('Showing main app');
+    const authScreen = document.getElementById('auth-screen');
+    const mainApp = document.getElementById('main-app');
+    
+    if (authScreen) authScreen.style.display = 'none';
+    if (mainApp) {
+      mainApp.style.display = 'block';
+      console.log('Main app is now visible');
+    } else {
+      console.error('Main app element not found - check your HTML element ID');
+    }
+  }
+
+  // KEEP ALL OTHER FUNCTIONS UNCHANGED:
+  window.saveUserPreferences = async function(userId, categories, schedule) {
+  if (!currentUser) {
+    alert('Please sign in first');
+    return;
+  }
+  try {
+    const token = await getToken(messaging, {
+      vapidKey: 'BFeiQnMxZlXHXxtQrAPvWSJ_1XnTklpH2IEcPAG_qjoxKKwHICnJOaEjzK3rq5zNMyaD02_gjJPqtBA6WYGu20U'
+    });
+    
+    await setDoc(doc(db, "users", currentUser.uid), {
+      email: currentUser.email,
+      selectedCategories: categories,
+      schedule: schedule,
+      pushToken: token,
+      createdAt: new Date()
+    });
+    console.log("Preferences saved to Firestore.");
+  } catch (error) {
+    console.error("Error saving preferences:", error);
+  }
+}
+
+
+  // FCM TOKEN FUNCTIONS - UNCHANGED:
+  async function requestNotificationPermissionAndGetToken() {
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        console.log('Notification permission not granted.');
+        return;
+      }
+      const currentToken = await getToken(messaging, {
+        vapidKey: 'BFeiQnMxZlXHXxtQrAPvWSJ_1XnTklpH2IEcPAG_qjoxKKwHICnJOaEjzK3rq5zNMyaD02_gjJPqtBA6WYGu20U'
+      });
+      if (currentToken) {
+        console.log('FCM Token:', currentToken);
+        // TODO: Send this token to your server
+      } else {
+        console.log('No registration token available. Request permission to generate one.');
+      }
+    } catch (error) {
+      console.error('An error occurred while retrieving token.', error);
+    }
+  }
+
+  async function getFcmToken() {
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        console.log('Notification permission not granted.');
+        return;
+      }
+      const currentToken = await getToken(messaging, {
+        vapidKey: 'BFeiQnMxZlXHXxtQrAPvWSJ_1XnTklpH2IEcPAG_qjoxKKwHICnJOaEjzK3rq5zNMyaD02_gjJPqtBA6WYGu20U'
+      });
+      if (currentToken) {
+        console.log('FCM Token:', currentToken);
+        // Send this token to your server or save it for push notifications
+      } else {
+        console.log('No registration token available. Request permission to generate one.');
+      }
+    } catch (err) {
+     console.error('An error occurred while retrieving token.', err);
+    }
+  }
+  
+  getFcmToken();
+
+  onMessage(messaging, (payload) => {
+    console.log('Message received. ', payload);
+
+    // Customize how you want to show the notification
+    if (Notification.permission === 'granted') {
+      new Notification('SoulCode', {
+        body: payload.notification.body,
+        icon: '/icon-192.png',
+        badge: '/icon-192.png',
+        vibrate: [200, 100, 200],
+        // You can add more options here if needed
+      });
+    }
+  });
+
+</script>
+
+    <!-- Scripts -->
+    <script>
+let usedMessages = [];
+let allMessages = [];
+
+// Messages embedded directly
+function loadMessages() {
+    allMessages = [
+        "Pause and breathe deeply. Within stillness lies the clarity you seek.",
+        "Trust the unfolding of your journey; each step holds unseen gifts.",
+        "Release what no longer serves you and make space for new possibilities.",
+        "Embrace the present moment — it is where your power resides.",
+"Allow yourself to receive support, even when you feel strong.",
+    "Courage often whispers softly; listen closely to your inner voice.",
+    "Growth happens quietly, in the spaces between effort and rest.",
+    "Your worth is not defined by outcomes but by the love you carry.",
+    "In uncertainty, find the chance to create something new.",
+    "Let go of resistance and flow with the natural rhythm of life.",
+    "Small steps forward build the path to your greatest dreams.",
+    "Compassion toward yourself opens the door to healing.",
+    "Notice what brings you peace and return to it often.",
+    "Every ending carries the seed of a new beginning.",
+    "Your intuition is a wise guide; trust its gentle nudges.",
+    "Embrace change as a doorway to growth, not loss.",
+    "Find gratitude in the simple moments—they hold profound meaning.",
+    "Rest is a vital part of progress, honor your need to recharge.",
+    "When doubts arise, remember the strength you’ve already shown.",
+    "Your journey is unique; compare only to your own yesterday.",
+    "Seek balance by honoring both your heart and your mind.",
+    "The answers you seek often come in unexpected ways.",
+    "Let kindness be the foundation of your actions today.",
+    "Patience allows wisdom to bloom within your experience.",
+    "What you nurture today will flourish tomorrow.",
+    "Embrace the mystery of life with open arms and curious eyes.",
+    "Your presence is a gift—share it generously with the world.",
+    "Trust that setbacks are stepping stones to deeper understanding.",
+    "Celebrate progress, no matter how small it seems.",
+    "Choose hope as your compass in times of challenge.",
+    "Embrace your imperfections; they are the colors that make you unique.",
+    "Look for the lesson hidden within every challenge.",
+    "Peace begins with acceptance — start within.",
+    "Open your heart to possibilities beyond your current vision.",
+    "Strength grows when you face fears with gentle courage.",
+    "Allow yourself space to dream without limits.",
+    "Trust the timing of your life, even when the path is unclear.",
+    "Healing is a process — honor each step without judgment.",
+    "Your energy creates your experience; nurture it wisely.",
+    "Release control and invite flow into your day.",
+    "Your story matters; embrace it with compassion.",
+    "Find beauty in the ordinary moments around you.",
+    "You are more capable than you realize — keep moving forward.",
+    "Let your kindness ripple outward, touching all you meet.",
+    "Growth requires patience—be gentle with your pace.",
+    "Look inward for strength when the outside feels uncertain.",
+    "You are not alone; support surrounds you in many forms.",
+    "Every breath is a new beginning.",
+    "Embrace silence as a source of wisdom and clarity.",
+    "Balance action with rest to sustain your journey.",
+    "Release the need for perfection and welcome progress.",
+    "Your inner light shines brightest through challenges.",
+    "Give yourself permission to rest without guilt.",
+    "The seeds you plant today will bloom in time.",
+    "Choose peace over worry in every moment you can.",
+    "Trust that the universe is guiding you toward your highest good.",
+    "Let gratitude fill your heart and open new doors.",
+    "Your resilience is a quiet, steady flame — tend to it.",
+    "Find joy in small victories along your path.",
+    "Nurture your dreams with consistent, loving attention.",
+    "Trust your inner wisdom to guide you through uncertainty.",
+    "The journey is as important as the destination—cherish each step.",
+    "You have the power to choose peace in any moment.",
+    "Let go of what weighs you down and rise lighter.",
+    "Embrace curiosity—it leads to new paths and growth.",
+    "Your heart knows what your mind may forget.",
+    "Patience opens doors that force cannot.",
+    "Take time to nurture your soul as you do your goals.",
+    "Your presence can heal wounds—start with yourself.",
+    "Open your eyes to the miracles in everyday life.",
+    "Trust that challenges are shaping your strength.",
+    "Celebrate who you are becoming, not just what you achieve.",
+    "When you stumble, pause and learn before moving forward.",
+    "Release judgment and practice kindness toward yourself.",
+    "Your courage inspires others more than you realize.",
+    "Every act of self-care strengthens your foundation.",
+    "Allow your intentions to grow without pressure or expectation.",
+    "You are a beacon of light in your own story.",
+    "Trust the process, even when the path feels unknown.",
+    "Be gentle with yourself during times of change.",
+    "Let your breath anchor you in moments of doubt.",
+    "Focus on what you can control and release the rest.",
+    "Your dreams are valid and worth pursuing.",
+    "Seek harmony between your ambitions and well-being.",
+    "Give yourself permission to say no when needed.",
+    "Every step forward is a victory to honor.",
+    "Your inner peace radiates outward to those around you.",
+    "Accept support gracefully—it strengthens your journey.",
+    "Approach each day with an open heart and mind.",
+    "Trust that every ending makes way for a new beginning.",
+    "Embrace the unknown as an opportunity for growth.",
+    "Your heart’s wisdom is always accessible—listen closely.",
+    "Healing begins the moment you offer yourself compassion.",
+    "Find strength in stillness and clarity in quiet moments.",
+    "You are more resilient than any challenge you face.",
+    "Let your intentions be rooted in love and kindness.",
+    "Each day is a fresh page—write it with purpose.",
+    "Trust your inner compass to lead you true.",
+    "Accept what is and create what could be.",
+    "Let go of fear and welcome possibility.",
+    "Your journey unfolds exactly as it should.",
+    "You have everything you need to move forward.",
+    "Patience nurtures growth beyond what eyes can see.",
+    "Find peace in surrendering control.",
+    "Your value is inherent, not earned by achievement.",
+    "Rest is essential to your strength and clarity.",
+    "Celebrate progress, no matter how small.",
+    "Open your heart to new perspectives.",
+    "What you nurture within grows outward in time.",
+    "Be kind to your past self as you grow today.",
+    "Embrace change as a natural part of your evolution.",
+    "Your breath grounds you in the present moment.",
+    "Clarity comes when you release expectations.",
+    "You are the author of your own story.",
+    "Focus on what lifts you higher today.",
+    "Growth often looks like small, steady steps.",
+    "Your intuition speaks softly—trust its guidance.",
+    "Let your kindness be your strength.",
+    "Embrace moments of pause to recharge and reflect.",
+    "The light you seek shines from within.",
+    "Allow yourself to release what no longer serves your highest good.",
+    "Your presence is a gift that can heal and inspire.",
+    "Trust that every experience teaches you something valuable.",
+    "You have the strength to rise above any challenge.",
+    "Let your heart guide your steps today.",
+    "Every breath is an opportunity to begin anew.",
+    "Nurture your dreams with patience and faith.",
+    "Small acts of kindness create powerful ripples.",
+    "When you feel lost, return to your center.",
+    "Embrace the power of possibility in each moment.",
+    "Your journey is uniquely yours—honor it fully.",
+    "Peace begins when you accept yourself completely.",
+    "Trust the process of unfolding, even when it’s unclear.",
+    "Let go of what you cannot change and focus on what you can.",
+    "Your resilience is a quiet, powerful force.",
+    "Seek balance between doing and being.",
+    "Your intuition is a trustworthy companion—listen often.",
+    "Give yourself permission to rest and recharge.",
+    "Growth often comes disguised as discomfort.",
+    "Celebrate the courage it takes to keep going.",
+    "Each moment offers a chance to start fresh.",
+    "Embrace your unique path without comparison.",
+    "Your inner peace is your greatest strength.",
+    "Release resistance and invite flow into your life.",
+    "Trust in the wisdom that comes from experience.",
+    "Let gratitude soften your heart and expand your vision.",
+    "You are worthy of love, success, and happiness.",
+    "Focus on the good and it will multiply.",
+    "Patience and perseverance open new doors.",
+    "Your dreams are seeds—water them with intention.",
+    "Listen to your heart’s whispers—they carry truth.",
+    "Embrace uncertainty as a space for growth.",
+    "Let your kindness be a light in the darkness.",
+    "You have the power to create positive change.",
+    "Balance action with rest for sustained progress.",
+    "Be gentle with yourself in moments of struggle.",
+    "Your story is still being written—choose your next chapter wisely.",
+    "Trust that you are exactly where you need to be.",
+    "Release fear and step boldly into your potential.",
+    "Embrace the journey, with all its twists and turns.",
+    "Every challenge you face is an opportunity for growth and learning.",
+    "Allow yourself to move at your own pace without pressure.",
+    "Trust that clarity will come when the time is right.",
+    "Embrace the lessons hidden within each experience.",
+    "Your heart holds the key to your deepest wisdom.",
+    "Release the need to control outcomes and trust the process.",
+    "Celebrate your courage to face each new day.",
+    "Your journey is a unique expression of your soul.",
+    "Practice kindness toward yourself as you would to a friend.",
+    "Find strength in surrendering to what is beyond your control.",
+    "Allow joy to flow into your life through simple moments.",
+    "You are connected to a greater source of love and support.",
+    "Let your intuition guide you gently but firmly.",
+    "Each breath grounds you more deeply in the present.",
+    "Your intentions have the power to shape your reality.",
+    "Embrace vulnerability as a pathway to strength.",
+    "Trust in your ability to overcome obstacles with grace.",
+    "Seek balance in all areas of your life for true harmony.",
+    "Release self-doubt and welcome confidence.",
+    "Nurture your body, mind, and spirit with love.",
+    "You are worthy of rest and renewal.",
+    "Let gratitude open your heart to abundance.",
+    "Be present for the small miracles around you.",
+    "You are capable of more than you realize.",
+    "Accept yourself fully, imperfections and all.",
+    "Take time to listen to the whispers of your soul.",
+    "Your patience will bring great rewards.",
+    "Find peace in the acceptance of what you cannot change.",
+    "Every day is a fresh opportunity to grow and evolve.",
+    "Trust that your path is unfolding perfectly.",
+    "Embrace the unknown with curiosity and courage.",
+    "Your presence has a positive impact on the world.",
+    "Let go of fear and open your heart to possibility.",
+    "Practice forgiveness to free your spirit.",
+    "Be gentle with yourself during times of transition.",
+    "Celebrate your progress, no matter how small.",
+    "You have the strength to create positive change.",
+    "Listen deeply to your inner guidance.",
+    "Balance effort with rest to sustain your journey.",
+    "Trust that you are exactly where you need to be, right now."
+];
+}
+
+function spinCard() {
+    const spinner = document.querySelector('.card-spinner');
+    const result = document.getElementById('card-result');
+    
+    spinner.classList.add('spinning');
+    
+    setTimeout(() => {
+        spinner.classList.remove('spinning');
+        
+        // Get random message
+        let randomMessage = getRandomMessage();
+        
+        if (result) {
+            result.classList.add('show');
+            result.innerHTML = `<h3>⚝ </h3><p>${randomMessage}</p>`;
+        }
+    }, 2000);
+}
+
+    // Meditation URLs
+const meditationUrls = {
+    'selflove': 'https://youtu.be/YIS7HskL4fU?si=2XdNB4tllHQpzoaV',
+    'stress': 'https://youtu.be/g7wRuSJSkyQ?si=EzWoIyviB40giWt1',
+    'breath': 'https://youtu.be/j-UTeboCPno?si=Qapkj480WmszaA0X',
+    'depression': 'https://youtu.be/77EjxZeTefQ?si=VRkpG4X3oNmXNTvu',
+    'mindfulness': 'https://youtu.be/vjzDC_PNW14?si=dRYLgqVzcQOKw_TF'
+};
+
+// Add meditation card click listeners
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.meditation-card[data-meditation]').forEach(card => {
+        card.addEventListener('click', function() {
+            const meditationType = this.getAttribute('data-meditation');
+            if (meditationType !== 'personalized') {
+                startMeditation(meditationType);
             }
+        });
+    });
+});
+
+// Global audio player variable
+let currentAudio = null;
+
+function startMeditation(type) {
+    const player = document.getElementById('meditation-player');
+    const url = meditationUrls[type];
+    
+    player.innerHTML = `
+        <div class="player-container">
+            <div class="player-image">
+                <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop" alt="Meditation">
+                <div class="play-overlay">
+                    <div class="play-button" onclick="playMeditation('${url}')">▶️</div>
+                </div>
+            </div>
+            <div class="player-controls">
+                <h3>${getReadableName(type)}</h3>
+                <div class="control-buttons">
+                    <button class="control-btn" onclick="playMeditation('${url}')">▶️ Play</button>
+                    <button class="control-btn" onclick="pauseMeditation()">⏸️ Pause</button>
+                    <button class="control-btn" onclick="stopMeditation()">⏹️ Stop</button>
+                </div>
+            </div>
+        </div>
+    `;
+    player.classList.add('active');
+}
+
+function startArcanaMediation(arcanaNumber) {
+    closeArcanaModal();
+    const player = document.getElementById('meditation-player');
+    const url = 'https://youtu.be/vjzDC_PNW14?si=dRYLgqVzcQOKw_TF';
+    
+    player.innerHTML = `
+        <div class="player-container">
+            <div class="player-image">
+                <img src="https://i.imgur.com/9j6rJ83.jpeg" alt="Arcana Meditation">
+                <div class="play-overlay">
+                    <div class="play-button" onclick="playMeditation('${url}')">▶️</div>
+                </div>
+            </div>
+            <div class="player-controls">
+                <h3>${arcanaNumber}${getOrdinalSuffix(arcanaNumber)} Arcana Meditation</h3>
+                <div class="control-buttons">
+                    <button class="control-btn" onclick="playMeditation('${url}')">▶️ Play</button>
+                    <button class="control-btn" onclick="pauseMeditation()">⏸️ Pause</button>
+                    <button class="control-btn" onclick="stopMeditation()">⏹️ Stop</button>
+                </div>
+            </div>
+        </div>
+    `;
+    player.classList.add('active');
+}
+
+function extractVideoId(url) {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+}
+
+function playMeditation(url) {
+    const videoId = extractVideoId(url);
+    if (!videoId) {
+        alert('Invalid YouTube URL');
+        return;
+    }
+    
+    // Stop any currently playing audio
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+    }
+    
+    // Create hidden audio element to play YouTube audio
+    const audioUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1`;
+    
+    // Create invisible iframe for audio playback
+    if (!document.getElementById('hidden-audio-player')) {
+        const hiddenPlayer = document.createElement('iframe');
+        hiddenPlayer.id = 'hidden-audio-player';
+        hiddenPlayer.style.display = 'none';
+        hiddenPlayer.style.position = 'absolute';
+        hiddenPlayer.style.left = '-9999px';
+        hiddenPlayer.width = '1';
+        hiddenPlayer.height = '1';
+        hiddenPlayer.allow = 'autoplay';
+        document.body.appendChild(hiddenPlayer);
+    }
+    
+    const hiddenPlayer = document.getElementById('hidden-audio-player');
+    hiddenPlayer.src = audioUrl;
+    
+    // Update UI to show playing state
+    updatePlayerUI(true);
+}
+
+function pauseMeditation() {
+    const hiddenPlayer = document.getElementById('hidden-audio-player');
+    if (hiddenPlayer) {
+        hiddenPlayer.src = '';
+    }
+    updatePlayerUI(false);
+}
+
+function stopMeditation() {
+    const hiddenPlayer = document.getElementById('hidden-audio-player');
+    if (hiddenPlayer) {
+        hiddenPlayer.src = '';
+    }
+    
+    const player = document.getElementById('meditation-player');
+    player.classList.remove('active');
+    
+    updatePlayerUI(false);
+}
+
+function updatePlayerUI(isPlaying) {
+    const playOverlay = document.querySelector('.play-overlay');
+    const playButtons = document.querySelectorAll('.control-btn');
+    
+    if (isPlaying) {
+        if (playOverlay) playOverlay.style.display = 'none';
+        // Update button states to show playing
+        playButtons.forEach(btn => {
+            if (btn.textContent.includes('Play')) {
+                btn.innerHTML = '⏸️ Playing...';
+                btn.style.opacity = '0.7';
+            }
+        });
+    } else {
+        if (playOverlay) playOverlay.style.display = 'flex';
+        // Reset button states
+        playButtons.forEach(btn => {
+            if (btn.textContent.includes('Playing')) {
+                btn.innerHTML = '▶️ Play';
+                btn.style.opacity = '1';
+            }
+        });
+    }
+}
+
+function getReadableName(type) {
+    const names = {
+        'selflove': '3D Self Love Neural Practice',
+        'stress': 'Stress Relief Neural Practice',
+        'breath': '3 Deep Breath Technique',
+        'depression': 'Relieve Depression & Anxiety',
+        'mindfulness': 'Mindfulness Relaxation Guided'
+    };
+    return names[type] || type;
+}
+
+function showArcanaSelection() {
+    document.getElementById('arcana-modal').style.display = 'block';
+}
+
+function closeArcanaModal() {
+    document.getElementById('arcana-modal').style.display = 'none';
+}
+
+function getOrdinalSuffix(num) {
+    const suffixes = ['th', 'st', 'nd', 'rd'];
+    const v = num % 100;
+    return suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0];
+}
+
+
+function getRandomMessage() {
+    if (allMessages.length === 0) return "Loading messages...";
+    
+    // Reset if all messages used
+    if (usedMessages.length >= allMessages.length) {
+        usedMessages = [];
+    }
+    
+    // Get unused message
+    let availableMessages = allMessages.filter((msg, index) => !usedMessages.includes(index));
+    let randomIndex = Math.floor(Math.random() * availableMessages.length);
+    let selectedMessage = availableMessages[randomIndex];
+    
+    // Mark as used
+    let originalIndex = allMessages.indexOf(selectedMessage);
+    usedMessages.push(originalIndex);
+    
+    return selectedMessage;
+}
+function showPage(pageId) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const page = document.getElementById(pageId);
+if (page) {
+  page.classList.add('active');
+} else {
+  console.warn(`showPage: No element with id "${pageId}" found.`);
+}
+        
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    // Remove the nav-item activation line since action cards aren't nav items
+}
+
+// Helper function to convert display name to key - REPLACE THE ENTIRE FUNCTION
+function getAffirmationKey(displayName) {
+    const keyMap = {
+        "Think Positively": "think-positively",
+        "Build Self-Confidence": "build-self-confidence", 
+        "Calm Your Anxiety": "calm-your-anxiety",
+        "Nurture Self-Love": "nurture-self-love",
+        "Express Gratitude": "express-gratitude",
+        "Achieve Success": "achieve-success",
+        "Ignite Motivation": "ignite-motivation",
+        "Accept Yourself": "accept-yourself",
+        "Love Your Body": "love-your-body",
+        "Accept Your Parents and Ancestral Bloodline Power": "embrace-ancestry",
+        "Embrace Changes": "embrace-changes",
+        "Gain Balance in Life": "gain-balance",
+        "Build Wealth": "build-wealth",
+        "Lose Weight": "lose-weight",
+        "Quit Smoking": "quit-smoking",
+        "Fight with Depression": "fight-depression",
+        "Forgive and Let Go": "forgive-and-let-go",
+        "Conquer Loneliness": "conquer-loneliness",
+        "Overcome Toxic Relationships": "overcome-toxic-relationships",
+        "Forge New Connections": "forge-new-connections",
+        "Nurture Sexuality": "nurture-sexuality",
+        "Manifest New Love": "manifest-new-love",
+        "Deal with Postpartum": "cherish-your-pregnancy",
+        "Awaken Spiritually": "awaken-spiritually",
+        "Harness the Law of Attraction": "harness-law-of-attraction",
+        "Heal From Grief": "heal-from-grief",
+        "Fuel Vitality": "fuel-vitality",
+        "Adopt Stoic Mindset": "adopt-stoic-mindset",
+        "Inspire as a Leader": "inspire-as-leader",
+        "Elevate Career": "elevate-career"
+    };
+    return keyMap[displayName];
+}
+
+
+// Load messages when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    loadMessages();
+    document.getElementById('home-page').classList.add('active');
+
+});
+
+// Navigation for action cards and footer menu
+document.addEventListener('DOMContentLoaded', function() {
+    // Action cards on home page
+    document.querySelectorAll('.action-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const pageId = this.getAttribute('data-page');
+            if (pageId) {
+                showPage(pageId + '-page');
+            }
+        });
+    });
+    
+    // Footer navigation
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const pageId = this.getAttribute('data-page');
+            if (pageId) {
+                showPage(pageId);
+            }
+        });
+    });
+});
+</script>
+<script>
+    // Register service worker for PWA
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+
+        // Hide loading screen when app loads
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const loadingScreen = document.getElementById('loading-screen');
+                if (loadingScreen) {
+                    loadingScreen.style.opacity = '0';
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                    }, 500);
+                }
+            }, 2000);
+        });
+
+        
+        // Install prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show install button
+            const installBtn = document.createElement('button');
+            installBtn.innerHTML = '📱 Install App';
+            installBtn.className = 'install-prompt';
+            installBtn.style.cssText = `
+                position: fixed;
+                bottom: 100px;
+                right: 20px;
+                background: #ccae79;
+                color: #4c135d;
+                border: none;
+                padding: 12px 20px;
+                border-radius: 25px;
+                font-weight: bold;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                z-index: 1000;
+                animation: pulse 2s infinite;
+            `;
+            
+            installBtn.addEventListener('click', async () => {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`User response to the install prompt: ${outcome}`);
+                deferredPrompt = null;
+                installBtn.remove();
+            });
+            
+            document.body.appendChild(installBtn);
+        });
+
+        // Add pulse animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Affirmations functionality
+class AffirmationsManager {
+    constructor() {
+        this.selectedCategories = new Set();
+        this.settings = {
+            days: [],
+            frequency: 1,
+            startTime: '09:00'
+        };
+        this.init();
+    }
+
+    init() {
+        this.loadSavedSettings();
+        this.bindEvents();
+        this.updateSelectedDisplay();
+        
+        // Check immediately and after DOM is ready
+        this.checkAndHideCompletedSetup();
+        
+        // Add longer delay to ensure all elements are loaded
+        setTimeout(() => {
+            this.checkAndHideCompletedSetup();
+        }, 500);
+    }
+
+    loadSavedSettings() {
+        const saved = localStorage.getItem('affirmationSettings');
+        if (saved) {
+            const data = JSON.parse(saved);
+            
+            // Load categories
+            data.categories.forEach(category => {
+                this.selectedCategories.add(category);
+                const categoryCard = document.querySelector(`[data-category="${category}"]`);
+                if (categoryCard) {
+                    categoryCard.classList.add('selected');
+                }
+            });
+            
+            // Load days
+            data.days.forEach(day => {
+                const checkbox = document.getElementById(`day-${day}`);
+                if (checkbox) checkbox.checked = true;
+            });
+            this.settings.days = data.days;
+            
+            // Load frequency and start time
+            this.settings.frequency = data.frequency;
+            this.settings.startTime = data.startTime;
+            
+            const frequencySelect = document.getElementById('frequency-select');
+            const startTimeInput = document.getElementById('start-time');
+            
+            if (frequencySelect) frequencySelect.value = data.frequency;
+            if (startTimeInput) startTimeInput.value = data.startTime;
+            
+            this.updatePreview();
+        }
+    }
+
+    bindEvents() {
+        // Category selection
+        document.querySelectorAll('.category-card').forEach(card => {
+            card.addEventListener('click', (e) => this.toggleCategory(e));
+        });
+        
+        // Day checkboxes
+        document.querySelectorAll('.day-checkbox input').forEach(checkbox => {
+            checkbox.addEventListener('change', () => this.updateDays());
+        });
+        
+        // Frequency selection
+        const frequencySelect = document.getElementById('frequency-select');
+        if (frequencySelect) {
+            frequencySelect.addEventListener('change', (e) => {
+                this.settings.frequency = parseInt(e.target.value);
+                this.updatePreview();
+            });
+        }
+        
+        // Start time
+        const startTimeInput = document.getElementById('start-time');
+        if (startTimeInput) {
+            startTimeInput.addEventListener('change', (e) => {
+                this.settings.startTime = e.target.value;
+                this.updatePreview();
+            });
+        }
+        
+        // Save button
+        const saveButton = document.getElementById('save-settings');
+        if (saveButton) {
+            saveButton.addEventListener('click', () => this.saveSettings());
+        }
+        
+        // Setup reminders button
+        const setupButton = document.getElementById('setup-reminders-btn');
+        if (setupButton) {
+            setupButton.addEventListener('click', () => {
+                const notificationSetup = document.querySelector('.notification-setup');
+                if (notificationSetup) {
+                    notificationSetup.style.display = 'block';
+                }
+            });
+        }
+    }
+
+  toggleCategory(e) {
+    const card = e.currentTarget;
+    const category = card.dataset.category;
+    
+    if (!category) return;
+    
+    if (this.selectedCategories.has(category)) {
+        this.selectedCategories.delete(category);
+        card.classList.remove('selected');
+    } else {
+        this.selectedCategories.add(category);
+        card.classList.add('selected');
+    }
+    
+    this.updateSelectedDisplay();
+    this.saveToLocalStorage();
+
+    // SHOW the buttons **ONLY** when user changes selections
+    const setupButtonContainer = document.querySelector('.setup-button-container');
+    if (setupButtonContainer) {
+        setupButtonContainer.style.display = 'block';
+    }
+    const notificationSetup = document.querySelector('.notification-setup');
+    if (notificationSetup) {
+        notificationSetup.style.display = 'block';
+    }
+}
+
+    updateSelectedDisplay() {
+        const selectedList = document.getElementById('selected-list');
+        const selectedContainer = document.querySelector('.selected-categories');
+        const setupButtonContainer = document.querySelector('.setup-button-container');
+        const notificationElements = [
+            document.querySelector('.days-selection'),
+            document.querySelector('.frequency-selection'),
+            document.querySelector('.start-time-selection'),
+            document.getElementById('save-settings'),
+            document.getElementById('schedule-preview')
+        ];
+
+        if (this.selectedCategories.size > 0) {
+            if (selectedContainer) selectedContainer.classList.add('show');
+            if (setupButtonContainer) setupButtonContainer.style.display = 'show';
+
+            // Show all notification setup elements
+            notificationElements.forEach(el => {
+                if (el) el.classList.add('show');
+            });
+            
+            if (selectedList) {
+                selectedList.innerHTML = '';
+                
+                this.selectedCategories.forEach(category => {
+                    const tag = document.createElement('div');
+                    tag.className = 'selected-tag';
+                    tag.innerHTML = `
+                        ${category}
+                        <span class="remove" data-category="${category}">×</span>
+                    `;
+                    
+                    tag.querySelector('.remove').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.removeCategory(category);
+                    });
+                    
+                    selectedList.appendChild(tag);
+                });
+            }
+        } else {
+            if (selectedContainer) selectedContainer.classList.remove('show');
+            if (setupButtonContainer) setupButtonContainer.style.display = 'show';
+
+            // Hide all notification setup elements
+            notificationElements.forEach(el => {
+                if (el) el.classList.remove('show');
+            });
+        }
+    }
+
+    removeCategory(category) {
+        this.selectedCategories.delete(category);
+        const categoryCard = document.querySelector(`[data-category="${category}"]`);
+        if (categoryCard) {
+            categoryCard.classList.remove('selected');
+        }
+        this.updateSelectedDisplay();
+        this.saveToLocalStorage();
+        
+        // Hide notification setup if no categories selected
+        if (this.selectedCategories.size === 0) {
+            const notificationSetup = document.querySelector('.notification-setup');
+            if (notificationSetup) {
+                notificationSetup.classList.remove('show');
+            }
+        }
+    }
+
+    updateDays() {
+        this.settings.days = [];
+        document.querySelectorAll('.day-checkbox input:checked').forEach(checkbox => {
+            this.settings.days.push(checkbox.value);
+        });
+        this.updatePreview();
+    }
+
+    updatePreview() {
+        const previewContent = document.getElementById('preview-content');
+        const schedulePreview = document.getElementById('schedule-preview');
+        
+        if (this.settings.days.length > 0 && this.selectedCategories.size > 0) {
+            if (schedulePreview) schedulePreview.style.display = 'block';
+            
+            const times = this.generateScheduleTimes();
+            const daysText = this.settings.days.join(', ');
+            const categoriesText = Array.from(this.selectedCategories).join(', ');
+            
+            if (previewContent) {
+                previewContent.innerHTML = `
+                    <p><strong>Days:</strong> ${daysText}</p>
+                    <p><strong>Categories:</strong> ${categoriesText}</p>
+                    <p><strong>Times:</strong> ${times.join(', ')}</p>
+                    <p><strong>Frequency:</strong> Every ${this.settings.frequency} hour(s)</p>
+                `;
+            }
+        } else {
+            if (schedulePreview) schedulePreview.style.display = 'none';
+        }
+    }
+
+    generateScheduleTimes() {
+        const times = [];
+        const [startHour, startMinute] = this.settings.startTime.split(':').map(Number);
+        let currentHour = startHour;
+        
+        // Generate times for a day (max 24 hours)
+        while (currentHour < 24) {
+            const timeString = `${currentHour.toString().padStart(2, '0')}:${startMinute.toString().padStart(2, '0')}`;
+            times.push(timeString);
+            currentHour += this.settings.frequency;
+        }
+        
+        return times;
+    }
+
+
+    async saveSettings() {
+    // Your existing validation
+    if (this.selectedCategories.size === 0) {
+        this.showMessage('Please select at least one category!', 'error');
+        return;
+    }
+    
+    if (this.settings.days.length === 0) {
+        this.showMessage('Please select at least one day!', 'error');
+        return;
+    }
+        
+        const settingsData = {
+            selectedCategories: Array.from(this.selectedCategories),
+
+            days: this.settings.days,
+            frequency: this.settings.frequency,
+            startTime: this.settings.startTime,
+            setupComplete: true,
+            savedAt: new Date().toISOString()
+        };
+        
+        localStorage.setItem('affirmationSettings', JSON.stringify(settingsData));
+        await window.saveUserPreferences(userId, Array.from(this.selectedCategories), {
+  days: settingsData.days,
+  frequency: settingsData.frequency,
+  startTime: settingsData.startTime
+});
+
+        this.showMessage('Your preferences have been saved successfully! 🎉', 'success');
+        
+        // Schedule notifications if supported
+        this.scheduleNotifications();
+        
+        // Wait 4 seconds before hiding windows so user can see the success message and preview
+        setTimeout(() => {
+            this.hideSetupElements();
+        }, 4000);
+    }
+
+    saveToLocalStorage() {
+        const quickSave = {
+            categories: Array.from(this.selectedCategories)
+        };
+        localStorage.setItem('selectedCategories', JSON.stringify(quickSave));
+    }
+
+    showMessage(message, type = 'success') {
+        // Remove existing messages
+        const existingMessage = document.querySelector('.settings-message');
+        if (existingMessage) {
+            existingMessage.remove();
+        }
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `settings-message ${type}`;
+        messageDiv.innerHTML = message;
+        
+        const saveButton = document.getElementById('save-settings');
+        if (saveButton && saveButton.parentNode) {
+            saveButton.parentNode.insertBefore(messageDiv, saveButton.nextSibling);
+        }
+        
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            messageDiv.remove();
+        }, 3000);
+    }
+
+    async scheduleNotifications() {
+    if ('Notification' in window) {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            console.log('Notification permission granted for:', this.settings);
+
+            // Show a test notification immediately
+            new Notification('Affirmations app', {
+                body: 'Your daily affirmations reminders are set! 🎉',
+                icon: 'icon.png' // optional, add your app icon path
+            });
+
+            // Future: integrate with service worker for scheduling
+            // You can add service worker registration here if you want
+        } else {
+            console.log('Notification permission denied.');
+        }
+    } else {
+        console.log('Notifications not supported in this browser.');
+    }
+
+
+    }
+
+    checkAndHideCompletedSetup() {
+        console.log('Checking for completed setup...');
+        const saved = localStorage.getItem('affirmationSettings');
+        console.log('Saved settings:', saved);
+        
+        if (saved) {
+            try {
+                const parsedSettings = JSON.parse(saved);
+                // Check if settings are actually complete (has days and other required fields)
+                if (parsedSettings.days && parsedSettings.days.length > 0 && parsedSettings.setupComplete) {
+                    console.log('Complete settings found, hiding elements...');
+                    this.hideSetupElements();
+                } else {
+                    console.log('Settings exist but incomplete');
+                }
+            } catch (error) {
+                console.error('Error parsing saved settings:', error);
+            }
+        } else {
+            console.log('No saved settings found');
+        }
+    }
+
+   hideSetupElements() {
+    const setupButtonContainer = document.querySelector('.setup-button-container');
+    if (setupButtonContainer) {
+        // Hide buttons by setting display to none (or use a class)
+        setupButtonContainer.style.display = 'none';
+        console.log('Setup button hidden');
+    }
+
+    // Similarly for notification setup
+    const notificationSetup = document.querySelector('.notification-setup');
+    if (notificationSetup) {
+        notificationSetup.style.display = 'none';
+        console.log('Notification setup hidden');
+    }
+
+    // Hide selected categories container if needed
+    const selectedContainer = document.querySelector('.selected-categories');
+    if (selectedContainer) {
+        selectedContainer.style.display = 'none';
+        console.log('Selected categories hidden');
+    }
+}
+
+
+
+    // Add method to reset setup (for testing)
+    resetSetup() {
+        localStorage.removeItem('affirmationSettings');
+        localStorage.removeItem('selectedCategories');
+        location.reload();
+    }
+
+    // Method to get random affirmation from selected categories
+    getRandomAffirmation() {
+        if (this.selectedCategories.size === 0) return null;
+        
+        const categories = Array.from(this.selectedCategories);
+        const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+        
+        // This will connect to your affirmations data
+        return this.getAffirmationFromCategory(randomCategory);
+    }
+
+    // Placeholder for connecting to your affirmations data
+    getAffirmationFromCategory(category) {
+        // This method will be updated once you share your affirmations.js structure
+        console.log(`Getting affirmation from category: ${category}`);
+        return `Sample affirmation from ${category}`;
+    }
+}
+// Generate and store a unique userId if not already saved
+let userId = localStorage.getItem('userId');
+if (!userId) {
+  userId = 'user_' + Math.random().toString(36).substr(2, 9);
+  localStorage.setItem('userId', userId);
+}
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    window.affirmationsManager = new AffirmationsManager();
+});
+
+
+// Calculator functionality
+let currentCalculator = '';
+
+function showCodeInput(calculatorType) {
+    currentCalculator = calculatorType;
+    document.getElementById('code-modal').style.display = 'block';
+}
+
+function closeCodeModal() {
+    document.getElementById('code-modal').style.display = 'none';
+    document.getElementById('access-code-input').value = '';
+}
+
+function validateCode() {
+    const code = document.getElementById('access-code-input').value.trim();
+    const validCodes = {
+        'money-code': 'wealthcode455',
+        'forecast': 'vision775'
+    };
+
+    if (code === validCodes[currentCalculator]) {
+        unlockCalculator(currentCalculator);
+        closeCodeModal();
+        alert('Calculator unlocked! 🎉');
+    } else {
+        alert('Invalid code. Please try again.');
+    }
+}
+
+function unlockCalculator(calculatorType) {
+    const card = document.querySelector(`[data-calculator="${calculatorType}"]`);
+    if (!card) {
+        console.error(`No card found for calculator type: ${calculatorType}`);
+        return;
+    }
+
+    const lockOverlay = card.querySelector('.lock-overlay');
+    if (lockOverlay) {
+        lockOverlay.style.display = 'none';
+    }
+
+    // Save unlocked status
+    localStorage.setItem(`calculator-${calculatorType}`, 'unlocked');
+
+    // Add click listener once (optional: avoid duplicates)
+    if (!card.dataset.listenerAttached) {
+        card.addEventListener('click', () => showEmbeddedCalculator(calculatorType));
+        card.dataset.listenerAttached = 'true';
+    }
+
+    // Show embedded calculator immediately
+    showEmbeddedCalculator(calculatorType);
+}
+
+function showEmbeddedCalculator(calculatorType) {
+    if (document.getElementById(`embedded-${calculatorType}`)) return;
+
+    const calculatorUrls = {
+        'money-code': 'https://money-code-calculator.vercel.app/',
+        'forecast': 'https://forecast-calculator-ochre.vercel.app/'
+    };
+
+    const calculatorNames = {
+        'money-code': '💰 Money Code Calculator',
+        'forecast': '🔮 Forecast Calculator'
+    };
+
+    const calculatorContainer = document.createElement('div');
+    calculatorContainer.id = `embedded-${calculatorType}`;
+    calculatorContainer.className = 'embedded-calculator';
+    calculatorContainer.innerHTML = `
+        <div class="calculator-header">
+            <h2>${calculatorNames[calculatorType]}</h2>
+            <button class="close-calculator" onclick="closeEmbeddedCalculator('${calculatorType}')">×</button>
+        </div>
+        <div class="calculator-iframe-container">
+            <iframe src="${calculatorUrls[calculatorType]}" 
+                    frameborder="0" 
+                    width="100%" 
+                    height="600px"
+                    style="border-radius: 10px;">
+            </iframe>
+        </div>
+    `;
+
+    document.body.appendChild(calculatorContainer);
+    calculatorContainer.style.display = 'block';
+}
+
+function closeEmbeddedCalculator(calculatorType) {
+    const calculator = document.getElementById(`embedded-${calculatorType}`);
+    if (calculator) {
+        calculator.remove();
+    }
+}
+
+function checkAndHideCompletedSetup() {
+    console.log('Checking for completed setup...');
+    const saved = localStorage.getItem('affirmationSettings');
+    console.log('Saved settings:', saved);
+    
+    if (saved) {
+        console.log('Settings found, hiding elements...');
+        
+        // Hide the setup button container
+        const setupButtonContainer = document.querySelector('.setup-button-container');
+        console.log('Setup button container:', setupButtonContainer);
+       if (setupButtonContainer) {
+    setupButtonContainer.classList.remove('show');
+    console.log('Setup button hidden');
+}
+        
+        // Hide the selected categories container
+        const selectedContainer = document.querySelector('.selected-categories');
+        console.log('Selected container:', selectedContainer);
+        if (selectedContainer) {
+            selectedContainer.style.display = 'none';
+            console.log('Selected categories hidden');
+        }
+        
+        // Hide the notification setup window
+        const notificationSetup = document.querySelector('.notification-setup');
+        console.log('Notification setup:', notificationSetup);
+        if (notificationSetup) {
+            notificationSetup.style.display = 'none';
+            console.log('Notification setup hidden');
+        }
+    } else {
+        console.log('No saved settings found');
+    }
+}
+
+function forceFixLifemap() {
+    console.log('Attempting to fix lifemap...');
+    const lifemapPage = document.getElementById('lifemap-page');
+    const bottomNav = document.querySelector('.bottom-nav');
+    
+    if (lifemapPage && lifemapPage.classList.contains('active')) {
+        // Force page positioning with space for bottom nav
+        lifemapPage.style.position = 'absolute';
+lifemapPage.style.top = '0';
+lifemapPage.style.left = '50%';
+lifemapPage.style.transform = 'translateX(-50%)';
+lifemapPage.style.height = 'auto';
+lifemapPage.style.minHeight = '100vh';
+
+        lifemapPage.style.width = '100%';
+        lifemapPage.style.height = 'auto';
+        lifemapPage.style.maxWidth = '400px';
+        lifemapPage.style.margin = '0 auto';
+lifemapPage.style.zIndex = '9999';
+lifemapPage.style.padding = '0px 15px 120px 15px';
+lifemapPage.style.paddingTop = '0';
+lifemapPage.style.marginTop = '0';
+
+lifemapPage.style.overflowY = 'auto';
+lifemapPage.style.background = 'linear-gradient(135deg, #4c135d 0%, #6b2c91 100%)';
+
+// Force header to top with no gap
+const header = lifemapPage.querySelector('.page-header');
+if (header) {
+    header.style.marginTop = '0';
+    header.style.paddingTop = '20px';
+}
+
+// ADD THIS NEW PART:
+// Force lifemap-content container to have no gap
+const lifemapContent = lifemapPage.querySelector('.lifemap-content');
+if (lifemapContent) {
+    lifemapContent.style.marginTop = '0';
+    lifemapContent.style.paddingTop = '0';
+}
+
+
+// Force all children to have no top margin/padding
+const lifemapChildren = lifemapPage.children;
+for (let i = 0; i < lifemapChildren.length; i++) {
+    if (i === 0) { // First child (header)
+        lifemapChildren[i].style.marginTop = '0';
+        lifemapChildren[i].style.paddingTop = '20px';
+    } else {
+        lifemapChildren[i].style.marginTop = '0';
+        lifemapChildren[i].style.paddingTop = '0';
+    }
+}
+
+
+        
+        // Force the bottom nav to show properly
+        forceShowBottomNav();
+        
+        // Re-initialize navigation to ensure it still works
+        setTimeout(() => {
+            reinitializeAllNavigation();
+        }, 100);
+        
+        console.log('Lifemap styling applied with bottom nav restored');
+    }
+}
+
+
+function forceShowBottomNav() {
+    const bottomNav = document.querySelector('.bottom-nav');
+    if (bottomNav) {
+        // Force all possible ways to show it
+        bottomNav.style.display = 'flex';
+        bottomNav.style.visibility = 'visible';
+        bottomNav.style.opacity = '1';
+        bottomNav.style.transform = 'none';
+        bottomNav.style.pointerEvents = 'auto';
+        bottomNav.style.position = 'fixed';
+        bottomNav.style.bottom = '0';
+        bottomNav.style.left = '0';
+        bottomNav.style.right = '0';
+        bottomNav.style.zIndex = '10000'; // Higher than lifemap page
+        bottomNav.style.background = '#4c135d'; // Add background if needed
+        console.log('Bottom nav forced to show');
+    }
+}
+
+// Auto-run the lifemap fix when page loads and when switching pages
+document.addEventListener('DOMContentLoaded', function() {
+    // Check every 500ms for lifemap page
+    setInterval(function() {
+        const lifemapPage = document.getElementById('lifemap-page');
+        if (lifemapPage && lifemapPage.classList.contains('active')) {
+            forceFixLifemap();
+        }
+    }, 500);
+});
+
+// Also run immediately
+setTimeout(forceFixLifemap, 1000);
+
+// Bottom Navigation Handler
+function initializeBottomNavigation() {
+    const navItems = document.querySelectorAll('.bottom-nav .nav-item');
+    
+    navItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const targetPage = this.getAttribute('data-page');
+            console.log('Nav item clicked:', targetPage);
+            
+            // Remove active class from all nav items
+            navItems.forEach(nav => nav.classList.remove('active'));
+            
+            // Add active class to clicked item
+            this.classList.add('active');
+            
+            // Navigate to the target page
+            navigateToPage(targetPage);
         });
     });
 }
 
-// Send scheduled affirmations (for background sync)
-async function sendScheduledAffirmations() {
-    try {
-        // Get user data from IndexedDB or cache
-        const userData = await getUserData();
-        
-        if (userData && userData.selectedAffirmationCategories.length > 0) {
-            const randomCategory = userData.selectedAffirmationCategories[
-                Math.floor(Math.random() * userData.selectedAffirmationCategories.length)
-            ];
-            
-            const affirmation = getRandomAffirmation(randomCategory);
-            
-            await self.registration.showNotification('SoulCode Affirmation', {
-                body: affirmation,
-                icon: '/icon-192.png',
-                badge: '/icon-192.png',
-                tag: 'soulcode-affirmation',
-                data: {
-                    category: randomCategory,
-                    affirmation: affirmation
-                }
-            });
-        }
-    } catch (error) {
-        console.error('Service Worker: Error sending affirmation', error);
-    }
-}
-
-// Get user data helper function
-async function getUserData() {
-    try {
-        // Try to get from cache first
-        const cache = await caches.open(CACHE_NAME);
-        const response = await cache.match('/user-data');
-        
-        if (response) {
-            return await response.json();
-        }
-        
-        // Fallback to localStorage simulation
-        return null;
-    } catch (error) {
-        console.error('Service Worker: Error getting user data', error);
-        return null;
-    }
-}
-
-// Get random affirmation helper function
-function getRandomAffirmation(category) {
-    const affirmations = affirmationCategories[category];
-    if (!affirmations || affirmations.length === 0) {
-        // Default fallback affirmations
-        return "Stay positive and keep going!";
-    }
-    return affirmations[Math.floor(Math.random() * affirmations.length)];
-}
-
-// Get random affirmation helper function
-function getRandomAffirmation(category) {
-    const affirmations = affirmationCategories[category];
-    if (!affirmations || affirmations.length === 0) {
-        // Default fallback affirmations
-        return "Stay positive and keep going!";
-    }
-    return affirmations[Math.floor(Math.random() * affirmations.length)];
-}
-    const affirmationCategories = {
-    "think-positively": {
-        name: "Think Positively",
-                affirmations: [
-            "I choose to see the good in every situation.",
-            "My thoughts create my reality, and I choose positivity.",
-            "Each day brings new opportunities and reasons to smile.",
-            "I focus on what I can control and let go of what I can’t.",
-            "I am surrounded by positive energy and uplifting people.",
-            "Every challenge I face is an opportunity to grow.",
-            "I trust that everything is working out for my highest good.",
-            "I radiate confidence, joy, and positivity.",
-            "I am grateful for this moment and find peace in it.",
-            "I let go of negative thoughts—they do not define me.",
-            "Today, I choose hope and happiness.",
-            "I attract positive experiences into my life.",
-            "I see the best in myself and others.",
-            "My life is full of endless possibilities.",
-            "I welcome joy into my heart and peace into my mind.",
-            "I am more than my fears or doubts.",
-            "I believe in the power of optimism.",
-            "I am open to new perspectives and positive change.",
-            "I choose kindness, to myself and others.",
-            "I deserve happiness and embrace it freely.",
-            "I trust the timing of my life.",
-            "Good things are happening to me and around me.",
-            "I release the past and live fully in the present.",
-            "I am capable, resilient, and strong.",
-            "My mind is clear, focused, and filled with positive thoughts.",
-            "Each breath I take fills me with calm and clarity.",
-            "I turn setbacks into comebacks.",
-            "I am always learning, growing, and evolving.",
-            "I wake up each day ready to thrive.",
-            "Positivity is my natural state of being.",
-            "I choose thoughts that uplift and empower me.",
-            "Positive energy flows through me effortlessly.",
-            "I see challenges as opportunities to grow.",
-            "Every day holds the promise of new joy.",
-            "I focus on solutions rather than problems.",
-            "My mind is clear, calm, and full of light.",
-            "I attract positive people and experiences.",
-            "I welcome happiness and peace into my life.",
-            "I release negative thoughts with ease.",
-            "I radiate optimism and hope.",
-            "My positive mindset creates positive outcomes.",
-            "I find the silver lining in every situation.",
-            "Joy is my natural state.",
-            "I am surrounded by abundance and positivity.",
-            "I choose to think thoughts that nourish my soul.",
-            "Every breath I take fills me with positive energy.",
-            "I greet each day with a hopeful heart.",
-            "My thoughts create a bright and beautiful future.",
-            "I am grateful for the positive in my life.",
-            "I embrace positivity in all aspects of my life.",
-            "Optimism flows through me like a river.",
-            "I am a magnet for positive experiences.",
-            "I let go of fear and welcome courage.",
-            "My mind is focused on growth and possibility.",
-            "I celebrate every small victory with joy.",
-            "I cultivate happiness with every thought.",
-            "Positive thinking empowers my life journey.",
-            "I am worthy of a life filled with positivity.",
-            "Each positive thought brings me closer to my dreams.",
-            "I choose to see the good in every situation."
-        ]
-    },
-    "build-self-confidence": {
-        name: "Build Self-Confidence",
-                affirmations: [
-            "I believe in myself and my abilities.",
-            "I am confident, capable, and strong.",
-            "I trust myself to make the right decisions.",
-            "I am proud of who I am becoming.",
-            "I have everything I need within me to succeed.",
-            "My confidence grows stronger every day.",
-            "I deserve to take up space and use my voice.",
-            "I am not afraid to be seen or heard.",
-            "I trust in my unique journey and talents.",
-            "I release self-doubt and embrace self-belief.",
-            "I am worthy of love, respect, and success.",
-            "I am bold, fearless, and free.",
-            "I honor my strengths and acknowledge my progress.",
-            "I choose to show up fully and authentically.",
-            "I believe in my goals and know I can achieve them.",
-            "I handle challenges with grace and resilience.",
-            "I am enough, just as I am.",
-            "I radiate self-assurance and inner strength.",
-            "I do not compare myself to others—I am on my own path.",
-            "I am proud of how far I’ve come.",
-            "I deserve all the good that comes my way.",
-            "I embrace uncertainty with courage and curiosity.",
-            "I trust my intuition and inner guidance.",
-            "I release fear and step into my power.",
-            "I am always learning and growing, and that’s a strength.",
-            "My confidence inspires others.",
-            "I have the courage to chase my dreams.",
-            "I respect myself and set healthy boundaries.",
-            "I believe in the value I bring to the world.",
-            "I am becoming the most confident version of myself.",
-            "I am proud of who I am becoming.",
-            "Confidence flows naturally from within me.",
-            "I trust my abilities to succeed.",
-            "I am capable of achieving great things.",
-            "My self-worth is not defined by others’ opinions.",
-            "I believe in my unique talents and gifts.",
-            "I stand tall and speak with clarity.",
-            "I am fearless in the pursuit of my goals.",
-            "I radiate confidence in every action.",
-            "I am worthy of respect and kindness.",
-            "I trust myself to make the best decisions.",
-            "I celebrate my strengths and embrace my growth areas.",
-            "I am comfortable in my own skin.",
-            "I face challenges with courage and grace.",
-            "I am deserving of success and happiness.",
-            "I exude confidence in every room I enter.",
-            "I am enough exactly as I am today.",
-            "My confidence inspires those around me.",
-            "I am growing stronger and more confident every day.",
-            "I trust my intuition and inner wisdom.",
-            "I embrace my imperfections as part of my strength.",
-            "I am fearless in expressing my true self.",
-            "My voice matters and deserves to be heard.",
-            "I take bold steps toward my dreams.",
-            "I attract opportunities that build my confidence.",
-            "I am worthy of love and success.",
-            "I let go of self-doubt and welcome self-belief.",
-            "I am confident in my unique path.",
-            "I trust the process of my personal growth.",
-            "I am empowered and self-assured in all I do."
-        ]
-    },
-    "calm-your-anxiety": {
-        name: "Calm Your Anxiety",
-                affirmations: [
-            "I am safe, I am grounded, I am at peace.",
-            "This feeling is temporary, and I will get through it.",
-            "I breathe in calm and exhale tension.",
-            "My mind is clear, my body is relaxed.",
-            "I am in control of my thoughts and emotions.",
-            "I choose peace over worry.",
-            "I am allowed to slow down and take care of myself.",
-            "I trust that things are working out as they should.",
-            "I release the need to be perfect.",
-            "I am doing the best I can, and that is enough.",
-            "It’s okay to not have all the answers right now.",
-            "I give myself permission to let go of stress.",
-            "My breath is a tool I can use anytime to feel calm.",
-            "I am not my anxiety—I am so much more.",
-            "I accept this moment without judgment.",
-            "Peace begins with a single breath.",
-            "I allow myself to feel what I feel without fear.",
-            "I am stronger than this anxious thought.",
-            "I replace worry with trust and fear with hope.",
-            "I am surrounded by calm, healing energy.",
-            "I let go of what I can’t control.",
-            "Every breath I take helps me feel more at ease.",
-            "I give myself grace and compassion.",
-            "I choose to respond with calm rather than react with fear.",
-            "I am supported, and I don’t have to face this alone.",
-            "I listen to my body and honor its needs.",
-            "I deserve peace, and I create it within myself.",
-            "I gently return to the present moment.",
-            "I can handle whatever comes my way with calm and strength.",
-            "I am free from fear and open to serenity.",
-            "I am safe and secure in this moment.",
-            "Calmness washes over me with every breath.",
-            "I release tension and welcome peace.",
-            "I am grounded, present, and centered.",
-            "My mind is clear and focused.",
-            "I breathe in calm and exhale worry.",
-            "I trust that I can handle whatever comes my way.",
-            "Peace fills my heart and mind.",
-            "I choose serenity over stress.",
-            "I am patient with myself during anxious moments.",
-            "I am stronger than my fears.",
-            "I allow myself to rest and recover.",
-            "I am in control of my thoughts and emotions.",
-            "I let go of what I cannot change.",
-            "Every breath brings me deeper calm.",
-            "I am surrounded by support and love.",
-            "I create a safe space within myself.",
-            "Anxiety does not define me.",
-            "I trust the process of healing and growth.",
-            "I nurture my mind with positive, peaceful thoughts.",
-            "I release worry and embrace hope.",
-            "I am connected to a calm, steady energy within me.",
-            "I allow peace to fill every corner of my being.",
-            "I am patient and kind to myself in moments of anxiety.",
-            "I focus on the present and release fear of the future.",
-            "Calmness is my natural state.",
-            "I trust my body’s ability to relax and heal.",
-            "I am centered and balanced no matter the circumstances.",
-            "I welcome peace with open arms.",
-            "I am safe, calm, and in control."
-        ]
-    },
-
-   
-  "accept-yourself": {
-    name: "Accept Yourself",
-        affirmations: [
-      "I accept myself exactly as I am right now.",
-      "I am allowed to be a work in progress and still be worthy.",
-      "I embrace my flaws—they make me human.",
-      "I let go of the need to be perfect.",
-      "I honor my journey, including the messy parts.",
-      "I am proud of who I am becoming.",
-      "I release comparison and appreciate my uniqueness.",
-      "I am enough, just as I am.",
-      "I treat myself with kindness and understanding.",
-      "I am learning to love all versions of myself.",
-      "I give myself permission to grow at my own pace.",
-      "I accept my past and look forward with hope.",
-      "My worth is not based on others' approval.",
-      "I welcome all parts of myself with compassion.",
-      "I no longer fight against who I am.",
-      "I make peace with my imperfections.",
-      "I forgive myself for the times I’ve been hard on me.",
-      "I am not broken—I am whole and evolving.",
-      "I celebrate what makes me different.",
-      "I choose self-acceptance over self-judgment.",
-      "I honor my feelings without shame.",
-      "I trust myself to grow through what I go through.",
-      "I am free from the pressure to meet unrealistic expectations.",
-      "I listen to my inner voice with love and respect.",
-      "I let go of what I 'should' be and embrace who I am.",
-      "I offer myself patience and grace.",
-      "I see beauty in my own reflection.",
-      "I am worthy of love—including my own.",
-      "I give myself the same kindness I give others.",
-      "I choose to stand by myself, no matter what.",
-      "I embrace all parts of myself with love.",
-      "I accept my imperfections as part of my uniqueness.",
-      "I am worthy of love exactly as I am.",
-      "I release judgment and embrace compassion for myself.",
-      "I honor my feelings and give myself grace.",
-      "I accept my past and look forward with hope.",
-      "I am proud of who I am becoming.",
-      "I allow myself to be perfectly imperfect.",
-      "I am enough in this very moment.",
-      "I choose self-acceptance over self-criticism.",
-      "I honor my journey and my growth.",
-      "I forgive myself for past mistakes.",
-      "I am at peace with who I am today.",
-      "I embrace my authentic self fully and freely.",
-      "I am gentle with myself during times of change.",
-      "I release the need for external validation.",
-      "I celebrate my unique gifts and talents.",
-      "I am confident in my true self.",
-      "I accept my limitations and work within them.",
-      "I treat myself with kindness and respect.",
-      "I am proud of my progress, no matter how small.",
-      "I give myself permission to be vulnerable.",
-      "I am whole, just as I am.",
-      "I release the need to be perfect.",
-      "I accept my emotions and allow them to flow.",
-      "I am worthy of care and compassion.",
-      "I trust myself and my decisions.",
-      "I embrace my story and my journey.",
-      "I love myself unconditionally.",
-      "I accept myself fully and completely."
-    ]
-  },
-
-  "love-your-body": {
-    name: "Love Your Body",
-        affirmations: [
-      "My body is beautiful and worthy of love.",
-      "I appreciate all that my body does for me every day.",
-      "I treat my body with kindness and respect.",
-      "I honor my body as the home of my spirit.",
-      "I am grateful for the strength and resilience of my body.",
-      "My body deserves care, rest, and nourishment.",
-      "I celebrate my unique shape and appearance.",
-      "I listen to my body’s needs and respond with love.",
-      "I am comfortable and confident in my own skin.",
-      "I release negative thoughts about my body.",
-      "I am grateful for the ability to move, breathe, and experience life.",
-      "My body is my ally, not my enemy.",
-      "I embrace my body’s imperfections—they tell my story.",
-      "I choose to focus on health and happiness, not perfection.",
-      "I honor the natural beauty that radiates from within me.",
-      "I am patient and gentle with my body as it changes.",
-      "I treat my body as a temple that deserves care and respect.",
-      "I am proud of what my body can do.",
-      "I nurture my body with wholesome food and positive thoughts.",
-      "My body deserves love, regardless of its size or shape.",
-      "I forgive myself for any past neglect or harsh judgments.",
-      "I accept my body and celebrate its uniqueness.",
-      "I feel at home in my body.",
-      "I appreciate the way my body supports me in all that I do.",
-      "I choose to see beauty in my reflection every day.",
-      "My body is worthy of care and affection.",
-      "I release the need to compare my body to others.",
-      "I celebrate the life my body gives me.",
-      "I am grateful for the health I have today.",
-      "Loving my body helps me love myself more deeply.",
-      "My body is a beautiful vessel that carries me through life.",
-      "I honor my body’s strength and resilience.",
-      "I am grateful for my body’s ability to heal and grow.",
-      "I treat my body with kindness and respect.",
-      "My body deserves love and care every day.",
-      "I listen to my body’s needs and honor them.",
-      "I celebrate my body’s uniqueness and beauty.",
-      "I appreciate my body for all it does for me.",
-      "I nourish my body with healthy choices.",
-      "My body is a temple of health and vitality.",
-      "I am patient and gentle with my body.",
-      "I embrace my body with love and acceptance.",
-      "My body is my home, and I cherish it.",
-      "I am thankful for the movement my body allows.",
-      "I honor my body’s natural rhythms and cycles.",
-      "I release negative thoughts about my body.",
-      "I am confident and comfortable in my skin.",
-      "I celebrate the strength in my body.",
-      "I choose to treat my body with love every day.",
-      "My body is worthy of love and care.",
-      "I listen deeply to what my body needs.",
-      "I am grateful for my body’s ability to experience joy.",
-      "I respect my body’s limits and honor its signals.",
-      "I choose to see my body through eyes of love.",
-      "My body is beautiful exactly as it is today.",
-      "I am grateful for every part of my body.",
-      "I honor my body by making healthy choices.",
-      "I release shame and embrace love for my body.",
-      "My body supports me in living my best life.",
-      "I love and accept my body unconditionally."
-    ]
-  },
-
- "embrace-ancestry": {
-  name: "Accept Your Parents and Ancestral Bloodline Power",
-        affirmations: [
-      "I honor my parents and the lessons they have given me.",
-      "I accept my family history with compassion and understanding.",
-      "The strengths of my ancestors flow through me.",
-      "I release any resentment and choose forgiveness.",
-      "My roots give me strength, wisdom, and resilience.",
-      "I am proud to carry my ancestral legacy forward.",
-      "I embrace the gifts and challenges from my lineage.",
-      "I find peace in accepting my family as they are.",
-      "I acknowledge the sacrifices made by those who came before me.",
-      "I am connected to generations of love, courage, and growth.",
-      "I forgive my parents and myself for any imperfections.",
-      "I release judgment and welcome healing in my family relationships.",
-      "I am empowered by the bloodline that flows within me.",
-      "I honor the cultural and spiritual heritage passed down to me.",
-      "I carry my ancestors’ dreams and hopes in my heart.",
-      "I am grateful for the lessons learned from my family history.",
-      "I accept my parents’ humanity and their unique journeys.",
-      "I am a bridge between past, present, and future generations.",
-      "I cultivate love and understanding within my family.",
-      "I respect the paths my ancestors took to bring me here.",
-      "I embrace the power of healing ancestral wounds.",
-      "I am grounded in the strength of my bloodline.",
-      "I honor my parents’ efforts to do their best.",
-      "I choose love over pain in my family stories.",
-      "I celebrate the resilience that runs through my lineage.",
-      "I am free to create new patterns of love and acceptance.",
-      "I am connected to my ancestors’ wisdom and guidance.",
-      "I release the past with gratitude and welcome growth.",
-      "My family history is a source of strength and inspiration.",
-      "I accept myself fully as part of this beautiful, complex lineage.",
-      "I honor the wisdom passed down through my lineage.",
-      "I embrace the strengths of my ancestors within me.",
-      "My family history empowers my journey.",
-      "I forgive past generations and release old wounds.",
-      "I am connected to the love and resilience of my ancestors.",
-      "I honor my parents’ efforts and their growth.",
-      "I release judgment and embrace compassion for my family.",
-      "The legacy of my ancestors inspires my strength.",
-      "I carry forward the positive traits of my bloodline.",
-      "I create healing where there was hurt.",
-      "My roots give me stability and courage.",
-      "I am grateful for the gifts my ancestors have passed on.",
-      "I release ancestral patterns that no longer serve me.",
-      "I am proud of my heritage and culture.",
-      "I welcome the guidance of my ancestors in my life.",
-      "I honor the challenges my parents overcame.",
-      "I am worthy of the love passed through generations.",
-      "I heal old family wounds with love and understanding.",
-      "My ancestors’ love supports me always.",
-      "I embrace my heritage as a source of strength.",
-      "I release resentment and choose peace with my family.",
-      "The power of my bloodline flows through me.",
-      "I am grateful for the lessons my parents taught me.",
-      "I am connected to my ancestral roots with pride.",
-      "I honor the sacrifices made for my wellbeing.",
-      "I carry forward the love and strength of my family.",
-      "I release guilt and shame from my family history.",
-      "I create a new legacy of love and healing.",
-      "My family’s love is a source of empowerment.",
-      "I accept and love my parents and ancestors completely."
-    ]
-  },
-
-
-  "nurture-self-love": {
-    name: "Nurture Self-Love",
-        affirmations: [
-      "I am worthy of love, starting with my own.",
-      "I love and accept myself unconditionally.",
-      "I am enough exactly as I am.",
-      "My relationship with myself is loving and kind.",
-      "I deserve to treat myself with compassion.",
-      "I honor my needs and take care of myself.",
-      "I am learning to love every part of me.",
-      "I am proud of who I am becoming.",
-      "I forgive myself and release guilt and shame.",
-      "I am gentle with myself in moments of struggle.",
-      "I speak to myself with encouragement and respect.",
-      "I am deserving of rest, joy, and peace.",
-      "I listen to my inner voice with love.",
-      "I accept all of me—my light and my shadow.",
-      "I am my own safe space.",
-      "I do not need to prove my worth to anyone.",
-      "I honor my journey and trust my path.",
-      "My imperfections make me beautifully human.",
-      "I choose to be kind to myself every day.",
-      "I am allowed to put myself first.",
-      "I radiate love from within.",
-      "I celebrate my growth and progress.",
-      "I attract people who respect and value me.",
-      "I am whole, even as I grow.",
-      "My body is deserving of love and care.",
-      "I create space for self-love in my life daily.",
-      "I am lovable just as I am.",
-      "My worth is not determined by others’ opinions.",
-      "I choose self-love over self-criticism.",
-      "I am love, I am light, I am enough.",
-      "I honor my needs and listen to my heart.",
-      "I deserve kindness, from others and myself.",
-      "I am worthy of unconditional love.",
-      "My self-love grows stronger every day.",
-      "I treat myself with compassion and respect.",
-      "I am enough just as I am.",
-      "I forgive myself and embrace my journey.",
-      "I celebrate my unique beauty and spirit.",
-      "Loving myself is a gift I give daily.",
-      "I am patient with my growth and healing.",
-      "I nurture my mind, body, and soul with love.",
-      "I accept all parts of myself with tenderness.",
-      "I am deserving of joy and fulfillment.",
-      "I release self-criticism and welcome self-acceptance.",
-      "My worth is inherent and limitless.",
-      "I am gentle with myself through every challenge.",
-      "I celebrate my achievements and efforts.",
-      "I treat myself with the same love I give to others.",
-      "I honor my emotions and allow myself to feel.",
-      "I create space for self-love in my daily life.",
-      "I am proud of the person I am becoming.",
-      "I am my own greatest supporter.",
-      "My self-love empowers my choices.",
-      "I trust myself to make loving decisions.",
-      "I am kind to myself even in imperfection.",
-      "I embrace my worth without apology.",
-      "My self-love attracts positive energy.",
-      "I nourish my soul with love and care.",
-      "I am whole, complete, and lovable.",
-      "I choose love over fear in every moment."
-    ]
-  },
-
-  "express-gratitude": {
-    name: "Express Gratitude",
-        affirmations: [
-      "I am grateful for this moment and all it holds.",
-      "My life is full of blessings, big and small.",
-      "I give thanks for the people who support and love me.",
-      "Each day brings something to be thankful for.",
-      "Gratitude fills my heart and shapes my outlook.",
-      "I appreciate the beauty that surrounds me.",
-      "I am thankful for my body and all it allows me to do.",
-      "I recognize the abundance already in my life.",
-      "I give thanks for lessons that help me grow.",
-      "I am grateful for the progress I’ve made.",
-      "Today, I choose to focus on what I have, not what I lack.",
-      "I start and end my day with a grateful heart.",
-      "I appreciate my journey and trust where it leads.",
-      "I am thankful for the simple joys in life.",
-      "Gratitude shifts my perspective and lifts my spirit.",
-      "I find peace in the present and gratitude in the now.",
-      "I give thanks for my inner strength and resilience.",
-      "I am grateful for the ability to learn and change.",
-      "Each breath is a gift, and I cherish it.",
-      "I welcome each new day with appreciation.",
-      "I see every challenge as a chance to grow and learn.",
-      "I express thanks easily and openly.",
-      "My heart is open to the richness of life.",
-      "I appreciate who I am and who I am becoming.",
-      "I am grateful for opportunities that come my way.",
-      "I give thanks for quiet moments and peaceful thoughts.",
-      "Gratitude empowers me to live fully and joyfully.",
-      "I see blessings where others see problems.",
-      "I attract more good by being thankful for what I have.",
-      "I carry gratitude with me and share it freely.",
-      "I am grateful for the abundance in my life.",
-      "Gratitude opens my heart to joy.",
-      "I appreciate the beauty in everyday moments.",
-      "I find blessings even in challenges.",
-      "My gratitude attracts more to be thankful for.",
-      "I am thankful for my strength and resilience.",
-      "I acknowledge the good in myself and others.",
-      "Each day offers countless reasons to be grateful.",
-      "Gratitude fills my heart and uplifts my spirit.",
-      "I celebrate the kindness I receive and give.",
-      "I am thankful for the lessons life teaches me.",
-      "My gratitude creates a positive ripple in the world.",
-      "I appreciate the people who enrich my life.",
-      "I am thankful for my health and vitality.",
-      "I welcome gratitude as a daily practice.",
-      "I am grateful for opportunities to grow.",
-      "Gratitude helps me see the world through loving eyes.",
-      "I find joy in small acts of kindness.",
-      "I am grateful for my unique journey.",
-      "My heart overflows with appreciation.",
-      "I am thankful for every breath I take.",
-      "Gratitude strengthens my connection to others.",
-      "I express thanks for the support I receive.",
-      "I recognize and appreciate my progress.",
-      "Gratitude brings peace to my mind and heart.",
-      "I am thankful for moments of rest and renewal.",
-      "I appreciate the love that surrounds me.",
-      "I celebrate my blessings with an open heart.",
-      "Gratitude inspires me to give back.",
-      "I choose to live each day with a grateful heart."
-    ]
-  },
-
-  "achieve-success": {
-    name: "Achieve Success",
-        affirmations: [
-      "I am capable of achieving great success.",
-      "I turn my goals into reality with focused action.",
-      "I believe in my ability to succeed.",
-      "Every step I take brings me closer to my dreams.",
-      "I am committed, consistent, and confident.",
-      "Success flows to me because I work for it and believe in it.",
-      "I attract opportunities that align with my purpose.",
-      "I learn from every experience and grow stronger.",
-      "I deserve the success I envision.",
-      "My potential is limitless.",
-      "I overcome obstacles with courage and clarity.",
-      "I take bold action without fear of failure.",
-      "I define success on my own terms.",
-      "I trust the process and stay the course.",
-      "I am driven, focused, and full of energy.",
-      "I am a magnet for progress and positive results.",
-      "I rise after every setback and move forward stronger.",
-      "I celebrate small wins on the path to big achievements.",
-      "I have the power to shape my future.",
-      "I surround myself with inspiration and support.",
-      "I show up every day with purpose and passion.",
-      "I turn challenges into opportunities.",
-      "My vision is clear, and my actions are aligned.",
-      "I stay grounded in discipline and inspired by dreams.",
-      "I am proud of how far I’ve come and excited for what’s ahead.",
-      "I take responsibility for my success and own my journey.",
-      "I believe in my vision even when others don’t see it yet.",
-      "I grow beyond my limits and reach new heights.",
-      "I keep going, no matter what.",
-      "I am already successful because I never stop moving forward.",
-      "I am focused and determined to achieve my goals.",
-      "Success flows to me effortlessly.",
-      "I am worthy of all my dreams and aspirations.",
-      "I attract opportunities that align with my purpose.",
-      "My hard work brings rewarding results.",
-      "I am confident in my ability to succeed.",
-      "Every setback is a setup for a comeback.",
-      "I celebrate progress, not perfection.",
-      "I create success through consistent effort.",
-      "I am resilient and overcome all obstacles.",
-      "My mindset is aligned with success and abundance.",
-      "I learn from failures and grow stronger.",
-      "I am deserving of prosperity and achievement.",
-      "I take inspired action toward my dreams daily.",
-      "Success is a journey I embrace fully.",
-      "I am surrounded by supportive people who uplift me.",
-      "My goals are clear and achievable.",
-      "I attract success by believing in myself.",
-      "I am persistent and stay focused on my path.",
-      "I trust my intuition to guide my success.",
-      "I release doubt and welcome confidence.",
-      "I celebrate every milestone with gratitude.",
-      "I am proactive and take control of my future.",
-      "I create opportunities through my positive attitude.",
-      "My success benefits others and myself.",
-      "I embrace challenges as opportunities to excel.",
-      "I am disciplined and committed to my growth.",
-      "I visualize my success and work toward it every day.",
-      "I am capable of achieving extraordinary things.",
-      "Success comes naturally when I believe in myself."
-    ]
-  },
+// Home Page Action Cards Handler
+function initializeHomePageActions() {
+    const actionCards = document.querySelectorAll('.action-card');
     
-  "gain-balance": {
-    name: " Gain Balance in Life ",
-    affirmations: [
-      "I create balance in all areas of my life.",
-      "I prioritize what truly matters to me.",
-      "I honor my needs for work, rest, and play.",
-      "I allow myself time to recharge and rejuvenate.",
-      "I manage my time with calm and clarity.",
-      "I maintain healthy boundaries that support my well-being.",
-      "I find harmony between my responsibilities and passions.",
-      "I give myself permission to say no when needed.",
-      "I nurture my body, mind, and spirit equally.",
-      "I cultivate peace through balanced choices.",
-      "I release guilt when I focus on self-care.",
-      "I listen to my inner wisdom to guide my balance.",
-      "I am patient with myself as I create balance.",
-      "I create space for joy in my daily routine.",
-      "I am grounded and centered in all I do.",
-      "I balance effort with rest and reflection.",
-      "I am in control of how I spend my energy.",
-      "I choose balance as a foundation for success.",
-      "I embrace simplicity and let go of overwhelm.",
-      "I honor my emotions and give myself grace.",
-      "I celebrate small moments of peace throughout my day.",
-      "I align my actions with my values.",
-      "I maintain focus without losing sight of self-care.",
-      "I create routines that nurture balance naturally.",
-      "I welcome flexibility and flow in my life.",
-      "I balance giving to others with giving to myself.",
-      "I am deserving of a balanced, fulfilling life.",
-      "I cultivate calm even amid life’s busyness.",
-      "I practice mindfulness to maintain my balance.",
-      "Every day, I grow closer to my ideal balance.",
-      "I create harmony between work, rest, and play.",
-      "Balance brings peace and clarity to my life.",
-      "I prioritize what nourishes my mind, body, and soul.",
-      "I set healthy boundaries that protect my energy.",
-      "I honor my need for rest and renewal.",
-      "I manage my time with intention and ease.",
-      "I give myself permission to slow down when needed.",
-      "I create space for joy and relaxation.",
-      "Balance allows me to thrive in all areas of life.",
-      "I nurture relationships that support my well-being.",
-      "I listen to my body’s signals for rest and activity.",
-      "I am present and fully engaged in each moment.",
-      "I release guilt when I take time for myself.",
-      "I balance giving and receiving with grace.",
-      "I create routines that support my inner peace.",
-      "I prioritize self-care without hesitation.",
-      "I bring calm and focus to busy days.",
-      "I cultivate mental, physical, and emotional balance.",
-      "I honor my passions while maintaining balance.",
-      "I make choices that support my overall well-being.",
-      "I am balanced in my work and my play.",
-      "I create daily habits that nurture balance.",
-      "I embrace simplicity and let go of chaos.",
-      "I find peace in stillness and activity alike.",
-      "I allow myself to rest without guilt.",
-      "Balance helps me maintain clarity and calm.",
-      "I am centered and grounded throughout my day.",
-      "I create harmony in my environment and relationships.",
-      "I welcome balance as a path to fulfillment.",
-      "I am grateful for the balance I cultivate in my life."
-    ]
-  },
-  
-  "build-wealth": {
-    name: " Build Wealth",
-    affirmations: [
-      "I am worthy of financial abundance.",
-      "Wealth flows to me easily and effortlessly.",
-      "I attract opportunities that increase my income.",
-      "I am open to receiving all forms of abundance.",
-      "My actions create constant prosperity.",
-      "I manage my money wisely and with intention.",
-      "I am aligned with the energy of wealth.",
-      "I deserve to live a rich and fulfilling life.",
-      "I am a magnet for financial success.",
-      "I use my wealth to create positive change.",
-      "Money comes to me from multiple sources.",
-      "I am financially free and secure.",
-      "I am grateful for the abundance I already have.",
-      "My mindset is focused on growth and opportunity.",
-      "I am confident in my ability to generate wealth.",
-      "I welcome prosperity in all areas of my life.",
-      "I release limiting beliefs about money.",
-      "I take smart, bold steps to grow my wealth.",
-      "I am worthy of making more money.",
-      "I celebrate every financial win, big or small.",
-      "I am disciplined and consistent with my finances.",
-      "I attract investments and resources that increase my wealth.",
-      "I am open to learning new ways to grow financially.",
-      "I use money as a tool to live my best life.",
-      "I deserve abundance in all forms.",
-      "My income is constantly increasing.",
-      "I am grateful for my growing financial security.",
-      "I believe in my ability to create wealth.",
-      "I make wise financial decisions with clarity and confidence.",
-      "Building wealth is a journey I enjoy every step of.",
-      "Wealth flows to me easily and abundantly.",
-      "I am open to receiving financial prosperity.",
-      "My mindset attracts opportunities for wealth.",
-      "I am worthy of financial success.",
-      "Money comes to me from expected and unexpected sources.",
-      "I manage my money wisely and responsibly.",
-      "I am grateful for the wealth I have and the wealth on its way.",
-      "I create multiple streams of income effortlessly.",
-      "My actions lead me to greater financial freedom.",
-      "I release scarcity and welcome abundance.",
-      "I am financially secure and stable.",
-      "My wealth allows me to live generously and joyfully.",
-      "I attract investments that grow my wealth.",
-      "I am confident in my ability to create wealth.",
-      "Prosperity is my natural state.",
-      "I make smart financial decisions every day.",
-      "My wealth supports my dreams and goals.",
-      "I am deserving of all the riches life offers.",
-      "I am open to new ways to increase my income.",
-      "I believe in my ability to build lasting wealth.",
-      "Money enhances my ability to do good in the world.",
-      "I welcome financial growth with gratitude.",
-      "I am empowered to create the life I desire.",
-      "I attract abundance through positive thinking and action.",
-      "I am financially free and independent.",
-      "My wealth grows as I grow.",
-      "I handle money with confidence and ease.",
-      "I deserve financial success and happiness.",
-      "I am thankful for the financial opportunities that come my way.",
-      "I am a magnet for wealth and prosperity."
-    ]
-  },
-
-"embrace-changes": {
-  name: "Embrace Changes",
-  affirmations: [
-    "I welcome change as a natural part of life.",
-    "Change brings new opportunities and growth.",
-    "I am adaptable and open to new experiences.",
-    "I trust the process of change, even when it feels uncertain.",
-    "I release resistance and embrace transformation.",
-    "Every change leads me closer to my highest good.",
-    "I am courageous in the face of the unknown.",
-    "I grow stronger through every challenge and transition.",
-    "Change helps me discover my true potential.",
-    "I am flexible and flow with life's rhythms.",
-    "I let go of fear and welcome new beginnings.",
-    "I trust myself to handle whatever comes my way.",
-    "I see change as an exciting adventure.",
-    "I am open to learning and evolving constantly.",
-    "I release the past to make space for the future.",
-    "Change is a pathway to my growth and success.",
-    "I meet change with curiosity and hope.",
-    "I embrace uncertainty with faith and confidence.",
-    "I am grateful for the lessons change teaches me.",
-    "I find peace in the process of transformation.",
-    "I am resilient and can adapt to any situation.",
-    "I accept that change is necessary for progress.",
-    "I flow effortlessly with life's transitions.",
-    "I choose to see change as a gift, not a threat.",
-    "I embrace new chapters with enthusiasm.",
-    "I trust the timing of my life's changes.",
-    "I am excited about the possibilities that change brings.",
-    "I release attachment and welcome freedom.",
-    "I am growing, evolving, and becoming my best self.",
-    "Change empowers me to create a better future.",
-    "I welcome change as an opportunity for growth.",
-    "Change brings new possibilities into my life.",
-    "I adapt easily and with grace.",
-    "I trust the process of transformation.",
-    "I release fear and welcome new beginnings.",
-    "Every change is a step toward my highest good.",
-    "I flow effortlessly with life's changes.",
-    "I embrace uncertainty with confidence.",
-    "Change helps me become my best self.",
-    "I let go of what no longer serves me.",
-    "I find excitement in the unknown.",
-    "I am resilient and flexible in the face of change.",
-    "Change opens doors to new adventures.",
-    "I trust that life's changes lead me where I need to be.",
-    "I release resistance and embrace transformation.",
-    "I am open to new opportunities that change brings.",
-    "I welcome growth and evolution in all areas of life.",
-    "Change renews my spirit and vision.",
-    "I am calm and grounded during transitions.",
-    "I embrace change as a natural part of life.",
-    "I trust myself to navigate change wisely.",
-    "I see change as a path to greater freedom.",
-    "My heart is open to new experiences.",
-    "I welcome change with an open mind and open heart.",
-    "Change helps me shed old limitations.",
-    "I am grateful for the lessons change brings.",
-    "I step boldly into new chapters.",
-    "I release the past and welcome the future.",
-    "I embrace change as a catalyst for personal growth.",
-    "I trust that every change is for my highest good."
-  ]
-},
-
-"lose-weight": {
-  name: " Lose Weight",
-  affirmations: [
-    "I am committed to caring for my body every day.",
-    "I choose nourishing foods that fuel my energy.",
-    "Every healthy choice brings me closer to my goals.",
-    "I love and respect my body throughout my journey.",
-    "I am patient with myself as I make progress.",
-    "I enjoy moving my body in ways that feel good.",
-    "I am becoming stronger, healthier, and more vibrant.",
-    "I release old habits that no longer serve me.",
-    "I trust my body's ability to heal and transform.",
-    "I am worthy of feeling confident and healthy.",
-    "I celebrate every step forward, no matter how small.",
-    "I listen to my body's needs with compassion.",
-    "I am in control of my food choices and habits.",
-    "I let go of guilt and embrace progress.",
-    "I am motivated and dedicated to my wellness goals.",
-    "My body responds positively to my healthy actions.",
-    "I honor my body by giving it nutritious food and rest.",
-    "I am grateful for my body's strength and resilience.",
-    "I attract positive energy that supports my health.",
-    "I am capable of achieving my ideal weight with balance.",
-    "I choose self-love over self-criticism every day.",
-    "I am consistent and committed to my health journey.",
-    "I enjoy creating healthy habits that last a lifetime.",
-    "I am confident in my ability to reach my goals.",
-    "I focus on progress, not perfection.",
-    "I nourish my body with kindness and respect.",
-    "I am patient with my body's natural pace of change.",
-    "I release negativity and welcome positive energy.",
-    "I celebrate my body at every stage of my journey.",
-    "I am proud of the healthy choices I make.",
-    "I respect my body and care for it lovingly.",
-    "I make healthy choices that support my weight goals.",
-    "I am patient with my body's transformation.",
-    "Every day, I am closer to my ideal weight.",
-    "I enjoy nourishing foods that fuel my body.",
-    "I am committed to my health and well-being.",
-    "I honor my body by moving it with joy.",
-    "I release habits that no longer serve my health.",
-    "I am strong, capable, and motivated.",
-    "I love and appreciate my body at every size.",
-    "I celebrate small victories on my weight loss journey.",
-    "I am disciplined and consistent with my habits.",
-    "My body responds positively to my care.",
-    "I am confident in my ability to reach my goals.",
-    "I visualize my healthiest, happiest self.",
-    "I am grateful for my body's strength and flexibility.",
-    "I release negative self-talk and embrace positivity.",
-    "I fuel my body with healthy, vibrant foods.",
-    "I enjoy physical activity that energizes me.",
-    "I trust my body's ability to transform.",
-    "I am patient and kind to myself during this journey.",
-    "I am motivated by self-love and care.",
-    "I release cravings that don't serve me.",
-    "I celebrate the progress I make every day.",
-    "My commitment to health is unwavering.",
-    "I am worthy of a healthy and vibrant body.",
-    "I make choices that honor my body's needs.",
-    "I am empowered to achieve my weight loss goals.",
-    "I am proud of my perseverance and dedication.",
-    "My body is becoming healthier and stronger every day."
-  ]
-},
-
-"quit-smoking": {
-  name: " Quit Smoking",
-  affirmations: [
-    "I am free from the need to smoke.",
-    "Each day, I grow stronger in my commitment to quit.",
-    "I choose health and vitality over smoking.",
-    "My body deserves to be clean and healthy.",
-    "I am in control of my cravings and release them easily.",
-    "I breathe deeply and fully without smoking.",
-    "I replace smoking with positive, healthy habits.",
-    "I am proud of every smoke-free day I achieve.",
-    "My lungs are healing and becoming stronger.",
-    "I release the past and focus on a smoke-free future.",
-    "I am committed to living my best, healthiest life.",
-    "I honor my body by caring for it with love.",
-    "I am capable of overcoming all challenges.",
-    "I choose freedom over addiction.",
-    "I am patient with myself during this process.",
-    "I am stronger than any craving or urge.",
-    "I celebrate my progress, no matter how small.",
-    "I find joy in being smoke-free.",
-    "I am surrounded by support and encouragement.",
-    "I breathe in clean, healing air with every breath.",
-    "I release stress through healthy, mindful practices.",
-    "I am grateful for my body's ability to heal.",
-    "I am confident in my decision to quit smoking.",
-    "I attract positive energy that supports my health.",
-    "I choose to nurture my body with care and respect.",
-    "I am free to live a long, vibrant life.",
-    "I let go of old habits and welcome new beginnings.",
-    "My mind is clear, focused, and smoke-free.",
-    "I am proud to be creating a healthier future for myself.",
-    "Every day, in every way, I am becoming healthier and stronger.",
-    "I am free from the habit of smoking.",
-    "I choose health and vitality over addiction.",
-    "Each day without smoking strengthens my resolve.",
-    "I am in control of my choices and my life.",
-    "I breathe deeply and fully, filling my lungs with clean air.",
-    "I release the urge to smoke with ease and confidence.",
-    "My body heals and renews itself every day.",
-    "I am proud of my commitment to quit smoking.",
-    "I replace smoking with healthy habits.",
-    "I am stronger than any craving.",
-    "I love my body and choose to care for it.",
-    "I attract support and encouragement in my journey.",
-    "I am patient and gentle with myself during this change.",
-    "I celebrate every smoke-free day with gratitude.",
-    "I am becoming healthier and more vibrant every moment.",
-    "I release all attachments to smoking.",
-    "I focus on the positive benefits of quitting.",
-    "I am capable of overcoming challenges.",
-    "My lungs grow stronger and healthier daily.",
-    "I choose peace and clarity over addiction.",
-    "I am empowered to make healthy decisions.",
-    "I am free from the need to smoke.",
-    "I embrace a smoke-free life with joy.",
-    "I am supported by my inner strength and willpower.",
-    "I forgive myself for past habits and move forward.",
-    "I am creating a healthier future for myself.",
-    "I breathe easily and deeply without smoking.",
-    "I honor my body by choosing freedom.",
-    "I am committed to my health and happiness.",
-    "I am proud to be smoke-free."
-  ]
-},
-      
-"fight-depression": {
-  name: "Fight with Depression",
-  affirmations: [
-    "I am not alone; support surrounds me.",
-    "I allow myself to feel and release my emotions.",
-    "I am stronger than my darkest days.",
-    "Each small step forward is progress.",
-    "I am worthy of love and kindness, especially from myself.",
-    "My feelings are valid, and I honor them.",
-    "I choose hope even when it feels hard.",
-    "I am patient with my healing process.",
-    "I am deserving of peace and happiness.",
-    "I can reach out for help when I need it.",
-    "I am capable of overcoming challenges.",
-    "My mind is healing one moment at a time.",
-    "I focus on the positive things I can control.",
-    "I forgive myself for having tough days.",
-    "I breathe in calm and breathe out tension.",
-    "I trust that brighter days are ahead.",
-    "I am gentle with myself through this journey.",
-    "I am more than my depression.",
-    "I can find moments of joy, even in small things.",
-    "I am open to healing and growth.",
-    "I honor my needs and take time to rest.",
-    "I believe in my ability to heal and recover.",
-    "I am proud of myself for keeping going.",
-    "I choose self-care and compassion today.",
-    "I embrace hope and resilience within me.",
-    "I release negative thoughts and invite positive ones.",
-    "I am worthy of support, care, and understanding.",
-    "I am learning to love myself through every challenge.",
-    "I am not defined by my struggles.",
-    "I am growing stronger, brighter, and more hopeful every day.",
-    "I am stronger than my struggles.",
-    "Each day, I find small moments of peace.",
-    "I deserve kindness and healing.",
-    "I allow myself to feel and heal at my own pace.",
-    "I am not alone in this journey.",
-    "My feelings are valid and important.",
-    "I have the strength to face today.",
-    "I choose hope even when it feels hard.",
-    "I am worthy of joy and happiness.",
-    "I release shame and embrace self-compassion.",
-    "I seek support when I need it.",
-    "Every breath I take brings me calm.",
-    "I am healing one step at a time.",
-    "I am proud of my courage and resilience.",
-    "I am deserving of love and care.",
-    "I honor my journey and trust the process.",
-    "I find light in the darkness.",
-    "My mind is capable of change and growth.",
-    "I choose thoughts that support my healing.",
-    "I am patient with myself through this process.",
-    "I allow myself to rest and recharge.",
-    "I am grateful for the strength I have inside.",
-    "I release negativity and welcome peace.",
-    "I am gentle with my heart and mind.",
-    "Each day is a new opportunity to heal.",
-    "I believe in my ability to overcome.",
-    "I am surrounded by love and support.",
-    "I celebrate every small victory.",
-    "I am more than my struggles.",
-    "Healing is my right, and I claim it now."
-  ]
-},
-
-"forgive-and-let-go": {
-  name: " Forgive and Let Go",
-  affirmations: [
-    "I choose to forgive myself and others.",
-    "Forgiveness frees my heart and mind.",
-    "I release the past and embrace peace.",
-    "Letting go brings me clarity and calm.",
-    "I am free from resentment and anger.",
-    "I allow healing to flow through me.",
-    "I release what no longer serves my highest good.",
-    "Forgiveness is a gift I give myself.",
-    "I choose peace over pain.",
-    "I let go of grudges and welcome compassion.",
-    "I release control and trust life's flow.",
-    "I am gentle with myself as I heal.",
-    "I forgive to create space for joy and love.",
-    "I let go of hurt with grace and courage.",
-    "My heart is open to forgiveness and healing.",
-    "I free myself from the burden of anger.",
-    "I release judgment and welcome understanding.",
-    "Forgiving others heals my soul.",
-    "I accept what happened and move forward.",
-    "I am at peace with my past.",
-    "I release pain to make room for happiness.",
-    "I forgive and grow stronger every day.",
-    "I let go of bitterness and embrace kindness.",
-    "I am free to create a joyful present.",
-    "I choose love and forgiveness over resentment.",
-    "Letting go helps me reclaim my power.",
-    "I release old wounds and welcome healing light.",
-    "I forgive myself for all my mistakes.",
-    "Forgiveness is my path to freedom and peace.",
-    "I let go with love and walk forward with peace.",
-    "I release the past and choose peace.",
-    "Forgiveness frees my heart and mind.",
-    "I let go of anger and resentment with ease.",
-    "I am open to healing and renewal.",
-    "I forgive myself and others completely.",
-    "Holding on no longer serves my highest good.",
-    "I am free from the burden of grudges.",
-    "I release pain and welcome love.",
-    "Forgiveness is a gift I give myself.",
-    "I choose compassion over judgment.",
-    "I am at peace with my past.",
-    "I let go of what I cannot change.",
-    "I free myself through forgiveness.",
-    "I embrace healing and freedom.",
-    "I release all negativity from my heart.",
-    "I trust the process of letting go.",
-    "I am gentle with myself in the process of forgiveness.",
-    "I release bitterness and welcome joy.",
-    "Forgiveness strengthens my spirit.",
-    "I am ready to move forward with grace.",
-    "I forgive to free myself, not to excuse.",
-    "Letting go brings me peace and clarity.",
-    "I am lighter and freer every day.",
-    "I choose to live with an open heart.",
-    "I release resentment and embrace love.",
-    "Forgiveness heals and empowers me.",
-    "I release the need to hold on to hurt.",
-    "I am at peace with all that has passed.",
-    "I embrace forgiveness as a path to freedom.",
-    "I am grateful for the peace forgiveness brings."
-  ]
-},
-
-"conquer-loneliness": {
-  name: " Conquer Loneliness",
-  affirmations: [
-    "I am never truly alone; I am connected to the world around me.",
-    "I am worthy of meaningful and loving relationships.",
-    "I find comfort in my own company.",
-    "I open my heart to new friendships and connections.",
-    "I am enough just as I am.",
-    "I attract people who appreciate and support me.",
-    "I nurture my relationships with love and kindness.",
-    "I enjoy moments of solitude as time for growth and reflection.",
-    "I am surrounded by love, even when I feel alone.",
-    "I release feelings of loneliness and welcome connection.",
-    "I reach out when I need support and companionship.",
-    "I am open to giving and receiving love freely.",
-    "I find peace within myself.",
-    "I create space in my life for meaningful connections.",
-    "I am patient and kind to myself during lonely times.",
-    "I celebrate my uniqueness and what I bring to others.",
-    "I choose to focus on love and connection every day.",
-    "I am a source of light and warmth for others.",
-    "I embrace opportunities to connect with new people.",
-    "I love and accept myself fully.",
-    "I am grateful for the relationships I have.",
-    "I nurture my inner world with compassion.",
-    "I am open to experiencing joy and companionship.",
-    "I trust that the right people are coming into my life.",
-    "I create connection through kindness and authenticity.",
-    "I am connected to the universal energy of love.",
-    "I find strength in both solitude and community.",
-    "I am deserving of deep, fulfilling relationships.",
-    "I release fear of loneliness and welcome connection.",
-    "I am grateful for the love that surrounds me, seen and unseen.",
-    "I am connected to love and light, even when alone.",
-    "I cherish my own company and find peace within.",
-    "I am never truly alone; love surrounds me always.",
-    "I open my heart to meaningful connections.",
-    "I am worthy of deep and loving relationships.",
-    "I nurture friendships that enrich my life.",
-    "I welcome new people and experiences with joy.",
-    "I find comfort and strength in solitude.",
-    "My presence brings value to every space.",
-    "I attract supportive and loving relationships.",
-    "I am open to love and connection every day.",
-    "I am grateful for the relationships I have.",
-    "I create space in my life for meaningful connection.",
-    "I am safe, loved, and supported.",
-    "I embrace moments of solitude as opportunities to grow.",
-    "I nurture myself with love and kindness.",
-    "I am open to new friendships and connections.",
-    "I release feelings of loneliness and welcome joy.",
-    "I am connected to the universe and all its love.",
-    "I find peace in my own company.",
-    "I trust that new connections are on their way to me.",
-    "I am deserving of meaningful relationships.",
-    "I am patient and kind to myself when feeling lonely.",
-    "I am surrounded by love, seen and unseen.",
-    "I attract people who uplift and support me.",
-    "I am confident in my ability to connect.",
-    "I celebrate the relationships that nurture me.",
-    "I am open, warm, and welcoming to others.",
-    "I cherish the love within myself.",
-    "I am never alone on my journey."
-  ]
-},
-
-"overcome-toxic-relationships": {
-  name: "Overcome Toxic Relationships",
-  affirmations: [
-    "I deserve healthy and loving relationships.",
-    "I am worthy of respect and kindness.",
-    "I release relationships that no longer serve my well-being.",
-    "I am strong enough to walk away from toxicity.",
-    "I honor my feelings and trust my intuition.",
-    "I choose peace over conflict and chaos.",
-    "I am healing and growing every day.",
-    "I create boundaries that protect my heart.",
-    "I am learning to love myself more deeply.",
-    "I forgive myself for past mistakes and move forward.",
-    "I attract positive, supportive people into my life.",
-    "I am free from the need for approval from toxic people.",
-    "I release guilt and embrace self-love.",
-    "I am courageous in creating a healthy environment.",
-    "I trust myself to make choices that honor my soul.",
-    "I am worthy of relationships that uplift and inspire me.",
-    "I let go of fear and embrace freedom.",
-    "I deserve happiness and peace in all my relationships.",
-    "I am not responsible for others' toxic behaviors.",
-    "I choose to surround myself with love and positivity.",
-    "I am reclaiming my power with each step I take.",
-    "I am patient with my healing process.",
-    "I am stronger than any pain from my past.",
-    "I deserve to be treated with dignity and care.",
-    "I release toxic patterns and welcome new beginnings.",
-    "I am learning to trust again, starting with myself.",
-    "I attract relationships that reflect my worth.",
-    "I am worthy of unconditional love.",
-    "I choose to nurture myself and my happiness.",
-    "Every day, I move closer to freedom and peace.",
-    "I deserve relationships that uplift and support me.",
-    "I release all negativity that no longer serves me.",
-    "I am worthy of respect and kindness.",
-    "I choose peace and healing over conflict.",
-    "I set healthy boundaries with love and confidence.",
-    "I let go of toxic influences with courage.",
-    "My heart is open to healthy, loving connections.",
-    "I forgive but do not forget my worth.",
-    "I trust my intuition to guide me away from harm.",
-    "I attract relationships that honor my true self.",
-    "I am healing from past wounds every day.",
-    "I am patient with myself as I grow stronger.",
-    "I release guilt and embrace self-love.",
-    "I am surrounded by love and positivity.",
-    "I deserve to be treated with compassion and respect.",
-    "I release toxic patterns and welcome peace.",
-    "I am empowered to create boundaries that protect me.",
-    "I am free from relationships that drain my energy.",
-    "I choose to nurture myself and my well-being.",
-    "I honor my feelings and act with courage.",
-    "I am learning and growing from my experiences.",
-    "I am deserving of love that nourishes my soul.",
-    "I release fear and welcome healthy connections.",
-    "I trust the journey to healthier relationships.",
-    "I am stronger every day as I heal and grow.",
-    "I surround myself with positive and supportive people.",
-    "I honor my need for peace and safety.",
-    "I am worthy of happiness and harmony.",
-    "I release the past and create space for love.",
-    "I am committed to my healing and self-respect."
-  ]
-},
-
-"forge-new-connections": {
-  name: " Forge New Connections",
-  affirmations: [
-    "I am open to meeting new people and making friends.",
-    "I attract positive and genuine connections.",
-    "I am confident in my ability to build meaningful relationships.",
-    "I am worthy of love, friendship, and connection.",
-    "I approach new relationships with an open heart and mind.",
-    "I communicate clearly and authentically with others.",
-    "I listen deeply and value others' perspectives.",
-    "I am a kind and supportive friend.",
-    "I welcome new people into my life with warmth and openness.",
-    "I release fear and embrace the joy of connection.",
-    "I am curious and excited to learn about others.",
-    "I am patient as I build trust and rapport.",
-    "I am grateful for every new connection I make.",
-    "I nurture relationships that bring mutual growth and happiness.",
-    "I am approachable and friendly.",
-    "I create space for new friendships to flourish.",
-    "I am confident in social settings and enjoy meeting new people.",
-    "I attract friends who respect and appreciate me.",
-    "I am open to diverse and enriching relationships.",
-    "I build connections based on honesty and trust.",
-    "I am present and engaged when connecting with others.",
-    "I radiate positive energy that draws people to me.",
-    "I embrace vulnerability as a strength in relationships.",
-    "I give and receive support freely and joyfully.",
-    "I celebrate the uniqueness of each new person I meet.",
-    "I am proactive in creating opportunities to connect.",
-    "I believe in the power of authentic connection.",
-    "I am open to the abundance of friendships available to me.",
-    "I attract connections that inspire and uplift me.",
-    "Every day, I expand my circle of meaningful relationships.",
-    "I am open to new friendships and opportunities.",
-    "I attract positive and supportive people into my life.",
-    "I am confident and approachable.",
-    "I welcome new connections with an open heart.",
-    "I create meaningful relationships easily.",
-    "I am worthy of love and friendship.",
-    "I embrace new experiences and the people I meet.",
-    "I communicate openly and authentically.",
-    "I am a good listener and a valued friend.",
-    "I am surrounded by people who uplift and inspire me.",
-    "I nurture my relationships with kindness and care.",
-    "I release fear and welcome connection.",
-    "I am grateful for every new person I meet.",
-    "I trust that new friendships come at the right time.",
-    "I create space in my life for meaningful connections.",
-    "I attract relationships that support my growth.",
-    "I am patient and open as new bonds form.",
-    "I am excited about the possibilities of new connections.",
-    "I share my authentic self with others.",
-    "I build bridges that bring love and understanding.",
-    "I am confident in social situations.",
-    "I am open to love and friendship in all forms.",
-    "I attract friendships that bring joy and support.",
-    "I am curious and open-minded about others.",
-    "I embrace vulnerability as a strength in relationships.",
-    "I create connections that nourish my soul.",
-    "I am grateful for the community I build.",
-    "I meet people who respect and appreciate me.",
-    "I am worthy of deep and lasting friendships.",
-    "I am open, warm, and inviting."
-  ]
-},
-
-"nurture-sexuality": {
-  name: "Nurture Sexuality",
-  affirmations: [
-    "I honor and respect my sexual self.",
-    "I embrace my sexuality as a natural and beautiful part of me.",
-    "I am worthy of pleasure, intimacy, and connection.",
-    "I listen to my body and honor its desires.",
-    "I express my sexuality with confidence and authenticity.",
-    "I release shame and guilt around my sexual feelings.",
-    "I am in tune with my needs and communicate them clearly.",
-    "I create safe and loving experiences for myself and others.",
-    "I celebrate my unique sexual energy.",
-    "I am deserving of mutual respect and consent in all relationships.",
-    "I nurture my sexual health with care and mindfulness.",
-    "I accept and love my body fully, exactly as it is.",
-    "I explore my sexuality with curiosity and without judgment.",
-    "I set healthy boundaries that protect my emotional and physical well-being.",
-    "I am comfortable with my sensuality and express it freely.",
-    "I attract relationships that honor my sexual expression.",
-    "I honor the sacredness of intimacy.",
-    "I am proud of my sexual growth and self-discovery.",
-    "I allow myself to experience joy and pleasure without fear.",
-    "I am connected to my sensual and sexual energy.",
-    "I release past hurts and open myself to new, positive experiences.",
-    "I trust my intuition to guide my sexual choices.",
-    "I deserve love, passion, and intimacy.",
-    "I nurture my sexuality with kindness and respect.",
-    "I am empowered to say yes or no based on my feelings.",
-    "I embrace my sexuality as an expression of my true self.",
-    "I am grateful for my body and its capacity for pleasure.",
-    "I create relationships built on trust, respect, and mutual pleasure.",
-    "I celebrate my sexual identity with pride.",
-    "My sexuality is a source of strength, creativity, and joy.",
-    "I embrace my sexuality with confidence and love.",
-    "My body is a source of pleasure and power.",
-    "I honor my desires and boundaries.",
-    "I am comfortable expressing my true self.",
-    "I celebrate my sexuality as a natural part of who I am.",
-    "I nurture intimacy with kindness and respect.",
-    "I am worthy of love and passion.",
-    "I listen to my body's needs and honor them.",
-    "I release shame and embrace pleasure.",
-    "I am confident in my sensuality.",
-    "I attract loving and respectful partners.",
-    "I communicate openly about my desires.",
-    "My sexuality is healthy and vibrant.",
-    "I honor my emotions and physical sensations.",
-    "I am free to explore my sexuality without judgment.",
-    "I respect my body and its signals.",
-    "I am proud of my sexual expression.",
-    "I create safe and loving spaces for intimacy.",
-    "I am open to pleasure and connection.",
-    "I trust my instincts and desires.",
-    "I release fear and embrace confidence in my sexuality.",
-    "I celebrate the beauty of my body.",
-    "I nurture my sexual energy with care and respect.",
-    "I am deserving of fulfilling and joyful intimacy.",
-    "I honor my personal journey with sexuality.",
-    "I am patient and gentle with myself as I explore.",
-    "I am connected to my body and its wisdom.",
-    "I embrace my unique sexual identity.",
-    "I am confident in setting boundaries that honor my needs.",
-    "I celebrate sexuality as a vital part of my life."
-  ]
-},
-
-"manifest-new-love": {
-  name: " Manifest New Love",
-  affirmations: [
-    "I am open and ready to receive new love.",
-    "I deserve a loving, healthy, and fulfilling relationship.",
-    "Love flows to me effortlessly and abundantly.",
-    "I attract a partner who respects, supports, and cherishes me.",
-    "I am worthy of deep connection and true intimacy.",
-    "My heart is open to give and receive love freely.",
-    "I release past hurts and welcome new beginnings.",
-    "I radiate love and attract loving energy.",
-    "I am confident in my ability to create a meaningful relationship.",
-    "I trust the universe to bring me the right partner at the right time.",
-    "I am grateful for the love that is coming into my life.",
-    "I love myself fully, and that love attracts my perfect match.",
-    "I am patient and trust the process of manifesting love.",
-    "I communicate my needs and desires with clarity and kindness.",
-    "I welcome a partner who aligns with my values and dreams.",
-    "I am excited to build a joyful and loving partnership.",
-    "I attract relationships filled with mutual respect and trust.",
-    "I am deserving of a love that uplifts and inspires me.",
-    "I release fear and embrace love with an open heart.",
-    "I celebrate my worthiness to be loved deeply.",
-    "I am a magnet for genuine and lasting love.",
-    "I am open to new experiences and connections.",
-    "I create space in my life for love to flourish.",
-    "I nurture my heart and prepare it for love.",
-    "I am ready to share my life with someone special.",
-    "I attract love that nourishes my soul.",
-    "I believe in the power of love to transform my life.",
-    "I welcome kindness, passion, and joy into my relationships.",
-    "I am grateful for the love I give and receive.",
-    "My heart is ready to receive a beautiful new love.",
-    "I am open to receiving a loving and nurturing relationship.",
-    "I attract love that honors and supports me.",
-    "My heart is ready for deep and meaningful connection.",
-    "I deserve love that is kind, joyful, and abundant.",
-    "I release past hurts and welcome new love.",
-    "I am attracting my perfect partner with ease.",
-    "I radiate love and attract it in return.",
-    "I trust the universe to bring the right love to me.",
-    "I am worthy of a relationship filled with respect and passion.",
-    "I open myself to love's infinite possibilities.",
-    "I love and accept myself fully, preparing for love from others.",
-    "I am grateful for the love I have and the love on its way.",
-    "My heart is open and ready to give and receive love.",
-    "I attract loving energy in all areas of my life.",
-    "I am patient and trust in divine timing for love.",
-    "I deserve love that uplifts and empowers me.",
-    "I release all fears around love and open to joy.",
-    "I am confident in my ability to attract true love.",
-    "I welcome romance and connection into my life.",
-    "I am worthy of love that is consistent and genuine.",
-    "I choose to see love everywhere I go.",
-    "I am open to building a relationship based on trust.",
-    "I am ready to share my authentic self with someone special.",
-    "I attract love effortlessly and naturally.",
-    "I am surrounded by love and positive relationships.",
-    "I forgive past love disappointments and move forward.",
-    "I embrace love as a source of healing and growth.",
-    "I honor my heart's desires and attract love accordingly.",
-    "I am deserving of a love that is joyful and free.",
-    "Love flows to me easily and abundantly."
-  ]
-},
-
-"deal-with-postpartum": {
-  name: " Deal with Postpartum",
-  affirmations: [
-    "I am doing my best, and that is enough.",
-    "My body is strong and healing every day.",
-    "I am patient with myself during this transition.",
-    "It's okay to ask for help and support.",
-    "I nurture myself with kindness and compassion.",
-    "My feelings are valid, and I honor them.",
-    "I am growing into this new role with grace.",
-    "I am proud of the love I give my baby.",
-    "I forgive myself for any mistakes; I am learning.",
-    "I am allowed to take time to rest and recover.",
-    "My emotions are part of my healing journey.",
-    "I am more than my postpartum challenges.",
-    "I am deserving of support and understanding.",
-    "I choose to focus on small moments of joy.",
-    "I release guilt and embrace self-love.",
-    "Every day, I become stronger and more resilient.",
-    "I am connected to a community of mothers who understand.",
-    "I listen to my body's needs with compassion.",
-    "I celebrate every victory, no matter how small.",
-    "I trust my instincts as a mother.",
-    "I honor my need for self-care without guilt.",
-    "My baby feels my love and care deeply.",
-    "I am patient with my healing process.",
-    "I am learning to balance my needs and my baby's needs.",
-    "I give myself permission to feel whatever comes up.",
-    "I am enough, just as I am right now.",
-    "I create space for rest and renewal in my life.",
-    "I am gentle with my mind and body.",
-    "I celebrate my strength and courage every day.",
-    "I am grateful for the bond I am building with my baby.",
-    "I trust that healing is happening at the right pace.",
-    "I release pressure and expectations.",
-    "I welcome support from those who care about me.",
-    "I choose to nurture myself with love and patience.",
-    "I embrace the changes in my body with kindness.",
-    "I am proud of how far I've come.",
-    "I listen to my emotions without judgment.",
-    "I am deserving of rest and relaxation.",
-    "I am connected to my baby through love and trust.",
-    "I allow myself to receive help graciously.",
-    "I honor the complexity of postpartum emotions.",
-    "I am patient with the healing process.",
-    "I release shame and welcome self-acceptance.",
-    "I am learning new strengths every day.",
-    "I am surrounded by love and support.",
-    "I celebrate the small moments of peace and joy.",
-    "I am gentle with myself as I navigate this journey.",
-    "I trust my body to heal and recover fully.",
-    "I am worthy of kindness from myself and others.",
-    "I give myself permission to prioritize my well-being.",
-    "I release fears and welcome hope.",
-    "I am building a foundation of love and care.",
-    "I am learning to balance my emotions with grace.",
-    "I am supported, seen, and heard.",
-    "I am growing into my new identity with courage.",
-    "I celebrate my progress, no matter how small.",
-    "I am enough for my baby and myself.",
-    "I embrace the journey of motherhood with love.",
-    "I am patient and compassionate with my healing process.",
-    "Each day, I choose love, healing, and strength."
-  ]
-},
-
-"awaken-spiritually": {
-  name: "Awaken Spiritually",
-  affirmations: [
-    "I am open to the wisdom of my inner spirit.",
-    "My soul is awakening to new levels of awareness.",
-    "I trust the guidance of my higher self.",
-    "I am connected to the infinite source of love and light.",
-    "I embrace spiritual growth as a joyful journey.",
-    "My heart is open to divine wisdom and truth.",
-    "I release all fears and doubts about my spiritual path.",
-    "I am in harmony with the universe's flow.",
-    "I am a radiant being of light and love.",
-    "My intuition guides me clearly and confidently.",
-    "I am aligned with my highest purpose.",
-    "I nurture my spirit through daily practices of mindfulness.",
-    "I welcome spiritual insights and revelations.",
-    "I am worthy of divine love and grace.",
-    "I trust the timing of my spiritual awakening.",
-    "I embrace silence and stillness to hear my inner voice.",
-    "I am grateful for the spiritual lessons I receive.",
-    "I release attachment to outcomes and trust the process.",
-    "I am a co-creator of my spiritual reality.",
-    "My energy is pure, vibrant, and healing.",
-    "I open my heart chakra to love and compassion.",
-    "I am connected to the wisdom of all living things.",
-    "I listen deeply to the messages of my soul.",
-    "I release negativity and welcome positive energy.",
-    "I am patient with my spiritual growth and transformation.",
-    "I honor my spiritual journey without judgment.",
-    "I trust in the divine timing of all things.",
-    "I am a lightworker, shining love into the world.",
-    "I am open to receive healing energy from the universe.",
-    "I embrace gratitude as a spiritual practice.",
-    "I am connected to my ancestors and spiritual guides.",
-    "I release limiting beliefs and embrace spiritual freedom.",
-    "I am present in every moment with awareness and love.",
-    "I cultivate peace and calm within my mind and heart.",
-    "I am worthy of spiritual abundance and joy.",
-    "I surrender control and trust the divine plan.",
-    "I awaken to the sacredness of all life.",
-    "I am a vessel for divine light and healing.",
-    "I honor my inner knowing and spiritual gifts.",
-    "I am open to miracles and synchronicities in my life.",
-    "I choose love as my highest vibration.",
-    "I release attachment to material things and embrace spiritual richness.",
-    "I am connected to the energy of the earth and sky.",
-    "I practice compassion for myself and others.",
-    "I am evolving into my highest spiritual self.",
-    "I welcome transformation with an open heart.",
-    "I trust that I am always guided and protected.",
-    "I nurture my soul through meditation and reflection.",
-    "I am grateful for my unique spiritual path.",
-    "I radiate peace, love, and understanding.",
-    "I am attuned to the energy of the universe.",
-    "I release past spiritual wounds and embrace healing.",
-    "I honor the divine light within myself and others.",
-    "I am patient and gentle with my spiritual awakening.",
-    "I allow my spirit to shine brightly and freely.",
-    "I am connected to universal love and wisdom.",
-    "I trust the journey of my soul's evolution.",
-    "I embrace the unknown with courage and faith.",
-    "I am grateful for every step on my spiritual path.",
-    "I awaken fully to my divine purpose and light."
-  ]
-},
-
-"harness-law-of-attraction": {
-  name: "Harness the Law of Attraction",
-  affirmations: [
-    "I am a powerful creator of my reality.",
-    "I attract all that I desire with ease and grace.",
-    "My thoughts and feelings align with my highest good.",
-    "I am worthy of receiving abundance in all areas of life.",
-    "I focus on what I want, and it comes to me effortlessly.",
-    "I am open and receptive to unlimited possibilities.",
-    "I trust the universe to deliver my desires at the perfect time.",
-    "I release resistance and welcome flow.",
-    "I believe in my power to manifest my dreams.",
-    "My positive energy attracts positive experiences.",
-    "I am grateful for all that I have and all that is coming.",
-    "I visualize my goals clearly and confidently.",
-    "I am in alignment with the energy of abundance.",
-    "I let go of doubt and embrace faith.",
-    "I attract loving and supportive people into my life.",
-    "I am deserving of success and happiness.",
-    "My actions are inspired and lead me closer to my dreams.",
-    "I speak affirmations of abundance and success daily.",
-    "I am magnetic to opportunities and prosperity.",
-    "I release limiting beliefs that block my manifestations.",
-    "I trust that everything I need is coming to me now.",
-    "I am open to receiving unexpected blessings.",
-    "I focus on gratitude to attract more to be grateful for.",
-    "I am patient and trust the timing of the universe.",
-    "I attract wealth, health, and happiness effortlessly.",
-    "I am aligned with the vibration of success.",
-    "My mind is clear, focused, and positive.",
-    "I attract ideas that bring me closer to my goals.",
-    "I believe in infinite possibilities.",
-    "I am worthy of living my dream life.",
-    "I let go of fear and embrace abundance.",
-    "I am grateful for the abundance flowing into my life.",
-    "I visualize my ideal life with joy and clarity.",
-    "I attract positive energy wherever I go.",
-    "I am a beacon of love and positivity.",
-    "I trust my intuition to guide me to what I desire.",
-    "I am open to miracles and magical moments.",
-    "I am surrounded by abundance in every form.",
-    "I attract success through inspired action.",
-    "I release scarcity and embrace prosperity.",
-    "I am confident in my ability to manifest my desires.",
-    "I choose thoughts that support my dreams.",
-    "I am grateful for the manifestations already on their way.",
-    "I create space in my life for abundance to enter.",
-    "I am aligned with the energy of gratitude and joy.",
-    "I attract loving and meaningful relationships.",
-    "I am in tune with the universe's loving support.",
-    "I attract opportunities that help me grow.",
-    "I welcome abundance in unexpected ways.",
-    "I am open to receiving all good things.",
-    "I am worthy of love, success, and happiness.",
-    "I trust that my dreams are manifesting now.",
-    "I radiate positive energy that attracts what I desire.",
-    "I am open to new experiences that align with my goals.",
-    "I believe my manifestations are already mine.",
-    "I am aligned with the flow of universal abundance.",
-    "I nurture my dreams with positive thoughts and actions.",
-    "I attract wealth, health, and joy effortlessly.",
-    "I am patient, persistent, and positive in my manifestation journey.",
-    "I celebrate every step of my manifestation success."
-  ]
-},
-
-"cherish-your-pregnancy": {
-  name: "Cherish Your Pregnancy",
-  affirmations: [
-    "I honor this beautiful journey of pregnancy.",
-    "My body is strong and capable of nurturing new life.",
-    "I am grateful for the life growing inside me.",
-    "I embrace the changes in my body with love and acceptance.",
-    "Each day, I connect deeply with my baby.",
-    "I am filled with joy and anticipation.",
-    "I trust my body to carry my baby safely.",
-    "I am patient and gentle with myself during this time.",
-    "I celebrate the miracle of pregnancy.",
-    "I nurture my baby with love, warmth, and care.",
-    "I listen to my body's needs and honor them.",
-    "I am calm, centered, and peaceful.",
-    "I release fear and welcome excitement.",
-    "I am surrounded by love and support.",
-    "I am grateful for the strength pregnancy gives me.",
-    "I am connected to the wisdom of my body.",
-    "I welcome this time to prepare and bond with my baby.",
-    "I trust my intuition as a mother.",
-    "My baby feels my love and care every moment.",
-    "I breathe deeply and relax my body and mind.",
-    "I celebrate the growth and change happening within me.",
-    "I honor the sacredness of pregnancy.",
-    "I am proud of the life I am creating.",
-    "I am deserving of love, care, and rest.",
-    "I welcome all feelings and emotions with compassion.",
-    "I nurture my spirit along with my body.",
-    "I am open to receiving help and support.",
-    "I cherish every moment of this journey.",
-    "I am creating a safe and loving space for my baby.",
-    "I release tension and embrace peace.",
-    "I am grateful for my body's ability to nurture life.",
-    "I trust the process of pregnancy and birth.",
-    "I am kind and patient with myself every day.",
-    "I allow myself to rest and replenish my energy.",
-    "I am surrounded by positive energy and love.",
-    "I celebrate the connection growing between me and my baby.",
-    "I am worthy of joy and celebration in pregnancy.",
-    "I breathe in calmness and breathe out worry.",
-    "I am supported by the love of those around me.",
-    "I honor the changes in my body as signs of growth.",
-    "I am present in every moment of this miraculous journey.",
-    "I welcome the new life with an open heart.",
-    "I trust in the wisdom of my body and baby.",
-    "I am grateful for the miracle growing inside me.",
-    "I celebrate the strength pregnancy brings me.",
-    "I nurture my baby with kindness and love.",
-    "I am calm, confident, and prepared.",
-    "I embrace the sacred connection between mother and child.",
-    "I release stress and welcome peace.",
-    "I listen with love to my baby's needs.",
-    "I am proud of my body and all it can do.",
-    "I am grateful for the support and love I receive.",
-    "I cherish the miracle of life within me.",
-    "I am surrounded by healing and positive energy.",
-    "I trust the journey and the timing of my pregnancy.",
-    "I am filled with hope, love, and joy.",
-    "I nurture my baby's growth with patience and care.",
-    "I embrace this time to connect deeply with my baby.",
-    "I am thankful for the gift of pregnancy.",
-    "I celebrate the beautiful life growing inside me."
-  ]
-},
-
-"conquer-loneliness": {
-  name: " Conquer Loneliness",
-  affirmations: [
-    "I am never truly alone; I am connected to all life.",
-    "I enjoy my own company and find peace within myself.",
-    "I am worthy of love and meaningful friendships.",
-    "I open my heart to new connections and relationships.",
-    "I embrace solitude as a time for growth and reflection.",
-    "I am enough just as I am.",
-    "I attract loving and supportive people into my life.",
-    "I am open to receiving love in many forms.",
-    "I nurture my relationship with myself every day.",
-    "I am deserving of kindness and companionship.",
-    "I release feelings of loneliness with compassion.",
-    "I am grateful for the moments of peace I find alone.",
-    "I reach out and connect with others confidently.",
-    "I am surrounded by love, even when I can't see it.",
-    "I trust that connection will come at the right time.",
-    "I am creating space for friendships and love to grow.",
-    "I listen to my heart's needs and honor them.",
-    "I am open to making meaningful connections.",
-    "I deserve relationships that nourish my soul.",
-    "I enjoy moments of quiet as opportunities for self-discovery.",
-    "I am patient and gentle with myself through lonely moments.",
-    "I am connected to the energy of love everywhere.",
-    "I am a magnet for positive and authentic relationships.",
-    "I release fear of rejection and embrace connection.",
-    "I honor my feelings and allow healing to happen.",
-    "I celebrate the friendships I have and the ones coming.",
-    "I am confident in my ability to connect with others.",
-    "I create fulfilling relationships built on trust and respect.",
-    "I am worthy of deep and lasting connections.",
-    "I choose love over loneliness.",
-    "I welcome joy and laughter into my life.",
-    "I find comfort and strength within myself.",
-    "I am surrounded by positive energy and loving people.",
-    "I open my mind and heart to new friendships.",
-    "I let go of loneliness and invite connection.",
-    "I am grateful for the support available to me.",
-    "I am never alone when I nurture my own soul.",
-    "I trust the universe to bring loving people into my life.",
-    "I embrace every opportunity to connect with others.",
-    "I am patient as I build meaningful relationships.",
-    "I am worthy of friendship and companionship.",
-    "I love and accept myself unconditionally.",
-    "I nurture my heart with kindness and care.",
-    "I am open to giving and receiving love freely.",
-    "I let go of past hurts that block connection.",
-    "I celebrate the love that surrounds me now.",
-    "I am growing stronger and more connected each day.",
-    "I attract friends who uplift and inspire me.",
-    "I honor my need for both connection and solitude.",
-    "I am filled with gratitude for every meaningful interaction.",
-    "I am confident in my ability to create a loving community.",
-    "I release loneliness and embrace self-compassion.",
-    "I cherish the love I have for myself and others.",
-    "I trust that connection is always possible.",
-    "I open my heart to joy and companionship.",
-    "I am grateful for every moment of connection I experience.",
-    "I am whole and complete on my own.",
-    "I celebrate the connections that nourish my soul.",
-    "I am deserving of love, friendship, and belonging.",
-    "I am open, ready, and excited for new relationships."
-  ]
-},
-
-"heal-from-grief": {
-  name: " Heal From Grief",
-  affirmations: [
-    "I allow myself to feel and honor my grief.",
-    "It's okay to grieve in my own time and way.",
-    "I am gentle and patient with myself during this healing.",
-    "My feelings are valid and deserve to be expressed.",
-    "I release pain with love and compassion.",
-    "I carry the love of those I've lost in my heart.",
-    "Each day, I take small steps toward healing.",
-    "I honor the memories that bring me comfort.",
-    "I am surrounded by love and support, even when I feel alone.",
-    "Healing is a journey, and I trust the process.",
-    "I forgive myself for feeling what I feel.",
-    "It's safe for me to cry and release my emotions.",
-    "I choose to remember the love, not just the loss.",
-    "My heart is open to healing and peace.",
-    "I find moments of calm even in the pain.",
-    "I am stronger than my grief.",
-    "I allow hope to enter my heart again.",
-    "I trust that love never truly leaves us.",
-    "I nurture myself with kindness and care.",
-    "I am grateful for the impact my loved one had on my life.",
-    "I embrace healing one breath at a time.",
-    "I am patient as I rebuild my sense of peace.",
-    "My heart is resilient and capable of healing.",
-    "I release guilt and embrace forgiveness.",
-    "I am connected to the love that surrounds me.",
-    "I allow joy back into my life when I'm ready.",
-    "I honor the depth of my love and loss.",
-    "I am open to support and comfort from others.",
-    "I cherish the good memories with gratitude.",
-    "I trust my inner wisdom to guide me through grief.",
-    "I release the past with love and grace.",
-    "I create space for peace and renewal.",
-    "I am healing in my own time and way.",
-    "I am gentle with my mind and body during this process.",
-    "I hold space for my emotions without judgment.",
-    "I am worthy of healing and happiness.",
-    "I carry the light of love within me.",
-    "I allow myself to feel hope and joy again.",
-    "I trust that life will bring me moments of peace.",
-    "I am surrounded by loving memories.",
-    "I choose to focus on healing and growth.",
-    "I release the heaviness and welcome lightness.",
-    "I am grateful for the love that remains in my heart.",
-    "I am supported by those who care for me.",
-    "I breathe in calm and breathe out pain.",
-    "I allow myself to heal at my own pace.",
-    "I honor the journey of grief as part of love.",
-    "I open my heart to new beginnings.",
-    "I am surrounded by peace and comfort.",
-    "I celebrate the love that lives on within me.",
-    "I accept the changes grief brings with courage.",
-    "I am healing, growing, and becoming whole again.",
-    "I let go of what no longer serves me.",
-    "I find strength in my vulnerability.",
-    "I embrace the support available to me.",
-    "I allow love to guide my healing process.",
-    "I trust that time will bring me peace.",
-    "I nurture my soul with love and patience.",
-    "I am open to healing in every moment.",
-    "I am grateful for the resilience of my heart."
-  ]
-},
-
-"fuel-vitality": {
-  name: " Fuel Vitality",
-  affirmations: [
-    "My body is full of energy and vitality.",
-    "I wake up feeling refreshed and ready to embrace the day.",
-    "Every cell in my body radiates health and strength.",
-    "I nourish my body with healthy food and positive thoughts.",
-    "I am vibrant, alive, and full of life.",
-    "My mind is clear, focused, and energized.",
-    "I have endless energy to pursue my passions.",
-    "I honor my body's needs and give it the rest it deserves.",
-    "I breathe deeply and fill my body with life-giving oxygen.",
-    "I move my body joyfully and with ease.",
-    "I am grateful for my strong and healthy body.",
-    "I release all fatigue and embrace vitality.",
-    "I am energized by the world around me.",
-    "I choose habits that boost my energy every day.",
-    "My body knows how to heal and regenerate.",
-    "I attract positive energy into my life.",
-    "I am filled with vibrant energy from morning till night.",
-    "I treat my body with love, respect, and care.",
-    "I am capable of overcoming any fatigue or tiredness.",
-    "I am energized, motivated, and unstoppable.",
-    "I let go of stress and welcome calm energy.",
-    "My spirit is alive and full of vitality.",
-    "I am grateful for my body's strength and endurance.",
-    "I choose to think thoughts that energize and uplift me.",
-    "I am a powerhouse of vitality and joy.",
-    "My energy flows freely and effortlessly.",
-    "I am full of life and enthusiasm for all I do.",
-    "I sleep deeply and wake up fully restored.",
-    "I am connected to the earth's energy and vitality.",
-    "I embrace movement and activity that fuels my body.",
-    "I am vibrant, healthy, and full of energy.",
-    "My body is my temple, and I honor it daily.",
-    "I am energized by positive relationships and surroundings.",
-    "I radiate vitality in everything I do.",
-    "I choose to feel alive and invigorated.",
-    "I am strong, healthy, and full of life force energy.",
-    "I nurture my mind, body, and soul with care and attention.",
-    "I am refreshed and energized by every breath I take.",
-    "I celebrate my body's amazing abilities.",
-    "I am grateful for my vitality and zest for life.",
-    "I release all blocks to my energy and enthusiasm.",
-    "I am energized by the light and warmth of the sun.",
-    "My energy is renewed with every healthy choice I make.",
-    "I am a vibrant being full of dynamic energy.",
-    "I choose to feel energized and strong today.",
-    "I fuel my body with nourishing foods that boost my vitality.",
-    "I am energized, alert, and ready for all challenges.",
-    "I love and respect my body's need for rest and activity.",
-    "I am filled with life, health, and vitality.",
-    "I attract energy and motivation effortlessly.",
-    "I am grateful for the strength and vitality that flows through me.",
-    "I feel vibrant, alive, and full of positive energy.",
-    "I am capable of achieving my goals with vitality and focus.",
-    "I embrace life with enthusiasm and vigor.",
-    "My energy increases with every healthy habit I practice.",
-    "I am filled with renewed strength every morning.",
-    "I honor my body's rhythms and give it what it needs.",
-    "I choose vitality in every thought, action, and choice.",
-    "I am alive, energized, and joyful in this moment.",
-    "I am grateful for my vibrant health and abundant energy."
-  ]
-},
-
-"adopt-stoic-mindset": {
-  name: " Adopt Stoic Mindset",
-  affirmations: [
-    "I control my reactions, not external events.",
-    "I accept what I cannot change with grace.",
-    "I focus on what is within my power.",
-    "I remain calm in the face of adversity.",
-    "I practice patience and self-discipline daily.",
-    "I embrace challenges as opportunities for growth.",
-    "I am master of my thoughts and emotions.",
-    "I detach from outcomes and focus on my actions.",
-    "I accept discomfort as part of life's journey.",
-    "I live according to my values and principles.",
-    "I welcome obstacles as teachers of wisdom.",
-    "I cultivate inner peace amidst external chaos.",
-    "I choose reason over impulse.",
-    "I am grounded and steady in all situations.",
-    "I practice gratitude for what I have.",
-    "I do not fear loss, for I am resilient.",
-    "I accept impermanence as a natural law.",
-    "I am responsible for my own happiness.",
-    "I seek wisdom through reflection and learning.",
-    "I remain humble and open-minded.",
-    "I respond with kindness, not anger.",
-    "I control my desires instead of being controlled by them.",
-    "I find strength in self-awareness.",
-    "I focus on progress, not perfection.",
-    "I am calm and composed in difficult moments.",
-    "I practice self-control in all areas of life.",
-    "I accept criticism as an opportunity to improve.",
-    "I live with intention and purpose.",
-    "I let go of what does not serve my growth.",
-    "I am at peace with uncertainty.",
-    "I embrace simplicity and avoid excess.",
-    "I cultivate resilience through mindful practice.",
-    "I find joy in the present moment.",
-    "I am patient with myself and others.",
-    "I focus on my own journey, not others' opinions.",
-    "I accept failure as a stepping stone to success.",
-    "I am not defined by external circumstances.",
-    "I choose calm over chaos.",
-    "I nurture my mind with wisdom and reason.",
-    "I practice humility in all my actions.",
-    "I am mindful of my thoughts and their impact.",
-    "I accept criticism without defensiveness.",
-    "I am content with what I have.",
-    "I let go of anger and resentment.",
-    "I face life's difficulties with courage and strength.",
-    "I focus on what truly matters.",
-    "I accept my limits and work within them.",
-    "I am present and engaged in every moment.",
-    "I embrace change as an opportunity to learn.",
-    "I seek to understand before being understood.",
-    "I cultivate compassion for myself and others.",
-    "I focus on virtue as the highest good.",
-    "I practice equanimity in success and failure.",
-    "I control my emotions instead of letting them control me.",
-    "I find peace in accepting life's impermanence.",
-    "I use reason as my guide in all decisions.",
-    "I am patient and persistent in pursuit of my goals.",
-    "I let go of attachment to outcomes.",
-    "I cultivate gratitude even in hardship.",
-    "I strive to live a life of wisdom, courage, justice, and temperance."
-  ]
-},
-
-"inspire-as-leader": {
-  name: " Inspire as a Leader",
-  affirmations: [
-    "I lead with integrity and authenticity.",
-    "I inspire others by living my values.",
-    "I communicate clearly and listen deeply.",
-    "I empower those around me to grow and succeed.",
-    "I am confident in my vision and decisions.",
-    "I embrace challenges as opportunities to lead.",
-    "I am calm and composed in difficult situations.",
-    "I lead with empathy and understanding.",
-    "I encourage creativity and innovation in my team.",
-    "I am open to feedback and continuous learning.",
-    "I motivate others through my passion and purpose.",
-    "I build trust through honesty and transparency.",
-    "I am resilient and adapt to change with grace.",
-    "I value collaboration and diverse perspectives.",
-    "I take responsibility for my actions and outcomes.",
-    "I inspire confidence through my actions.",
-    "I foster a positive and inclusive environment.",
-    "I lead by example, showing dedication and commitment.",
-    "I cultivate patience and persistence.",
-    "I recognize and celebrate the strengths of others.",
-    "I make decisions that align with my core values.",
-    "I am a source of calm and clarity in times of uncertainty.",
-    "I encourage growth mindset in myself and others.",
-    "I listen to understand, not just to respond.",
-    "I embrace humility and learn from my mistakes.",
-    "I inspire action through clear vision and purpose.",
-    "I motivate my team by showing genuine care and respect.",
-    "I am decisive yet open-minded.",
-    "I build strong relationships based on trust and respect.",
-    "I lead with courage, even in the face of fear.",
-    "I foster innovation by encouraging new ideas.",
-    "I am a source of inspiration and motivation.",
-    "I focus on solutions rather than problems.",
-    "I nurture talent and encourage development.",
-    "I am passionate about creating positive change.",
-    "I communicate with clarity and conviction.",
-    "I am approachable and open to dialogue.",
-    "I lead with empathy, valuing each individual's contribution.",
-    "I inspire others to believe in their potential.",
-    "I remain calm and focused under pressure.",
-    "I encourage collaboration and teamwork.",
-    "I set clear goals and help others achieve them.",
-    "I practice gratitude for the efforts of my team.",
-    "I am adaptable and embrace new challenges.",
-    "I lead with honesty and authenticity.",
-    "I inspire trust through consistent actions.",
-    "I create a vision that excites and motivates others.",
-    "I encourage open communication and feedback.",
-    "I take initiative and lead with confidence.",
-    "I support others in overcoming obstacles.",
-    "I am committed to personal and professional growth.",
-    "I inspire others by being a lifelong learner.",
-    "I celebrate success, both big and small.",
-    "I build resilience in myself and my team.",
-    "I lead with compassion and understanding.",
-    "I foster an environment where everyone feels valued.",
-    "I am focused on creating meaningful impact.",
-    "I encourage others to step into their leadership.",
-    "I remain grounded and humble as a leader.",
-    "I am proud to lead with purpose and passion."
-  ]
-},
-
-"elevate-career": {
-  name: " Elevate Career",
-  affirmations: [
-    "I am capable of achieving great success in my career.",
-    "I attract opportunities that align with my goals.",
-    "I am confident in my skills and expertise.",
-    "I embrace challenges as stepping stones to growth.",
-    "I learn and grow from every experience.",
-    "I communicate my ideas clearly and effectively.",
-    "I am proactive in pursuing my career goals.",
-    "I build strong, supportive professional relationships.",
-    "I am open to new opportunities and experiences.",
-    "I trust my intuition to guide my career decisions.",
-    "I am valued and respected at work.",
-    "I handle workplace challenges with grace and resilience.",
-    "I am deserving of promotions and raises.",
-    "I stay focused and motivated every day.",
-    "I balance ambition with patience and persistence.",
-    "I continuously improve my skills and knowledge.",
-    "I am a valuable asset to my team and organization.",
-    "I set clear career goals and take consistent action.",
-    "I am confident in asking for what I deserve.",
-    "I embrace change and adapt easily to new situations.",
-    "I am creative and resourceful in solving problems.",
-    "I take responsibility for my career growth.",
-    "I am grateful for the opportunities I have.",
-    "I learn from feedback and use it to improve.",
-    "I network with positive and inspiring professionals.",
-    "I am passionate about my work and purpose.",
-    "I maintain a healthy work-life balance.",
-    "I celebrate my achievements and milestones.",
-    "I am persistent and resilient in the face of setbacks.",
-    "I trust that the right opportunities come to me at the right time.",
-    "I am open to mentorship and guidance.",
-    "I speak confidently in meetings and presentations.",
-    "I contribute valuable ideas and solutions.",
-    "I am a leader who inspires and supports others.",
-    "I am focused on long-term success and fulfillment.",
-    "I take care of my physical and mental well-being.",
-    "I attract abundance and success in my career.",
-    "I am committed to continuous learning and growth.",
-    "I am organized and manage my time effectively.",
-    "I stay calm and composed under pressure.",
-    "I am recognized for my hard work and dedication.",
-    "I am open to new challenges and opportunities.",
-    "I build positive relationships with colleagues.",
-    "I create value in every task I undertake.",
-    "I am confident in my ability to lead projects.",
-    "I set clear boundaries to protect my energy.",
-    "I am excited about my career path and future.",
-    "I embrace opportunities to develop new skills.",
-    "I am focused on solutions and growth.",
-    "I communicate with confidence and clarity.",
-    "I am worthy of success and fulfillment in my career.",
-    "I approach work with enthusiasm and dedication.",
-    "I am adaptable and open to constructive change.",
-    "I celebrate the progress I make every day.",
-    "I am a magnet for career growth and advancement.",
-    "I trust myself to make wise career decisions.",
-    "I attract mentors and allies who support my journey.",
-    "I take initiative and lead with confidence.",
-    "I am grateful for every opportunity to grow professionally.",
-    "I am creating a fulfilling and successful career."
-  ]
-},
-
-"sharpen-focus": {
-  name: " Sharpen Focus",
-  affirmations: [
-    "I am fully present and engaged in the task at hand.",
-    "My mind is clear, focused, and sharp.",
-    "I easily tune out distractions and stay on track.",
-    "I prioritize my tasks with clarity and purpose.",
-    "I approach each task with full attention and dedication.",
-    "I am disciplined and consistent in my efforts.",
-    "My focus improves with every moment I dedicate.",
-    "I am in control of my attention and energy.",
-    "I break big tasks into manageable, focused steps.",
-    "I embrace deep work and flow states easily.",
-    "I am calm and centered while working.",
-    "I release all thoughts that do not serve my focus.",
-    "I create a productive environment for myself.",
-    "I am committed to finishing what I start.",
-    "I focus on one thing at a time with ease.",
-    "I am motivated and driven to complete my goals.",
-    "I am patient with myself as I build concentration.",
-    "My mind is free from clutter and distractions.",
-    "I enjoy the satisfaction of focused work.",
-    "I nourish my body and mind to support concentration.",
-    "I take breaks when needed to maintain sharpness.",
-    "I am organized and prepared for each task.",
-    "I easily shift my attention back when it wanders.",
-    "I trust myself to stay focused and productive.",
-    "I am dedicated to improving my mental clarity daily.",
-    "I create boundaries that protect my focus.",
-    "I set clear intentions before beginning work.",
-    "I am energized by the progress I make.",
-    "I avoid multitasking and give my full attention to one thing.",
-    "I am mindful of how I use my time and energy.",
-    "I let go of perfectionism to focus on progress.",
-    "I am confident in my ability to focus deeply.",
-    "I stay motivated by remembering my goals.",
-    "I cultivate habits that enhance my focus.",
-    "I silence the noise of distractions around me.",
-    "I keep my workspace tidy to support concentration.",
-    "I use positive affirmations to maintain clarity.",
-    "I celebrate each moment of deep focus.",
-    "I am committed to my mental and emotional well-being.",
-    "I manage my energy to stay sharp throughout the day.",
-    "I set priorities that align with my values.",
-    "I am focused, efficient, and effective.",
-    "I maintain clarity even under pressure.",
-    "I am calm, composed, and in control.",
-    "I trust the process of focused work.",
-    "I use mindful breathing to center myself.",
-    "I release worries that distract me from focus.",
-    "I am consistent in cultivating my concentration skills.",
-    "I am resilient in the face of distractions.",
-    "I use time-blocking to optimize focus.",
-    "I am clear on what I want to achieve.",
-    "I respect my time and protect it fiercely.",
-    "I am focused on solutions, not problems.",
-    "I enjoy the flow of uninterrupted work.",
-    "I am fully absorbed in my work.",
-    "I take care of my mental clarity through rest and nutrition.",
-    "I am patient as I strengthen my focus muscle.",
-    "I let go of what doesn't serve my goals.",
-    "I am proud of my ability to stay on task.",
-    "Every moment of focus brings me closer to success."
-  ]
-},
-
-"ignite-motivation": {
-  name: " Ignite Motivation",
-  affirmations: [
-    "I wake up with purpose and passion.",
-    "I am fueled by my goals and driven by progress.",
-    "I have the power to make today count.",
-    "I take inspired action every single day.",
-    "My dreams are worth the effort.",
-    "I stay focused, energized, and determined.",
-    "I am unstoppable when I set my mind to something.",
-    "Each step I take moves me forward.",
-    "I turn motivation into momentum.",
-    "I have the strength to keep going, even when it's hard.",
-    "I find joy in the process, not just the outcome.",
-    "My mindset is my greatest tool for success.",
-    "I choose action over excuses.",
-    "I am the architect of my future.",
-    "Progress over perfection fuels my growth.",
-    "I embrace challenges as fuel for motivation.",
-    "I can do hard things.",
-    "I remind myself daily why I started.",
-    "I am full of energy, enthusiasm, and purpose.",
-    "My goals light a fire inside me.",
-    "I am here to do great things.",
-    "I show up for myself every day.",
-    "I take responsibility for my motivation and my results.",
-    "I am building a life I'm excited to live.",
-    "I push through limits and break boundaries.",
-    "I create opportunities through hard work and focus.",
-    "I am proud of my effort and progress.",
-    "I don't wait for motivation—I create it.",
-    "I am ready, I am willing, I am doing it.",
-    "My actions today are shaping the success I'll celebrate tomorrow.",
-    "I awaken each day with energy and enthusiasm.",
-    "My goals inspire me to take bold action.",
-    "I am driven by passion and purpose.",
-    "I turn challenges into fuel for success.",
-    "Every step I take brings me closer to my dreams.",
-    "I create momentum through consistent effort.",
-    "I am motivated by my vision of the future.",
-    "My focus sharpens with every action I take.",
-    "I choose progress over perfection every time.",
-    "I embrace discipline as a tool for growth.",
-    "My determination is unshakable.",
-    "I celebrate my motivation and commitment daily.",
-    "I push past obstacles with resilience.",
-    "I am energized by the possibilities ahead.",
-    "My enthusiasm inspires those around me.",
-    "I am committed to making my dreams a reality.",
-    "I rise above procrastination with ease.",
-    "I am focused on what truly matters.",
-    "My motivation grows stronger with each new challenge.",
-    "I am persistent and unstoppable.",
-    "I attract opportunities that fuel my drive.",
-    "I take inspired action without hesitation.",
-    "I believe in my ability to succeed.",
-    "My passion lights the path forward.",
-    "I am capable of achieving great things today.",
-    "I am motivated by progress and growth.",
-    "I embrace action as the key to success.",
-    "I keep my eyes on the prize and my heart in the moment.",
-    "I am fearless in pursuing my goals.",
-    "Every effort I make moves me closer to success."
-  ]
+    actionCards.forEach(card => {
+        card.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const targetPage = this.getAttribute('data-page');
+            console.log('Action card clicked:', targetPage);
+            
+            // Update bottom nav active state
+            const navItems = document.querySelectorAll('.bottom-nav .nav-item');
+            navItems.forEach(nav => nav.classList.remove('active'));
+            
+            const correspondingNavItem = document.querySelector(`.bottom-nav .nav-item[data-page="${targetPage}"]`);
+            if (correspondingNavItem) {
+                correspondingNavItem.classList.add('active');
+            }
+            
+            // Navigate to the target page
+            navigateToPage(targetPage);
+        });
+    });
 }
-};
-   
-   
-// Update cache when new version is available
-self.addEventListener('message', event => {
-    if (event.data && event.data.type === 'UPDATE_CACHE') {
-        event.waitUntil(
-            caches.open(CACHE_NAME).then(cache => {
-                return cache.addAll(urlsToCache);
-            })
-        );
+
+// Navigation function
+function navigateToPage(pageName) {
+    console.log('Navigating to:', pageName);
+    
+    // Hide all pages first
+    const allPages = document.querySelectorAll('.page');
+    allPages.forEach(page => {
+        page.classList.remove('active');
+        page.style.display = 'none';
+    });
+    
+    // Show the target page
+    let targetPageElement;
+    
+    switch(pageName) {
+        case 'home':
+            targetPageElement = document.getElementById('home-page') || document.querySelector('.page[data-page="home"]');
+            break;
+        case 'meditations':
+            targetPageElement = document.getElementById('meditations-page') || document.querySelector('.page[data-page="meditations"]');
+            break;
+        case 'lifemap':
+            targetPageElement = document.getElementById('lifemap-page') || document.querySelector('.page[data-page="lifemap"]');
+            break;
+        case 'affirmations':
+            targetPageElement = document.getElementById('affirmations-page') || document.querySelector('.page[data-page="affirmations"]');
+            break;
+        case 'calculators':
+            targetPageElement = document.getElementById('calculators-page') || document.querySelector('.page[data-page="calculators"]');
+            break;
+        default:
+            console.log('Page not found:', pageName);
+            return;
+    }
+    
+    if (targetPageElement) {
+        targetPageElement.style.display = 'block';
+        targetPageElement.classList.add('active');
+        console.log('Successfully navigated to:', pageName);
+        
+        // Special handling for lifemap page
+        if (pageName === 'lifemap') {
+            setTimeout(() => {
+                forceFixLifemap();
+            }, 100);
+        }
+    } else {
+        console.error('Target page element not found for:', pageName);
+    }
+}
+
+// Enhanced forceShowBottomNav to ensure clickability
+function forceShowBottomNav() {
+    const bottomNav = document.querySelector('.bottom-nav');
+    if (bottomNav) {
+        // Force all possible ways to show it and make it clickable
+        bottomNav.style.display = 'flex';
+        bottomNav.style.visibility = 'visible';
+        bottomNav.style.opacity = '1';
+        bottomNav.style.transform = 'none';
+        bottomNav.style.pointerEvents = 'auto';
+        bottomNav.style.position = 'fixed';
+        bottomNav.style.bottom = '0';
+        bottomNav.style.left = '0';
+        bottomNav.style.right = '0';
+        bottomNav.style.zIndex = '10000';
+        bottomNav.style.background = '#4c135d';
+        
+        // Ensure nav items are also clickable
+        const navItems = bottomNav.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.style.pointerEvents = 'auto';
+            item.style.cursor = 'pointer';
+        });
+        
+        console.log('Bottom nav forced to show and made clickable');
+    }
+}
+
+// Re-initialize all navigation handlers
+function reinitializeAllNavigation() {
+    console.log('Re-initializing all navigation...');
+    initializeBottomNavigation();
+    initializeHomePageActions();
+}
+
+// Initialize everything when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Initializing navigation systems...');
+    
+    // Initialize both navigation systems
+    initializeBottomNavigation();
+    initializeHomePageActions();
+    
+    // Set home as active by default
+    const homeNavItem = document.querySelector('.nav-item[data-page="home"]');
+    if (homeNavItem) {
+        homeNavItem.classList.add('active');
+    }
+    
+    // Check every 500ms for lifemap page and ensure nav works
+    setInterval(function() {
+        const lifemapPage = document.getElementById('lifemap-page');
+        if (lifemapPage && lifemapPage.classList.contains('active')) {
+            forceFixLifemap();
+        }
+        
+        // Ensure action cards are still clickable
+        const actionCards = document.querySelectorAll('.action-card');
+        actionCards.forEach(card => {
+            if (!card.hasAttribute('data-nav-initialized')) {
+                card.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const targetPage = this.getAttribute('data-page');
+                    navigateToPage(targetPage);
+                });
+                card.setAttribute('data-nav-initialized', 'true');
+            }
+        });
+    }, 500);
+});
+
+// Also run immediately with delay
+setTimeout(() => {
+    reinitializeAllNavigation();
+    forceFixLifemap();
+}, 1000);
+
+// Additional initialization after 2 seconds to catch any delayed elements
+setTimeout(() => {
+    reinitializeAllNavigation();
+}, 2000);
+
+
+// Meditation Progress Functions
+function loadMeditationProgress() {
+    const totalMinutes = parseInt(localStorage.getItem('totalMeditationMinutes') || '0');
+    const totalSessions = parseInt(localStorage.getItem('totalMeditationSessions') || '0');
+    const totalHours = Math.floor(totalMinutes / 60);
+    
+    document.getElementById('meditation-minutes').textContent = totalMinutes;
+    document.getElementById('meditation-hours').textContent = totalHours;
+    document.getElementById('meditation-sessions').textContent = totalSessions;
+}
+
+function updateMeditationProgress(minutes) {
+    const currentMinutes = parseInt(localStorage.getItem('totalMeditationMinutes') || '0');
+    const currentSessions = parseInt(localStorage.getItem('totalMeditationSessions') || '0');
+    
+    localStorage.setItem('totalMeditationMinutes', (currentMinutes + minutes).toString());
+    localStorage.setItem('totalMeditationSessions', (currentSessions + 1).toString());
+    
+    console.log(`Meditation progress updated: +${minutes} minutes`);
+}
+
+// Affirmation Settings Functions
+function loadAffirmationSettings() {
+    const affirmations = JSON.parse(localStorage.getItem('scheduledAffirmations') || '[]');
+    const affirmationList = document.getElementById('affirmation-list');
+    const noAffirmations = document.getElementById('no-affirmations');
+    
+    if (affirmations.length === 0) {
+        affirmationList.style.display = 'none';
+        noAffirmations.style.display = 'block';
+        return;
+    }
+    
+    affirmationList.style.display = 'block';
+    noAffirmations.style.display = 'none';
+    
+    affirmationList.innerHTML = affirmations.map(affirmation => `
+        <div class="affirmation-item">
+            <div class="affirmation-category">${affirmation.category}</div>
+            <div class="affirmation-text">"${affirmation.text}"</div>
+            <div class="affirmation-schedule">
+                <span>⏰</span>
+                <span>${affirmation.schedule || 'Daily reminder set'}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+function saveAffirmationSetting(category, text, schedule) {
+    const affirmations = JSON.parse(localStorage.getItem('scheduledAffirmations') || '[]');
+    
+    // Check if affirmation already exists
+    const existingIndex = affirmations.findIndex(a => a.text === text);
+    
+    if (existingIndex >= 0) {
+        // Update existing
+        affirmations[existingIndex] = { category, text, schedule };
+    } else {
+        // Add new
+        affirmations.push({ category, text, schedule });
+    }
+    
+    localStorage.setItem('scheduledAffirmations', JSON.stringify(affirmations));
+    console.log('Affirmation setting saved:', { category, text, schedule });
+}
+
+// Initialize profile settings
+document.addEventListener('DOMContentLoaded', function() {
+    loadProfilePhoto();
+    
+    // You can call updateMeditationProgress() from your meditation completion functions
+    // You can call saveAffirmationSetting() from your affirmation reminder setup
+});
+
+// Profile Menu Functions
+function toggleProfileMenu() {
+    const menu = document.getElementById('profile-menu'); // This should match now
+    menu.classList.remove('hidden');
+}
+
+function closeProfileMenu() {
+    const menu = document.getElementById('profile-menu'); // This should match now
+    menu.classList.add('hidden');
+}
+
+
+
+
+function changeProfilePicture() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imageUrl = e.target.result;
+                document.getElementById('profile-image').src = imageUrl;
+                localStorage.setItem('profileImage', imageUrl);
+                showMessage('✨ Profile picture updated!');
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+    input.click();
+    closeProfileMenu(); // Updated to use closeProfileMenu
+}
+
+function openNotificationSettings() {
+    closeProfileMenu(); // Updated to use closeProfileMenu
+    showNotificationModal();
+}
+
+
+function closeNotificationModal() {
+    const modal = document.getElementById('notification-modal');
+    if (modal) modal.remove();
+}
+
+function selectAffirmationCategories() {
+    closeNotificationModal();
+    showPage('affirmations');
+}
+
+function loadNotificationSettings() {
+    // Load notification toggle state
+    const notificationsEnabled = localStorage.getItem('notificationsEnabled') === 'true';
+    const toggle = document.getElementById('notifications-enabled');
+    const status = document.getElementById('notification-status');
+    
+    if (toggle) {
+        toggle.checked = notificationsEnabled && Notification.permission === 'granted';
+        
+        if (notificationsEnabled && Notification.permission === 'granted') {
+            status.textContent = '✅ Notifications enabled! You\'ll receive daily affirmations';
+        } else {
+            status.textContent = 'Enable notifications to receive daily affirmations';
+        }
+    }
+    
+    // Load meditation progress
+    const totalMinutes = parseInt(localStorage.getItem('totalMeditationMinutes') || '0');
+    const totalSessions = parseInt(localStorage.getItem('totalMeditationSessions') || '0');
+    const totalHours = Math.floor(totalMinutes / 60);
+    
+    document.getElementById('profile-meditation-hours').textContent = totalHours;
+    document.getElementById('profile-meditation-sessions').textContent = totalSessions;
+    
+    // Load selected categories from affirmation page
+    const selectedCategories = JSON.parse(localStorage.getItem('selectedAffirmationCategories') || '[]');
+    
+    const categoriesDisplay = document.getElementById('selected-categories-display');
+    if (selectedCategories.length > 0) {
+        categoriesDisplay.innerHTML = selectedCategories.map(cat => 
+            `<span class="category-tag">${cat}</span>`
+        ).join('');
+    } else {
+        categoriesDisplay.innerHTML = '<p style="color: #666; font-style: italic;">No categories selected yet. Go to Affirmations page to choose.</p>';
+    }
+    
+    document.getElementById('active-affirmations-count').textContent = selectedCategories.length;
+    
+    // Load wishes count
+    const wishes = JSON.parse(localStorage.getItem('savedWishes') || '[]');
+    document.getElementById('saved-wishes-count').textContent = wishes.length;
+    
+    // Load favorite meditation type
+    const meditationStats = JSON.parse(localStorage.getItem('meditationStats') || '{}');
+    const favorite = Object.keys(meditationStats).length > 0 ? 
+        Object.keys(meditationStats).reduce((a, b) => meditationStats[a] > meditationStats[b] ? a : b) : 
+        'Not set';
+    document.getElementById('favorite-meditation').textContent = favorite;
+    
+    // Calculate days active
+    const firstUse = localStorage.getItem('firstUseDate');
+    if (firstUse) {
+        const daysDiff = Math.floor((new Date() - new Date(firstUse)) / (1000 * 60 * 60 * 24));
+        document.getElementById('days-active').textContent = daysDiff + 1;
+    } else {
+        localStorage.setItem('firstUseDate', new Date().toISOString());
+        document.getElementById('days-active').textContent = '1';
+    }
+}
+
+
+// Wishes Functionality
+function openWishesBoard() {
+    toggleProfileMenu(); // Close profile menu
+    document.getElementById('wishes-modal').classList.remove('hidden');
+    document.getElementById('wishes-text').value = '';
+    document.getElementById('wishes-text').focus();
+}
+
+function closeWishesModal() {
+    document.getElementById('wishes-modal').classList.add('hidden');
+}
+
+function saveWish() {
+    const wishText = document.getElementById('wishes-text').value.trim();
+    if (!wishText) {
+        showMessage('⚠️ Please write your wish first!');
+        return;
+    }
+    
+    const wishes = JSON.parse(localStorage.getItem('savedWishes') || '[]');
+    const newWish = {
+        id: Date.now(),
+        text: wishText,
+        date: new Date().toLocaleDateString(),
+        timestamp: new Date().toISOString()
+    };
+    
+    wishes.unshift(newWish);
+    localStorage.setItem('savedWishes', JSON.stringify(wishes));
+    
+    // Clear the text area for new wish
+    document.getElementById('wishes-text').value = '';
+    
+    // Show success message
+    showMessage('✨ Your wish has been saved safely!');
+}
+
+function viewSavedWishes() {
+    const wishes = JSON.parse(localStorage.getItem('savedWishes') || '[]');
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>✨ Your Saved Wishes</h3>
+                <button class="close-modal" onclick="this.closest('.modal').remove()">×</button>
+            </div>
+            <div class="wishes-list">
+                ${wishes.length === 0 ? 
+                    '<p style="text-align: center; color: #666; font-style: italic;">No wishes saved yet. Write your first wish!</p>' :
+                    wishes.map(wish => `
+                        <div class="wish-item">
+                            <div class="wish-date">${wish.date}</div>
+                            <div class="wish-text">${wish.text}</div>
+                        </div>
+                    `).join('')
+                }
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function openPersonalTools() {
+    toggleProfileMenu();
+    // You can expand this to show additional tools
+    showMessage('🔧 Personal tools coming soon!');
+}
+
+// Meditation Integration
+function trackMeditationCompletion(meditationType) {
+    // Track 7 minutes per session
+    updateMeditationProgress(7);
+    
+    // Track meditation type preferences
+    const stats = JSON.parse(localStorage.getItem('meditationStats') || '{}');
+    stats[meditationType] = (stats[meditationType] || 0) + 1;
+    localStorage.setItem('meditationStats', JSON.stringify(stats));
+    
+    showMessage(`🧘 Great session! +7 minutes logged`);
+}
+
+// Enhanced meditation card click handler (continued)
+document.addEventListener('DOMContentLoaded', function() {
+    // Add click handlers to meditation cards
+    const meditationCards = document.querySelectorAll('.meditation-card');
+    meditationCards.forEach(card => {
+        const originalClick = card.onclick;
+        card.addEventListener('click', function() {
+            const meditationType = this.dataset.meditation;
+            if (meditationType && meditationType !== 'personalized') {
+                // Track that user started this meditation type
+                trackMeditationStart(meditationType);
+            }
+            // Call original click handler if it exists
+            if (originalClick) originalClick.call(this);
+        });
+    });
+
+   // Initialize affirmation categories when page loads
+function initializeAffirmationCategories() {
+    const categoryCards = document.querySelectorAll('.category-card');
+    console.log('Found category cards:', categoryCards.length); // Debug line
+    
+    categoryCards.forEach(card => {
+        card.addEventListener('click', function() {
+            console.log('Category clicked:', this.dataset.category); // Debug line
+            toggleCategorySelection(this);
+        });
+    });
+    
+    // Load saved categories
+    loadSavedCategories();
+}
+
+// Call this when navigating to affirmations page
+function showAffirmationsPage() {
+    // Your existing page navigation code
+    // Then add:
+    setTimeout(() => {
+        initializeAffirmationCategories();
+    }, 100);
+}
+
+
+    // Initialize profile
+    initializeProfile();
+});
+
+function trackMeditationStart(meditationType) {
+    // Store the start time and type
+    localStorage.setItem('currentMeditation', JSON.stringify({
+        type: meditationType,
+        startTime: new Date().toISOString()
+    }));
+}
+
+// Call this when meditation actually completes
+function completeMeditation() {
+    const current = JSON.parse(localStorage.getItem('currentMeditation') || '{}');
+    if (current.type) {
+        trackMeditationCompletion(current.type);
+        localStorage.removeItem('currentMeditation');
+    }
+}
+
+// Affirmation Categories Integration
+function toggleCategorySelection(card) {
+    const checkbox = card.querySelector('.checkbox');
+    const category = card.dataset.category;
+        
+    // Toggle visual state
+    card.classList.toggle('selected');
+    checkbox.classList.toggle('checked');
+        
+    // Update selected categories and show/hide button
+    updateSelectedCategories();
+}
+
+function updateSelectedCategories() {
+    const selectedCards = document.querySelectorAll('.category-card.selected');
+    const selectedList = document.getElementById('selected-list');
+    const setupButton = document.querySelector('.setup-button-container');
+        
+    if (selectedCards.length > 0) {
+        // Show selected categories
+        selectedList.innerHTML = Array.from(selectedCards).map(card =>
+            `<span class="selected-category">${card.dataset.category}</span>`
+        ).join('');
+                
+        // Show setup button
+        if (setupButton) setupButton.style.display = 'block';
+                
+        // Save to localStorage
+        const categories = Array.from(selectedCards).map(card => card.dataset.category);
+        localStorage.setItem('selectedAffirmationCategories', JSON.stringify(categories));
+            
+    } else {
+        selectedList.innerHTML = '<p>No categories selected</p>';
+        if (setupButton) setupButton.style.display = 'none';
+    }
+}
+
+
+// Load saved affirmation categories
+function loadSavedCategories() {
+    const savedCategories = JSON.parse(localStorage.getItem('selectedAffirmationCategories') || '[]');
+    
+    savedCategories.forEach(category => {
+        const card = document.querySelector(`[data-category="${category}"]`);
+        if (card) {
+            card.classList.add('selected');
+            card.querySelector('.checkbox').classList.add('checked');
+        }
+    });
+    
+    updateSelectedCategories();
+}
+
+// Enhanced setup reminders functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const setupBtn = document.getElementById('setup-reminders-btn');
+    if (setupBtn) {
+        setupBtn.addEventListener('click', function() {
+            document.querySelector('.notification-setup').style.display = 'block';
+            this.style.display = 'none';
+        });
+    }
+    
+    const saveBtn = document.getElementById('save-settings');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', saveNotificationSettings);
+    }
+    
+    // Load saved categories when on affirmations page
+    if (document.getElementById('affirmations-page')) {
+        loadSavedCategories();
     }
 });
 
-// Handle failed network requests for images
-self.addEventListener('fetch', event => {
-    if (event.request.destination === 'image') {
-        event.respondWith(
-            caches.match(event.request).then(response => {
-                return response || fetch(event.request).catch(() => {
-                    // Return placeholder image if image fails to load
-                    return new Response(
-                        '<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><rect fill="#ccc" width="100" height="100"/><text x="50" y="50" font-size="12" text-anchor="middle" fill="#555" dy=".3em">Image not found</text></svg>',
-                        { headers: { 'Content-Type': 'image/svg+xml' } }
-                    );
-                });
-            })
-        );
+function saveNotificationSettings() {
+    // FIX: Get selected categories from DOM instead of localStorage
+    const selectedCards = document.querySelectorAll('.category-card.selected');
+    const selectedCategories = Array.from(selectedCards).map(card => card.dataset.category);
+    
+    if (selectedCategories.length === 0) {
+        showMessage('⚠️ Please select at least one category first!');
+        return;
     }
-});
+    
+    // Get selected days
+    const selectedDays = [];
+    ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].forEach(day => {
+        if (document.getElementById(`day-${day}`).checked) {
+            selectedDays.push(day);
+        }
+    });
+    
+    if (selectedDays.length === 0) {
+        showMessage('⚠️ Please select at least one day!');
+        return;
+    }
+    
+    const frequency = document.getElementById('frequency-select').value;
+    const startTime = document.getElementById('start-time').value;
+    
+    // Save notification settings
+    const notificationSettings = {
+        categories: selectedCategories,
+        days: selectedDays,
+        frequency: parseInt(frequency),
+        startTime: startTime,
+        enabled: true,
+        createdAt: new Date().toISOString()
+    };
+    
+    localStorage.setItem('notificationSettings', JSON.stringify(notificationSettings));
+    
+    // Create affirmation entries for each category
+    selectedCategories.forEach(category => {
+        saveAffirmationSetting(category, `Daily ${category} affirmation`, `${selectedDays.join(', ')} at ${startTime}`);
+    });
+    
+    // Hide all UI elements after save
+    document.querySelector('.notification-setup').style.display = 'none';
+    document.querySelector('.setup-button-container').style.display = 'none';
+    document.querySelector('.selected-categories').style.display = 'none';
+    
+    // Clear all selections visually
+    document.querySelectorAll('.category-card.selected').forEach(card => {
+        card.classList.remove('selected');
+        card.querySelector('.checkbox').classList.remove('checked');
+    });
+    
+    // Show success message IN FRONT
+showMessage('🔔 Notification settings saved successfully!');
+ }
+
+function showSchedulePreview(settings) {
+    const preview = document.getElementById('schedule-preview');
+    const content = document.getElementById('preview-content');
+    
+    const timeSlots = [];
+    const startHour = parseInt(settings.startTime.split(':')[0]);
+    
+    for (let i = 0; i < Math.floor(12 / settings.frequency); i++) {
+        const hour = (startHour + (i * settings.frequency)) % 24;
+        timeSlots.push(`${hour.toString().padStart(2, '0')}:00`);
+    }
+    
+    content.innerHTML = `
+        <div class="preview-item">
+            <strong>Days:</strong> ${settings.days.join(', ')}
+        </div>
+        <div class="preview-item">
+            <strong>Times:</strong> ${timeSlots.join(', ')}
+        </div>
+        <div class="preview-item">
+            <strong>Categories:</strong> ${settings.categories.length} selected
+        </div>
+        <div class="preview-item">
+            <strong>Daily Affirmations:</strong> ~${timeSlots.length} per day
+        </div>
+    `;
+    
+    preview.style.display = 'block';
+}
+
+// Utility Functions
+function showMessage(message) {
+    // Remove existing messages
+    const existing = document.querySelector('.success-message');
+    if (existing) existing.remove();
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'success-message';
+    messageDiv.textContent = message;
+    
+    // Apply inline styles directly
+    messageDiv.style.cssText = `
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        z-index: 99999 !important;
+        background: linear-gradient(135deg, #ccae79 0%, #caafe0 100%) !important;
+        color: white !important;
+        padding: 20px 30px !important;
+        border-radius: 15px !important;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3) !important;
+        font-size: 18px !important;
+        font-weight: bold !important;
+        text-align: center !important;
+        min-width: 320px !important;
+        border: 2px solid rgba(255,255,255,0.2) !important;
+    `;
+    
+    document.body.appendChild(messageDiv);
+    
+    setTimeout(() => {
+        if (messageDiv.parentNode) {
+            messageDiv.remove();
+        }
+    }, 3000);
+}
+
+
+function initializeProfile() {
+    // Load saved profile image
+    const savedImage = localStorage.getItem('profileImage');
+    const profileImg = document.getElementById('profile-image');
+    if (savedImage && profileImg) {
+        profileImg.src = savedImage;
+    }
+    
+    // Initialize first use date if not set
+    if (!localStorage.getItem('firstUseDate')) {
+        localStorage.setItem('firstUseDate', new Date().toISOString());
+    }
+    
+    // Load existing data
+    loadMeditationProgress();
+    loadAffirmationSettings();
+}
+
+// Your existing functions (enhanced)
+function loadMeditationProgress() {
+    const totalMinutes = parseInt(localStorage.getItem('totalMeditationMinutes') || '0');
+    const totalSessions = parseInt(localStorage.getItem('totalMeditationSessions') || '0');
+    const totalHours = Math.floor(totalMinutes / 60);
+    
+    // Update elements if they exist
+    const minutesEl = document.getElementById('meditation-minutes');
+    const hoursEl = document.getElementById('meditation-hours');
+    const sessionsEl = document.getElementById('meditation-sessions');
+    
+    if (minutesEl) minutesEl.textContent = totalMinutes;
+    if (hoursEl) hoursEl.textContent = totalHours;
+    if (sessionsEl) sessionsEl.textContent = totalSessions;
+}
+
+function updateMeditationProgress(minutes) {
+    const currentMinutes = parseInt(localStorage.getItem('totalMeditationMinutes') || '0');
+    const currentSessions = parseInt(localStorage.getItem('totalMeditationSessions') || '0');
+    
+    localStorage.setItem('totalMeditationMinutes', (currentMinutes + minutes).toString());
+    localStorage.setItem('totalMeditationSessions', (currentSessions + 1).toString());
+    
+    console.log(`Meditation progress updated: +${minutes} minutes`);
+    loadMeditationProgress(); // Refresh display
+}
+
+function loadAffirmationSettings() {
+    const affirmations = JSON.parse(localStorage.getItem('scheduledAffirmations') || '[]');
+    const affirmationList = document.getElementById('affirmation-list');
+    const noAffirmations = document.getElementById('no-affirmations');
+    
+    if (!affirmationList) return; // Element doesn't exist on this page
+    
+    if (affirmations.length === 0) {
+        affirmationList.style.display = 'none';
+        if (noAffirmations) noAffirmations.style.display = 'block';
+        return;
+    }
+    
+    affirmationList.style.display = 'block';
+    if (noAffirmations) noAffirmations.style.display = 'none';
+    
+    affirmationList.innerHTML = affirmations.map(affirmation => `
+        <div class="affirmation-item">
+            <div class="affirmation-category">${affirmation.category}</div>
+            <div class="affirmation-text">"${affirmation.text}"</div>
+            <div class="affirmation-schedule">
+                <span>⏰</span>
+                <span>${affirmation.schedule || 'Daily reminder set'}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+function saveAffirmationSetting(category, text, schedule) {
+    const affirmations = JSON.parse(localStorage.getItem('scheduledAffirmations') || '[]');
+    
+    const existingIndex = affirmations.findIndex(a => a.category === category);
+    
+    if (existingIndex >= 0) {
+        affirmations[existingIndex] = { category, text, schedule };
+    } else {
+        affirmations.push({ category, text, schedule });
+    }
+    
+    localStorage.setItem('scheduledAffirmations', JSON.stringify(affirmations));
+    console.log('Affirmation setting saved:', { category, text, schedule });
+    loadAffirmationSettings(); // Refresh display
+}
+
+// Add these functions to connect with your meditation player
+function onMeditationComplete() {
+    // Call this when your meditation audio/timer finishes
+    completeMeditation();
+}
+
+// For manual completion (if user stops early)
+function markMeditationComplete(meditationType) {
+    trackMeditationCompletion(meditationType);
+}
+// Add this to your complete integration
+
+// PWA Notification Functions
+async function requestNotificationPermission() {
+  if (!('Notification' in window)) {
+    showMessage('❌ This browser does not support notifications');
+    return false;
+  }
+
+  if (Notification.permission === 'granted') {
+    await getFcmToken();
+    return true;
+  }
+
+  if (Notification.permission !== 'denied') {
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      await getFcmToken();
+      return true;
+    }
+  }
+
+  return false;
+}
+
+async function getFcmToken() {
+  try {
+    const token = await getToken(messaging, { vapidKey: 'BFeiQnMxZlXHXxtQrAPvWSJ_1XnTklpH2IEcPAG_qjoxKKwHICnJOaEjzK3rq5zNMyaD02_gjJPqtBA6WYGu20U' });
+    if (token) {
+      console.log('FCM Token:', token);
+      // TODO: Save/send token to your backend or localStorage
+    } else {
+      console.log('No registration token available.');
+    }
+  } catch (error) {
+    console.error('Error retrieving FCM token:', error);
+  }
+}
+
+
+function showNotificationModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.id = 'notification-modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🔔 Notification Settings</h3>
+                <button class="close-modal" onclick="closeNotificationModal()" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color: #fff;">×</button>
+
+            </div>
+            <div class="notification-settings">
+                <!-- Notification Toggle -->
+                <div class="notification-toggle-section">
+                    <h4>📱 Push Notifications</h4>
+                    <div class="toggle-container">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="notifications-enabled" onchange="toggleNotifications()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span id="notification-status">Enable notifications to receive daily affirmations</span>
+                    </div>
+                </div>
+                
+                <div class="divider"></div>
+                
+                <h4>✨ Selected Affirmation Categories</h4>
+                <div id="selected-categories-display"></div>
+                <button onclick="selectAffirmationCategories()" 
+                
+                <div class="divider"></div>
+                
+                <h4>🧘 Meditation Progress</h4>
+                <div class="progress-stats">
+                    <p>Total Hours: <span id="profile-meditation-hours">0</span></p>
+                    <p>Sessions: <span id="profile-meditation-sessions">0</span></p>
+                    <p>Favorite Type: <span id="favorite-meditation">Not set</span></p>
+                </div>
+                
+                <h4>📊 Your Activity</h4>
+                <div class="progress-stats">
+                    <p>Active Affirmations: <span id="active-affirmations-count">0</span></p>
+                    <p>Saved Wishes: <span id="saved-wishes-count">0</span></p>
+                    <p>Days Active: <span id="days-active">0</span></p>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    loadNotificationSettings();
+}
+
+async function toggleNotifications() {
+    const toggle = document.getElementById('notifications-enabled');
+    const status = document.getElementById('notification-status');
+    
+    if (toggle.checked) {
+        const granted = await requestNotificationPermission();
+        if (granted) {
+            localStorage.setItem('notificationsEnabled', 'true');
+            status.textContent = '✅ Notifications enabled! You\'ll receive daily affirmations';
+            startNotificationSchedule();
+        } else {
+            toggle.checked = false;
+            status.textContent = '❌ Permission denied. Enable in browser settings';
+        }
+    } else {
+        localStorage.setItem('notificationsEnabled', 'false');
+        status.textContent = 'Enable notifications to receive daily affirmations';
+        stopNotificationSchedule();
+    }
+}
+
+function startNotificationSchedule() {
+    const settings = JSON.parse(localStorage.getItem('notificationSettings') || '{}');
+    if (!settings.enabled || !settings.categories) return;
+    
+    // Clear existing intervals
+    stopNotificationSchedule();
+    
+    // Create notification schedule
+    const intervalId = setInterval(() => {
+        sendRandomAffirmation();
+    }, settings.frequency * 60 * 60 * 1000); // Convert hours to milliseconds
+    
+    localStorage.setItem('notificationIntervalId', intervalId);
+}
+
+function stopNotificationSchedule() {
+    const intervalId = localStorage.getItem('notificationIntervalId');
+    if (intervalId) {
+        clearInterval(parseInt(intervalId));
+        localStorage.removeItem('notificationIntervalId');
+    }
+}
+
+function sendRandomAffirmation() {
+    const settings = JSON.parse(localStorage.getItem('notificationSettings') || '{}');
+    const affirmations = getAffirmationsByCategories(settings.categories);
+    
+    if (affirmations.length > 0 && Notification.permission === 'granted') {
+        const randomAffirmation = affirmations[Math.floor(Math.random() * affirmations.length)];
+        
+        new Notification('✨ Daily Affirmation', {
+            body: randomAffirmation.text,
+            icon: '/icon-192x192.png', // Your PWA icon
+            badge: '/icon-192x192.png',
+            tag: 'daily-affirmation',
+            requireInteraction: false
+        });
+    }
+}
+
+function getAffirmationsByCategories(categories) {
+    // You'll need to create an affirmations database
+    const affirmationsDB = {
+        'Think Positively': [
+            { text: 'I choose to see the good in every situation', category: 'Think Positively' },
+            { text: 'My thoughts create my reality, and I choose positive thoughts', category: 'Think Positively' },
+            { text: 'I am in control of my mindset and choose optimism', category: 'Think Positively' }
+        ],
+        'Build Self-Confidence': [
+            { text: 'I believe in myself and my abilities', category: 'Build Self-Confidence' },
+            { text: 'I am worthy of success and happiness', category: 'Build Self-Confidence' },
+            { text: 'My confidence grows stronger every day', category: 'Build Self-Confidence' }
+        ],
+        // Add more categories and affirmations...
+    };
+    
+    let allAffirmations = [];
+    categories.forEach(category => {
+        if (affirmationsDB[category]) {
+            allAffirmations = allAffirmations.concat(affirmationsDB[category]);
+        }
+    });
+    
+    return allAffirmations;
+}
+
+function openWishesModal() {
+    closeProfileMenu(); // Close the profile menu first
+    const modal = document.getElementById('wishes-modal');
+    modal.classList.remove('hidden'); // Show the wishes modal
+}
+
+function saveWish() {
+    const wishText = document.getElementById('wishes-text').value;
+    if (wishText.trim()) {
+        const wishes = JSON.parse(localStorage.getItem('wishes') || '[]');
+        wishes.push({
+            text: wishText,
+            date: new Date().toLocaleDateString()
+        });
+        localStorage.setItem('wishes', JSON.stringify(wishes));
+        document.getElementById('wishes-text').value = '';
+        
+        // Simple beautiful notification - just replace the alert line
+        const div = document.createElement('div');
+div.innerHTML = '✨ Wish saved!';
+div.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#ccae79;color:white;padding:15px;border-radius:10px;z-index:9999;text-align:center;';
+
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 2000);
+        
+    } else {
+        alert('Please write something first!');
+    }
+}
+
+
+function viewSavedWishes() {
+    const wishes = JSON.parse(localStorage.getItem('wishes') || '[]');
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:2000'; // Higher z-index
+    
+    const content = document.createElement('div');
+    content.className = 'modal-content';
+    content.style.cssText = 'background:white;border-radius:20px;padding:20px;max-width:360px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 10px 30px rgba(0,0,0,0.3)';
+
+    
+    // Create header
+    const header = document.createElement('div');
+    header.innerHTML = `
+        <h3 style="margin:0 0 20px 0;color:#333">✨ Your Saved Wishes</h3>
+        <button onclick="this.closest('[style*=fixed]').remove()" style="position:absolute;top:15px;right:20px;background:none;border:none;font-size:24px;cursor:pointer;color:#666">×</button>
+    `;
+    content.appendChild(header);
+    
+    // Create wishes list
+    const wishesContainer = document.createElement('div');
+    if (wishes.length === 0) {
+        wishesContainer.innerHTML = '<p style="text-align:center;color:#666;font-style:italic;padding:40px">No wishes saved yet!</p>';
+    } else {
+        wishes.forEach((wish, index) => {
+            const wishDiv = document.createElement('div');
+            wishDiv.style.cssText = 'padding:15px;margin:10px 0;background:linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);border-radius:12px;border-left:4px solid #ccae79';
+            wishDiv.innerHTML = `
+                <div style="font-size:12px;color:#666;margin-bottom:8px">${wish.date}</div>
+                <div style="font-size:16px;line-height:1.5;color:#333;font-weight:500">${wish.text}</div>
+            `;
+            wishesContainer.appendChild(wishDiv);
+        });
+    }
+    
+    content.appendChild(wishesContainer);
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+    
+    // Close when clicking outside
+    modal.onclick = (e) => {
+        if (e.target === modal) modal.remove();
+    };
+}
+
+function openFreeResources() {
+    window.open('https://payhip.com/KarmaDecoded/collection/free-resources', '_blank');
+}
+
+function showMainApp() {
+  console.log('=== showMainApp called ===');
+  const authScreen = document.getElementById('auth-screen');
+  const mainApp = document.getElementById('main-app');
+  
+  console.log('auth-screen found:', !!authScreen);
+  console.log('main-app found:', !!mainApp);
+  
+  if (authScreen) {
+    authScreen.style.display = 'none';
+    console.log('auth-screen hidden');
+  }
+  if (mainApp) {
+    mainApp.style.display = 'block';
+    console.log('main-app shown');
+  }
+  
+  console.log('=== showMainApp finished ===');
+}
+
+
+
+
+
+</script>
+</body>
+</html>
