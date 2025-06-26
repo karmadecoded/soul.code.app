@@ -900,7 +900,7 @@ function getRandomAffirmation(category) {
   }
     
   "gain-balance": {
-    name: " Gain Balance in Life – 30 Affirmations for Harmony and Stability",
+    name: " Gain Balance in Life ",
     affirmations: [
       "I create balance in all areas of my life.",
       "I prioritize what truly matters to me.",
