@@ -634,8 +634,8 @@ function getRandomAffirmation(category) {
     ]
   },
 
-  "embrace-ancestry": {
-    name: "Accept Parents & Embrace Ancestral Power",
+ "embrace-ancestry": {
+  name: "Accept Your Parents and Ancestral Bloodline Power",
         affirmations: [
       "I honor my parents and the lessons they have given me.",
       "I accept my family history with compassion and understanding.",
@@ -898,74 +898,7 @@ function getRandomAffirmation(category) {
       "Success comes naturally when I believe in myself."
     ]
   }
-
-
-  "embrace-changes": {
-    name: " Embrace Changes – 30 Affirmations for Courage and Growth",
-    affirmations: [
-      "I welcome change as a natural part of life.",
-      "Change brings new opportunities and growth.",
-      "I am adaptable and open to new experiences.",
-      "I trust the process of change, even when it feels uncertain.",
-      "I release resistance and embrace transformation.",
-      "Every change leads me closer to my highest good.",
-      "I am courageous in the face of the unknown.",
-      "I grow stronger through every challenge and transition.",
-      "Change helps me discover my true potential.",
-      "I am flexible and flow with life’s rhythms.",
-      "I let go of fear and welcome new beginnings.",
-      "I trust myself to handle whatever comes my way.",
-      "I see change as an exciting adventure.",
-      "I am open to learning and evolving constantly.",
-      "I release the past to make space for the future.",
-      "Change is a pathway to my growth and success.",
-      "I meet change with curiosity and hope.",
-      "I embrace uncertainty with faith and confidence.",
-      "I am grateful for the lessons change teaches me.",
-      "I find peace in the process of transformation.",
-      "I am resilient and can adapt to any situation.",
-      "I accept that change is necessary for progress.",
-      "I flow effortlessly with life’s transitions.",
-      "I choose to see change as a gift, not a threat.",
-      "I embrace new chapters with enthusiasm.",
-      "I trust the timing of my life’s changes.",
-      "I am excited about the possibilities that change brings.",
-      "I release attachment and welcome freedom.",
-      "I am growing, evolving, and becoming my best self.",
-      "Change empowers me to create a better future.",
-      "I welcome change as an opportunity for growth.",
-      "Change brings new possibilities into my life.",
-      "I adapt easily and with grace.",
-      "I trust the process of transformation.",
-      "I release fear and welcome new beginnings.",
-      "Every change is a step toward my highest good.",
-      "I flow effortlessly with life’s changes.",
-      "I embrace uncertainty with confidence.",
-      "Change helps me become my best self.",
-      "I let go of what no longer serves me.",
-      "I find excitement in the unknown.",
-      "I am resilient and flexible in the face of change.",
-      "Change opens doors to new adventures.",
-      "I trust that life’s changes lead me where I need to be.",
-      "I release resistance and embrace transformation.",
-      "I am open to new opportunities that change brings.",
-      "I welcome growth and evolution in all areas of life.",
-      "Change renews my spirit and vision.",
-      "I am calm and grounded during transitions.",
-      "I embrace change as a natural part of life.",
-      "I trust myself to navigate change wisely.",
-      "I see change as a path to greater freedom.",
-      "My heart is open to new experiences.",
-      "I welcome change with an open mind and open heart.",
-      "Change helps me shed old limitations.",
-      "I am grateful for the lessons change brings.",
-      "I step boldly into new chapters.",
-      "I release the past and welcome the future.",
-      "I embrace change as a catalyst for personal growth.",
-      "I trust that every change is for my highest good."
-    ]
-  },
-  
+    
   "gain-balance": {
     name: " Gain Balance in Life – 30 Affirmations for Harmony and Stability",
     affirmations: [
@@ -1296,7 +1229,7 @@ function getRandomAffirmation(category) {
   ]
 }
 "fight-depression": {
-  name: " Fight Depression",
+  name: "Fight with Depression",
   affirmations: [
     "I am not alone; support surrounds me.",
     "I allow myself to feel and release my emotions.",
