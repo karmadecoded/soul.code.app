@@ -3550,22 +3550,19 @@ window.signInWithApple = async function() {
     const token = await getToken(messaging, {
       vapidKey: 'BFeiQnMxZlXHXxtQrAPvWSJ_1XnTklpH2IEcPAG_qjoxKKwHICnJOaEjzK3rq5zNMyaD02_gjJPqtBA6WYGu20U'
     });
-
-    // NEW: Get actual affirmations from affirmationCategories
+    
     const selectedAffirmations = {};
     categories.forEach(categoryKey => {
-      if (affirmationCategories[categoryKey]) {
-        selectedAffirmations[categoryKey] = {
-          name: affirmationCategories[categoryKey].name,
-          affirmations: affirmationCategories[categoryKey].affirmations
-        };
-      }
+      selectedAffirmations[categoryKey] = {
+        name: categoryKey,
+        selected: true
+      };
     });
-
+    
     await setDoc(doc(db, "users", currentUser.uid), {
       email: currentUser.email,
       selectedCategories: categories,
-      selectedAffirmations: selectedAffirmations, // NEW: Full affirmation data
+      selectedAffirmations: selectedAffirmations,
       schedule: schedule,
       pushToken: token,
       createdAt: new Date()
