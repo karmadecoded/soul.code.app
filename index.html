@@ -3554,21 +3554,44 @@ window.signInWithApple = async function() {
         selected: true
       };
     });
+
+    // Get FCM token with detailed debugging
+    let pushToken = null;
+    console.log('🔔 Starting push token request...');
+    
+    try {
+      console.log('🔔 Requesting notification permission...');
+      const permission = await Notification.requestPermission();
+      console.log('🔔 Permission result:', permission);
+      
+      if (permission === 'granted') {
+        console.log('🔔 Permission granted, getting token...');
+        pushToken = await getToken(messaging, {
+          vapidKey: 'BFeiQnMxZlXHXxtQrAPvWSJ_1XnTklpH2IEcPAG_qjoxKKwHICnJOaEjzK3rq5zNMyaD02_gjJPqtBA6WYGu20U'
+        });
+        console.log('🔔 Push token obtained:', pushToken);
+      } else {
+        console.log('🔔 Permission denied or blocked');
+        alert('Notifications blocked. Please enable notifications in your browser settings for push notifications to work.');
+      }
+    } catch (tokenError) {
+      console.error('🔔 Error getting push token:', tokenError);
+    }
         
     await setDoc(doc(db, "users", currentUser.uid), {
       email: currentUser.email,
       selectedCategories: categories,
       selectedAffirmations: selectedAffirmations,
       schedule: schedule,
+      pushToken: pushToken,
       createdAt: new Date()
     });
-    console.log("Preferences saved to Firestore successfully!");
+    console.log("✅ Preferences saved to Firestore successfully!");
+    console.log("🔔 Push token in database:", pushToken ? "✅ SAVED" : "❌ NULL");
   } catch (error) {
     console.error("Error saving preferences:", error);
   }
 }
-
-
 
   // FCM TOKEN FUNCTIONS - UNCHANGED:
   async function requestNotificationPermissionAndGetToken() {
