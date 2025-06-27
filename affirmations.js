@@ -193,7 +193,7 @@ const affirmationCategories = {
             "I welcome peace with open arms.",
             "I am safe, calm, and in control."
         ]
-    }
+    },
 
    
   "accept-yourself": {
@@ -329,7 +329,7 @@ const affirmationCategories = {
   },
 
   "embrace-ancestry": {
-    name: "Accept Parents & Embrace Ancestral Power",
+    name: "Accept Your Parents and Ancestral Bloodline Power",
         affirmations: [
       "I honor my parents and the lessons they have given me.",
       "I accept my family history with compassion and understanding.",
@@ -392,7 +392,7 @@ const affirmationCategories = {
       "My family’s love is a source of empowerment.",
       "I accept and love my parents and ancestors completely."
     ]
-  }
+  },
 
 
   "nurture-self-love": {
@@ -591,11 +591,11 @@ const affirmationCategories = {
       "I am capable of achieving extraordinary things.",
       "Success comes naturally when I believe in myself."
     ]
-  }
+  },
 
 
   "embrace-changes": {
-    name: " Embrace Changes – 30 Affirmations for Courage and Growth",
+    name: " Embrace Changes ",
     affirmations: [
       "I welcome change as a natural part of life.",
       "Change brings new opportunities and growth.",
@@ -661,7 +661,7 @@ const affirmationCategories = {
   },
   
   "gain-balance": {
-    name: " Gain Balance in Life – 30 Affirmations for Harmony and Stability",
+    name: " Gain Balance in Life",
     affirmations: [
       "I create balance in all areas of my life.",
       "I prioritize what truly matters to me.",
@@ -790,7 +790,7 @@ const affirmationCategories = {
       "I am thankful for the financial opportunities that come my way.",
       "I am a magnet for wealth and prosperity."
     ]
-  }
+  },
 
 "embrace-changes": {
   name: "Embrace Changes",
@@ -856,7 +856,7 @@ const affirmationCategories = {
     "I embrace change as a catalyst for personal growth.",
     "I trust that every change is for my highest good."
   ]
-}
+},
 
 "lose-weight": {
   name: " Lose Weight",
@@ -922,7 +922,7 @@ const affirmationCategories = {
     "I am proud of my perseverance and dedication.",
     "My body is becoming healthier and stronger every day."
   ]
-}
+},
 
 "quit-smoking": {
   name: " Quit Smoking",
@@ -988,9 +988,10 @@ const affirmationCategories = {
     "I am committed to my health and happiness.",
     "I am proud to be smoke-free."
   ]
-}
+},
+    
 "fight-depression": {
-  name: " Fight Depression",
+  name: " Fight With Depression",
   affirmations: [
     "I am not alone; support surrounds me.",
     "I allow myself to feel and release my emotions.",
@@ -1185,7 +1186,7 @@ const affirmationCategories = {
     "I cherish the love within myself.",
     "I am never alone on my journey."
   ]
-}
+},
 
 "overcome-toxic-relationships": {
   name: "Overcome Toxic Relationships",
@@ -1383,7 +1384,7 @@ const affirmationCategories = {
     "I am confident in setting boundaries that honor my needs.",
     "I celebrate sexuality as a vital part of my life."
   ]
-}
+},
 
 "manifest-new-love": {
   name: " Manifest New Love",
@@ -1581,7 +1582,7 @@ const affirmationCategories = {
     "I am grateful for every step on my spiritual path.",
     "I awaken fully to my divine purpose and light."
   ]
-}
+},
 
 "harness-law-of-attraction": {
   name: "Harness the Law of Attraction",
@@ -1713,7 +1714,7 @@ const affirmationCategories = {
     "I am thankful for the gift of pregnancy.",
     "I celebrate the beautiful life growing inside me."
   ]
-}
+},
 
 "conquer-loneliness": {
   name: " Conquer Loneliness",
@@ -1845,7 +1846,7 @@ const affirmationCategories = {
     "I am open to healing in every moment.",
     "I am grateful for the resilience of my heart."
   ]
-}
+},
 
 "fuel-vitality": {
   name: " Fuel Vitality",
@@ -2109,7 +2110,7 @@ const affirmationCategories = {
     "I am grateful for every opportunity to grow professionally.",
     "I am creating a fulfilling and successful career."
   ]
-}
+},
 
 "sharpen-focus": {
   name: " Sharpen Focus",
