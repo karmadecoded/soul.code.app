@@ -2603,7 +2603,7 @@ input:checked + .toggle-slider:before {
 
 
     <!-- AFFIRMATIONS PAGE -->
-<div id="affirmations" class="page">
+<div id="affirmations-page" class="page">
     <div class="page-header">
         <h1>Daily Affirmations</h1>
         <p>Please choose one or more category of affirmation you want to receive daily.</p>
@@ -4516,23 +4516,32 @@ class AffirmationsManager {
             localStorage.setItem('userId', userId);
         }
 
-        // Make sure currentUser exists before saving to Firebase
-        if (window.currentUser) {
-            await window.saveUserPreferences(window.currentUser.uid, settingsData.categories, {
-                days: settingsData.days,
-                frequency: settingsData.frequency,
-                startTime: settingsData.startTime
-            });
-            console.log('Successfully saved to Firebase!');
-        } else {
-            console.error('No authenticated user found');
-            this.showMessage('Please sign in to save your preferences to the cloud', 'error');
-            return;
-        }
-    } catch (error) {
-        console.error('Error saving to Firebase:', error);
-        this.showMessage('Settings saved locally, but cloud sync failed', 'warning');
+        // Wait for authentication to complete
+if (!window.currentUser) {
+    console.log('Waiting for user authentication...');
+    for (let i = 0; i < 30; i++) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        if (window.currentUser) break;
     }
+}
+
+if (window.currentUser) {
+    await window.saveUserPreferences(window.currentUser.uid, settingsData.categories, {
+        days: settingsData.days,
+        frequency: settingsData.frequency,
+        startTime: settingsData.startTime
+    });
+    console.log('Successfully saved to Firebase!');
+} else {
+    console.error('No authenticated user found after waiting');
+    this.showMessage('Please sign in to save your preferences to the cloud', 'error');
+    return;
+}
+} catch (error) {
+    console.error('Error saving to Firebase:', error);
+    this.showMessage('Settings saved locally, but cloud sync failed', 'warning');
+}
+
 
     this.showMessage('Your preferences have been saved successfully! 🎉', 'success');
 
