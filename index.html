@@ -3541,6 +3541,41 @@ window.signInWithApple = async function() {
   }
 
   // KEEP ALL OTHER FUNCTIONS UNCHANGED:
+  // Add this right before your saveUserPreferences function
+window.clearFCMStorage = async function() {
+  try {
+    // Clear IndexedDB databases used by FCM
+    const databases = ['fcm_token_details_db', 'firebase-messaging-database'];
+    
+    for (const dbName of databases) {
+      try {
+        await new Promise((resolve, reject) => {
+          const deleteReq = indexedDB.deleteDatabase(dbName);
+          deleteReq.onsuccess = () => resolve();
+          deleteReq.onerror = () => reject(deleteReq.error);
+        });
+        console.log(`🔔 Cleared database: ${dbName}`);
+      } catch (e) {
+        console.log(`🔔 Could not clear ${dbName}:`, e);
+      }
+    }
+    
+    // Clear localStorage FCM data
+    Object.keys(localStorage).forEach(key => {
+      if (key.includes('firebase') || key.includes('fcm')) {
+        localStorage.removeItem(key);
+        console.log(`🔔 Cleared localStorage: ${key}`);
+      }
+    });
+    
+    console.log('🔔 FCM storage cleared, please refresh and try again');
+  } catch (error) {
+    console.error('🔔 Error clearing storage:', error);
+  }
+};
+
+// Call it once
+await clearFCMStorage();
  window.saveUserPreferences = async function(userId, categories, schedule) {
   if (!currentUser) {
     alert('Please sign in first');
