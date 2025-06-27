@@ -3541,16 +3541,12 @@ window.signInWithApple = async function() {
   }
 
   // KEEP ALL OTHER FUNCTIONS UNCHANGED:
-  window.saveUserPreferences = async function(userId, categories, schedule) {
+ window.saveUserPreferences = async function(userId, categories, schedule) {
   if (!currentUser) {
     alert('Please sign in first');
     return;
   }
   try {
-    const token = await getToken(messaging, {
-      vapidKey: 'BFeiQnMxZlXHXxtQrAPvWSJ_1XnTklpH2IEcPAG_qjoxKKwHICnJOaEjzK3rq5zNMyaD02_gjJPqtBA6WYGu20U'
-    });
-    
     const selectedAffirmations = {};
     categories.forEach(categoryKey => {
       selectedAffirmations[categoryKey] = {
@@ -3558,20 +3554,20 @@ window.signInWithApple = async function() {
         selected: true
       };
     });
-    
+        
     await setDoc(doc(db, "users", currentUser.uid), {
       email: currentUser.email,
       selectedCategories: categories,
       selectedAffirmations: selectedAffirmations,
       schedule: schedule,
-      pushToken: token,
       createdAt: new Date()
     });
-    console.log("Preferences saved to Firestore with full affirmations.");
+    console.log("Preferences saved to Firestore successfully!");
   } catch (error) {
     console.error("Error saving preferences:", error);
   }
 }
+
 
 
   // FCM TOKEN FUNCTIONS - UNCHANGED:
