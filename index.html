@@ -3583,20 +3583,15 @@ window.signInWithApple = async function() {
   }
 }
 
- // FCM TOKEN FUNCTIONS - MODIFIED:
+ // FCM TOKEN FUNCTIONS - FIXED:
 async function getFcmToken() {
   try {
-    const permission = await Notification.requestPermission();
-    if (permission !== 'granted') {
-      console.log('Notification permission not granted.');
-      return;
-    }
     const currentToken = await getToken(messaging, {
       vapidKey: 'BFeiQnMxZlXHXxtQrAPvWSJ_1XnTklpH2IEcPAG_qjoxKKwHICnJOaEjzK3rq5zNMyaD02_gjJPqtBA6WYGu20U'
     });
+
     if (currentToken) {
       console.log('FCM Token:', currentToken);
-      // TODO: Send this token to your server
 
       // Store the FCM token in Firestore
       await setDoc(doc(db, "users", currentUser.uid), {
@@ -3614,24 +3609,30 @@ async function getFcmToken() {
   }
 }
 
+// Ask permission first
+Notification.requestPermission().then((permission) => {
+  console.log('Notification permission status:', permission);
+  if (permission === 'granted') {
+    getFcmToken();
+  } else {
+    console.warn('Notifications permission not granted');
+  }
+});
 
-  
-  getFcmToken();
+// Listen for foreground messages
+onMessage(messaging, (payload) => {
+  console.log('Message received. ', payload);
 
-  onMessage(messaging, (payload) => {
-    console.log('Message received. ', payload);
+  if (Notification.permission === 'granted') {
+    new Notification('SoulCode', {
+      body: payload.notification.body,
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
+      vibrate: [200, 100, 200],
+    });
+  }
+});
 
-    // Customize how you want to show the notification
-    if (Notification.permission === 'granted') {
-      new Notification('SoulCode', {
-        body: payload.notification.body,
-        icon: '/icon-192.png',
-        badge: '/icon-192.png',
-        vibrate: [200, 100, 200],
-        // You can add more options here if needed
-      });
-    }
-  });
 
 </script>
 
