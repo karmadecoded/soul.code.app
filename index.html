@@ -3541,41 +3541,6 @@ window.signInWithApple = async function() {
   }
 
   // KEEP ALL OTHER FUNCTIONS UNCHANGED:
-  // Add this right before your saveUserPreferences function
-window.clearFCMStorage = async function() {
-  try {
-    // Clear IndexedDB databases used by FCM
-    const databases = ['fcm_token_details_db', 'firebase-messaging-database'];
-    
-    for (const dbName of databases) {
-      try {
-        await new Promise((resolve, reject) => {
-          const deleteReq = indexedDB.deleteDatabase(dbName);
-          deleteReq.onsuccess = () => resolve();
-          deleteReq.onerror = () => reject(deleteReq.error);
-        });
-        console.log(`🔔 Cleared database: ${dbName}`);
-      } catch (e) {
-        console.log(`🔔 Could not clear ${dbName}:`, e);
-      }
-    }
-    
-    // Clear localStorage FCM data
-    Object.keys(localStorage).forEach(key => {
-      if (key.includes('firebase') || key.includes('fcm')) {
-        localStorage.removeItem(key);
-        console.log(`🔔 Cleared localStorage: ${key}`);
-      }
-    });
-    
-    console.log('🔔 FCM storage cleared, please refresh and try again');
-  } catch (error) {
-    console.error('🔔 Error clearing storage:', error);
-  }
-};
-
-// Call it once
-await clearFCMStorage();
  window.saveUserPreferences = async function(userId, categories, schedule) {
   if (!currentUser) {
     alert('Please sign in first');
@@ -3590,120 +3555,66 @@ await clearFCMStorage();
       };
     });
 
-    // COMPREHENSIVE DEBUGGING
-    console.log('🔔 === PUSH TOKEN DEBUG START ===');
-    console.log('🔔 Current URL:', window.location.href);
-    console.log('🔔 Protocol:', window.location.protocol);
-    console.log('🔔 Browser support check:');
-    console.log('  - Notification API:', 'Notification' in window);
-    console.log('  - Service Worker:', 'serviceWorker' in navigator);
-    console.log('  - Push messaging:', 'PushManager' in window);
-    
-    // Check current notification permission
-    console.log('🔔 Current permission:', Notification.permission);
-
+    // Get FCM token
     let pushToken = null;
-    
     try {
-      // Request permission
-      console.log('🔔 Requesting notification permission...');
       const permission = await Notification.requestPermission();
-      console.log('🔔 Permission result:', permission);
-      
       if (permission === 'granted') {
-        console.log('🔔 Permission granted, checking service worker...');
-        
-        // Check if service worker is registered
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        console.log('🔔 Service worker registrations:', registrations.length);
-        
-        if (registrations.length > 0) {
-          registrations.forEach((reg, index) => {
-            console.log(`🔔 SW ${index}:`, reg.scope);
-          });
-        }
-
-        console.log('🔔 Attempting to get FCM token...');
-        console.log('🔔 VAPID Key:', 'BFeiQnMxZlXHXxtQrAPvWSJ_1XnTklpH2IEcPAG_qjoxKKwHICnJOaEjzK3rq5zNMyaD02_gjJPqtBA6WYGu20U');
-        
         pushToken = await getToken(messaging, {
           vapidKey: 'BFeiQnMxZlXHXxtQrAPvWSJ_1XnTklpH2IEcPAG_qjoxKKwHICnJOaEjzK3rq5zNMyaD02_gjJPqtBA6WYGu20U'
         });
-        
-        console.log('🔔 FCM Token result:', pushToken);
-        console.log('🔔 Token length:', pushToken ? pushToken.length : 'NULL');
-        
-      } else {
-        console.log('🔔 Permission not granted:', permission);
+        console.log('Push token obtained:', pushToken);
       }
     } catch (tokenError) {
-      console.error('🔔 Error getting push token:', tokenError);
-      console.error('🔔 Error details:', {
-        code: tokenError.code,
-        message: tokenError.message,
-        stack: tokenError.stack
-      });
+      console.error('Error getting push token:', tokenError);
     }
-    
-    console.log('🔔 === PUSH TOKEN DEBUG END ===');
         
     await setDoc(doc(db, "users", currentUser.uid), {
       email: currentUser.email,
       selectedCategories: categories,
       selectedAffirmations: selectedAffirmations,
       schedule: schedule,
-      pushToken: pushToken,
+      pushToken: pushToken, // ADD THIS LINE
       createdAt: new Date()
     });
-    
-    console.log("✅ Preferences saved to Firestore successfully!");
-    console.log("🔔 Final push token in database:", pushToken ? "✅ SAVED" : "❌ NULL");
+    console.log("Preferences saved to Firestore successfully!");
   } catch (error) {
     console.error("Error saving preferences:", error);
   }
 }
-  // FCM TOKEN FUNCTIONS - UNCHANGED:
-  async function requestNotificationPermissionAndGetToken() {
-    try {
-      const permission = await Notification.requestPermission();
-      if (permission !== 'granted') {
-        console.log('Notification permission not granted.');
-        return;
-      }
-      const currentToken = await getToken(messaging, {
-        vapidKey: 'BFeiQnMxZlXHXxtQrAPvWSJ_1XnTklpH2IEcPAG_qjoxKKwHICnJOaEjzK3rq5zNMyaD02_gjJPqtBA6WYGu20U'
-      });
-      if (currentToken) {
-        console.log('FCM Token:', currentToken);
-        // TODO: Send this token to your server
-      } else {
-        console.log('No registration token available. Request permission to generate one.');
-      }
-    } catch (error) {
-      console.error('An error occurred while retrieving token.', error);
-    }
-  }
 
-  async function getFcmToken() {
-    try {
-      const permission = await Notification.requestPermission();
-      if (permission !== 'granted') {
-        console.log('Notification permission not granted.');
-        return;
-      }
-      const currentToken = await getToken(messaging, {
-        vapidKey: 'BFeiQnMxZlXHXxtQrAPvWSJ_1XnTklpH2IEcPAG_qjoxKKwHICnJOaEjzK3rq5zNMyaD02_gjJPqtBA6WYGu20U'
-      });
-      if (currentToken) {
-        console.log('FCM Token:', currentToken);
-        // Send this token to your server or save it for push notifications
-      } else {
-        console.log('No registration token available. Request permission to generate one.');
-      }
-    } catch (err) {
-     console.error('An error occurred while retrieving token.', err);
+ // FCM TOKEN FUNCTIONS - MODIFIED:
+async function getFcmToken() {
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      console.log('Notification permission not granted.');
+      return;
     }
+    const currentToken = await getToken(messaging, {
+      vapidKey: 'BFeiQnMxZlXHXxtQrAPvWSJ_1XnTklpH2IEcPAG_qjoxKKwHICnJOaEjzK3rq5zNMyaD02_gjJPqtBA6WYGu20U'
+    });
+    if (currentToken) {
+      console.log('FCM Token:', currentToken);
+      // TODO: Send this token to your server
+
+      // Store the FCM token in Firestore
+      await setDoc(doc(db, "users", currentUser.uid), {
+        email: currentUser.email,
+        fcmToken: currentToken,
+        // Other user data...
+      }, { merge: true });
+
+      console.log("FCM Token saved to Firestore successfully!");
+    } else {
+      console.log('No registration token available. Request permission to generate one.');
+    }
+  } catch (err) {
+    console.error('An error occurred while retrieving token.', err);
   }
+}
+
+
   
   getFcmToken();
 
