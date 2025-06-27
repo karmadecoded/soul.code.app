@@ -4479,38 +4479,60 @@ class AffirmationsManager {
         this.showMessage('Please select at least one category!', 'error');
         return;
     }
-    
+
     if (this.settings.days.length === 0) {
         this.showMessage('Please select at least one day!', 'error');
         return;
     }
-        
-        const settingsData = {
-            categories: Array.from(this.selectedCategories),
-            days: this.settings.days,
-            frequency: this.settings.frequency,
-            startTime: this.settings.startTime,
-            setupComplete: true,
-            savedAt: new Date().toISOString()
-        };
-        
-        localStorage.setItem('affirmationSettings', JSON.stringify(settingsData));
-        await window.saveUserPreferences(userId, settingsData.categories, {
-  days: settingsData.days,
-  frequency: settingsData.frequency,
-  startTime: settingsData.startTime
-});
 
-        this.showMessage('Your preferences have been saved successfully! 🎉', 'success');
-        
-        // Schedule notifications if supported
-        this.scheduleNotifications();
-        
-        // Wait 4 seconds before hiding windows so user can see the success message and preview
-        setTimeout(() => {
-            this.hideSetupElements();
-        }, 4000);
+    const settingsData = {
+        categories: Array.from(this.selectedCategories),
+        days: this.settings.days,
+        frequency: this.settings.frequency,
+        startTime: this.settings.startTime,
+        setupComplete: true,
+        savedAt: new Date().toISOString()
+    };
+
+    localStorage.setItem('affirmationSettings', JSON.stringify(settingsData));
+
+    // FIX: Get userId properly and add error handling
+    try {
+        let userId = localStorage.getItem('userId');
+        if (!userId) {
+            userId = 'user_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('userId', userId);
+        }
+
+        // Make sure currentUser exists before saving to Firebase
+        if (window.currentUser) {
+            await window.saveUserPreferences(window.currentUser.uid, settingsData.categories, {
+                days: settingsData.days,
+                frequency: settingsData.frequency,
+                startTime: settingsData.startTime
+            });
+            console.log('Successfully saved to Firebase!');
+        } else {
+            console.error('No authenticated user found');
+            this.showMessage('Please sign in to save your preferences to the cloud', 'error');
+            return;
+        }
+    } catch (error) {
+        console.error('Error saving to Firebase:', error);
+        this.showMessage('Settings saved locally, but cloud sync failed', 'warning');
     }
+
+    this.showMessage('Your preferences have been saved successfully! 🎉', 'success');
+
+    // Schedule notifications if supported
+    this.scheduleNotifications();
+
+    // Wait 4 seconds before hiding windows so user can see the success message and preview
+    setTimeout(() => {
+        this.hideSetupElements();
+    }, 4000);
+}
+
 
     saveToLocalStorage() {
         const quickSave = {
