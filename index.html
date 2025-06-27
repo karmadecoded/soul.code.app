@@ -3865,13 +3865,23 @@ function spinCard() {
     }, 2000);
 }
 
-    // Meditation URLs
+   // Meditation URLs - Firebase Storage format
 const meditationUrls = {
-    'selflove': 'https://youtu.be/YIS7HskL4fU?si=2XdNB4tllHQpzoaV',
-    'stress': 'https://youtu.be/g7wRuSJSkyQ?si=EzWoIyviB40giWt1',
-    'breath': 'https://youtu.be/j-UTeboCPno?si=Qapkj480WmszaA0X',
-    'depression': 'https://youtu.be/77EjxZeTefQ?si=VRkpG4X3oNmXNTvu',
-    'mindfulness': 'https://youtu.be/vjzDC_PNW14?si=dRYLgqVzcQOKw_TF'
+  'selflove': 'https://firebasestorage.googleapis.com/v0/b/soul-code-app.firebasestorage.app/o/ytmp3free.cc_3d-self-love-guided-meditation-youtubemp3free.org.mp3?alt=media&token=0aa2fee7-10ea-4cd2-a174-423268f54a3b',
+  'stress': 'https://firebasestorage.googleapis.com/v0/b/soul-code-app.firebasestorage.app/o/ytmp3free.cc_stress-relief-guided-meditation-youtubemp3free.org.mp3?alt=media&token=debec40c-34da-4fc4-8c76-e2ae1b6f29ce',
+  'breath': 'https://firebasestorage.googleapis.com/v0/b/soul-code-app.firebasestorage.app/o/ytmp3free.cc_alleviate-stess-with-3-deep-breath-technique-guided-meditation-youtubemp3free.org.mp3?alt=media&token=32a58357-4669-47f1-a61c-a48d2a6666ae',
+  'depression': 'https://firebasestorage.googleapis.com/v0/b/soul-code-app.firebasestorage.app/o/ytmp3free.cc_relieve-depression-and-anxious-thought-guided-meditation-youtubemp3free.org.mp3?alt=media&token=e7b96c30-44a3-4b51-9685-2f1549efe86b',
+  'mindfulness': 'https://firebasestorage.googleapis.com/v0/b/soul-code-app.firebasestorage.app/o/ytmp3free.cc_mindfulness-relaxation-guided-10-minutes-meditation-youtubemp3free.org.mp3?alt=media&token=3cdacd79-d83f-4ca0-a656-34d43461153d',
+  // Arcana meditations - replace with your actual Firebase Storage URLs
+  'arcana1': 'https://firebasestorage.googleapis.com/v0/b/YOUR_PROJECT_ID.appspot.com/o/meditations%2Farcana1.mp3?alt=media',
+  'arcana2': 'https://firebasestorage.googleapis.com/v0/b/YOUR_PROJECT_ID.appspot.com/o/meditations%2Farcana2.mp3?alt=media',
+  'arcana3': 'https://firebasestorage.googleapis.com/v0/b/YOUR_PROJECT_ID.appspot.com/o/meditations%2Farcana3.mp3?alt=media',
+  'arcana4': 'https://firebasestorage.googleapis.com/v0/b/YOUR_PROJECT_ID.appspot.com/o/meditations%2Farcana4.mp3?alt=media',
+  'arcana5': 'https://firebasestorage.googleapis.com/v0/b/YOUR_PROJECT_ID.appspot.com/o/meditations%2Farcana5.mp3?alt=media',
+  'arcana6': 'https://firebasestorage.googleapis.com/v0/b/YOUR_PROJECT_ID.appspot.com/o/meditations%2Farcana6.mp3?alt=media',
+  'arcana7': 'https://firebasestorage.googleapis.com/v0/b/YOUR_PROJECT_ID.appspot.com/o/meditations%2Farcana7.mp3?alt=media',
+  'arcana8': 'https://firebasestorage.googleapis.com/v0/b/YOUR_PROJECT_ID.appspot.com/o/meditations%2Farcana8.mp3?alt=media',
+  'arcana9': 'https://firebasestorage.googleapis.com/v0/b/YOUR_PROJECT_ID.appspot.com/o/meditations%2Farcana9.mp3?alt=media'
 };
 
 // Add meditation card click listeners
@@ -3917,7 +3927,7 @@ function startMeditation(type) {
 function startArcanaMediation(arcanaNumber) {
     closeArcanaModal();
     const player = document.getElementById('meditation-player');
-    const url = 'https://youtu.be/vjzDC_PNW14?si=dRYLgqVzcQOKw_TF';
+    const url = meditationUrls[`arcana${arcanaNumber}`];
     
     player.innerHTML = `
         <div class="player-container">
@@ -3940,60 +3950,75 @@ function startArcanaMediation(arcanaNumber) {
     player.classList.add('active');
 }
 
-function extractVideoId(url) {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
-}
-
 function playMeditation(url) {
-    const videoId = extractVideoId(url);
-    if (!videoId) {
-        alert('Invalid YouTube URL');
-        return;
-    }
-    
     // Stop any currently playing audio
     if (currentAudio) {
         currentAudio.pause();
+        currentAudio.currentTime = 0;
         currentAudio = null;
     }
-    
-    // Create hidden audio element to play YouTube audio
-    const audioUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1`;
-    
-    // Create invisible iframe for audio playback
-    if (!document.getElementById('hidden-audio-player')) {
-        const hiddenPlayer = document.createElement('iframe');
-        hiddenPlayer.id = 'hidden-audio-player';
-        hiddenPlayer.style.display = 'none';
-        hiddenPlayer.style.position = 'absolute';
-        hiddenPlayer.style.left = '-9999px';
-        hiddenPlayer.width = '1';
-        hiddenPlayer.height = '1';
-        hiddenPlayer.allow = 'autoplay';
-        document.body.appendChild(hiddenPlayer);
+
+    // Create or get the audio element
+    let audio = document.getElementById('hidden-audio-player');
+    if (!audio) {
+        audio = document.createElement('audio');
+        audio.id = 'hidden-audio-player';
+        audio.style.display = 'none';
+        audio.controls = false;
+        audio.preload = 'metadata';
+        // Removed crossOrigin for Firebase Storage
+        document.body.appendChild(audio);
+        
+        // Add event listeners for better mobile compatibility
+        audio.addEventListener('loadstart', function() {
+            console.log('Audio loading started');
+        });
+        
+        audio.addEventListener('canplay', function() {
+            console.log('Audio can start playing');
+        });
+        
+        audio.addEventListener('error', function(e) {
+            console.error('Audio error:', e);
+            alert('Error loading audio. Please check if the file is accessible.');
+            updatePlayerUI(false);
+        });
+        
+        audio.addEventListener('ended', function() {
+            updatePlayerUI(false);
+        });
     }
+
+    // Set source and play
+    audio.src = url;
     
-    const hiddenPlayer = document.getElementById('hidden-audio-player');
-    hiddenPlayer.src = audioUrl;
+    // For mobile compatibility, we need user interaction
+    const playPromise = audio.play();
     
-    // Update UI to show playing state
-    updatePlayerUI(true);
+    if (playPromise !== undefined) {
+        playPromise.then(() => {
+            console.log('Audio started playing');
+            currentAudio = audio;
+            updatePlayerUI(true);
+        }).catch(error => {
+            console.error('Error playing audio:', error);
+            updatePlayerUI(false);
+        });
+    }
 }
 
 function pauseMeditation() {
-    const hiddenPlayer = document.getElementById('hidden-audio-player');
-    if (hiddenPlayer) {
-        hiddenPlayer.src = '';
+    if (currentAudio) {
+        currentAudio.pause();
+        updatePlayerUI(false);
     }
-    updatePlayerUI(false);
 }
 
 function stopMeditation() {
-    const hiddenPlayer = document.getElementById('hidden-audio-player');
-    if (hiddenPlayer) {
-        hiddenPlayer.src = '';
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        currentAudio = null;
     }
     
     const player = document.getElementById('meditation-player');
@@ -4025,6 +4050,35 @@ function updatePlayerUI(isPlaying) {
             }
         });
     }
+}
+
+// Helper functions (you may already have these)
+function getReadableName(type) {
+    const names = {
+        'selflove': '3D Self Love Neural Practice',
+        'stress': 'Stress Relief Neural Practice',
+        'breath': '3 Deep Breath Technique',
+        'depression': 'Relieve Depression & Anxiety',
+        'mindfulness': 'Mindfulness Relaxation Guided'
+    };
+    return names[type] || 'Meditation';
+}
+
+function getOrdinalSuffix(num) {
+    const j = num % 10;
+    const k = num % 100;
+    if (j == 1 && k != 11) return 'st';
+    if (j == 2 && k != 12) return 'nd';
+    if (j == 3 && k != 13) return 'rd';
+    return 'th';
+}
+
+function showArcanaSelection() {
+    document.getElementById('arcana-modal').style.display = 'block';
+}
+
+function closeArcanaModal() {
+    document.getElementById('arcana-modal').style.display = 'none';
 }
 
 function getReadableName(type) {
