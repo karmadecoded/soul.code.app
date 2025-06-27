@@ -3037,23 +3037,24 @@ input:checked + .toggle-slider:before {
   let currentUser = null;
   const auth = getAuth(app);
 
-  // AUTHENTICATION STATE LISTENER - FIXED:
-  onAuthStateChanged(auth, (user) => {
-    console.log('Auth state changed:', user);
-    if (user) {
-      currentUser = user;
-      console.log('User signed in:', user.email);
-      console.log('About to call showMainApp()');
-      // Add small delay to ensure DOM is ready
-      setTimeout(() => {
-        showMainApp();
-      }, 100);
-    } else {
-      currentUser = null;
-      console.log('User signed out');
-      showAuthScreen();
-    }
-  });
+  // AUTHENTICATION STATE LISTENER - FIXED:  
+onAuthStateChanged(auth, (user) => {
+  console.log('Auth state changed:', user);
+  if (user) {
+    window.currentUser = user;
+    currentUser = user;
+    console.log('User signed in:', user.email);
+    console.log('About to call showMainApp()');
+    // Add small delay to ensure DOM is ready
+    setTimeout(() => {
+      showMainApp();
+    }, 100);
+  } else {
+    currentUser = null;
+    console.log('User signed out');
+    showAuthScreen();
+  }
+});
 
   // UTILITY FUNCTIONS:
   function generateRandomPassword(length = 12) {
