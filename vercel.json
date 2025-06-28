@@ -13,6 +13,10 @@
       "dest": "/sw.js"
     },
     {
+      "src": "/(.*\\.(png|jpg|jpeg|gif|svg|ico|css|js|json))$",
+      "dest": "/$1"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
