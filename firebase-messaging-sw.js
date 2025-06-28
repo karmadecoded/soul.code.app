@@ -15,6 +15,12 @@ const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(function(payload) {
   console.log('[firebase-messaging-sw.js] Received background message ', payload);
+  console.log('=== DEBUG PAYLOAD ===');
+console.log('Full payload:', JSON.stringify(payload, null, 2));
+console.log('notification.title:', payload.notification?.title);
+console.log('notification.body:', payload.notification?.body);
+console.log('data object:', payload.data);
+console.log('=== END DEBUG ===');
   const notificationTitle = payload.notification?.title || 'SoulCode Affirmation';
   const notificationOptions = {
     body: payload.notification?.body || 'Your daily affirmation is ready!',
