@@ -1,8 +1,7 @@
 {
   "name": "SoulCode - Spiritual Wellness App",
   "short_name": "SoulCode",
-  "description": "Your personal spiritual wellness companion with meditations, affirmations, energy discovery, and daily guidance.",
-  "version": "1.0.0",
+  "description": "Your personal spiritual wellness companion with numerology insights, meditations, affirmations, energy discovery, and daily guidance.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
@@ -10,42 +9,10 @@
   "background_color": "#4c135d",
   "scope": "/",
   "lang": "en-US",
-  "dir": "ltr",
-  "categories": [
-    "health",
-    "lifestyle",
-    "wellness",
-    "meditation",
-    "spirituality"
-  ],
   "icons": [
-    {
-      "src": "icon-72.png",
-      "sizes": "72x72",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "icon-96.png",
-      "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "icon-128.png",
-      "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "any"
-    },
     {
       "src": "icon-144.png",
       "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "icon-152.png",
-      "sizes": "152x152",
       "type": "image/png",
       "purpose": "any"
     },
@@ -56,39 +23,10 @@
       "purpose": "any maskable"
     },
     {
-      "src": "icon-384.png",
-      "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
       "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "screenshot-mobile-1.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Home screen with daily card and meditation options"
-    },
-    {
-      "src": "screenshot-mobile-2.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Affirmations categories selection"
-    },
-    {
-      "src": "screenshot-desktop-1.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Desktop view of the spiritual wellness dashboard"
     }
   ],
   "shortcuts": [
@@ -130,126 +68,6 @@
           "type": "image/png"
         }
       ]
-    },
-    {
-      "name": "Energy Discovery",
-      "short_name": "Energy",
-      "description": "Discover your birth energy",
-      "url": "/?shortcut=energy",
-      "icons": [
-        {
-          "src": "icon-192.png",
-          "sizes": "192x192",
-          "type": "image/png"
-        }
-      ]
     }
-  ],
-  "related_applications": [
-    {
-      "platform": "webapp",
-      "url": "https://yourdomain.com/manifest.json"
-    }
-  ],
-  "prefer_related_applications": false,
-  "edge_side_panel": {
-    "preferred_width": 400
-  },
-  "launch_handler": {
-    "client_mode": "navigate-existing"
-  },
-  "handle_links": "preferred",
-  "protocol_handlers": [
-    {
-      "protocol": "web+soulcode",
-      "url": "/?protocol=%s"
-    }
-  ],
-  "file_handlers": [
-    {
-      "action": "/",
-      "accept": {
-        "application/json": [".json"],
-        "text/plain": [".txt"]
-      }
-    }
-  ],
-  "share_target": {
-    "action": "/share",
-    "method": "POST",
-    "enctype": "multipart/form-data",
-    "params": {
-      "title": "title",
-      "text": "text",
-      "url": "url",
-      "files": [
-        {
-          "name": "files",
-          "accept": ["image/*", "text/*"]
-        }
-      ]
-    }
-  },
-  "permissions": [
-    "notifications",
-    "background-sync",
-    "storage"
-  ],
-  "features": [
-    "cross-origin-isolated"
-  ],
-  "display_override": [
-    "window-controls-overlay",
-    "minimal-ui",
-    "standalone",
-    "browser"
-  ],
-  "id": "soulcode-spiritual-wellness",
-  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
-  "note_taking": {
-    "new_note_url": "/notes/new"
-  },
-  "widgets": [
-    {
-      "name": "Daily Affirmation",
-      "short_name": "Affirmation",
-      "description": "Display today's affirmation",
-      "tag": "daily-affirmation",
-      "template": "daily-affirmation",
-      "ms_ac_template": "adaptive-card.json",
-      "data": "/api/widget/affirmation",
-      "type": "application/json",
-      "screenshots": [
-        {
-          "src": "widget-screenshot.png",
-          "sizes": "300x200",
-          "label": "Daily affirmation widget"
-        }
-      ],
-      "icons": [
-        {
-          "src": "icon-192.png",
-          "sizes": "192x192"
-        }
-      ],
-      "auth": false,
-      "update": 86400
-    }
-  ],
-  "capture_links": "new-client",
-  "scope_extensions": [
-    {
-      "origin": "https://youtube.com"
-    },
-    {
-      "origin": "https://t.me"
-    }
-  ],
-  "lock_screen": {
-    "start_url": "/lockscreen"
-  },
-  "workbox": {
-    "navigateFallback": "/",
-    "navigateFallbackDenylist": ["/api/"]
-  }
+  ]
 }
