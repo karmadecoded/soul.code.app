@@ -23,7 +23,7 @@ console.log('data object:', payload.data);
 console.log('=== END DEBUG ===');
   const notificationTitle = payload.notification?.title || 'SoulCode Affirmation';
   const notificationOptions = {
-    body: payload.notification?.body || 'Your daily affirmation is ready!',
+    body: typeof payload.notification?.body === 'string' ? payload.notification.body : 'Your daily affirmation is ready!',
     icon: '/icon-192.png',
     badge: '/icon-192.png',
     vibrate: [200, 100, 200],
