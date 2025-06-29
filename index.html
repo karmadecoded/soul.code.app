@@ -2378,8 +2378,131 @@ input:checked + .toggle-slider:before {
 <!-- Authentication Screen -->
 <div id="auth-screen" style="display: block;">
   <div style="max-width: 350px; margin: 100px auto; padding: 30px; text-align: center; background: rgba(255,255,255,0.1); border-radius: 20px; backdrop-filter: blur(10px);">
-    <h1 style="color: white; margin-bottom: 10px;">Welcome to SoulCode</h1>
-    <p style="color: rgba(255,255,255,0.8); margin-bottom: 30px;">Sign in to receive personalized affirmations</p>
+    <h1 style="color: #ccae79; margin-bottom: 10px;">Welcome to SoulCode</h1>
+    <p style="color: rgba(255,255,255,0.8); margin-bottom: 30px;">Download the app now and get instant access to meditations, daily affirmations delivered straight to your phone, push notifications, powerful numerology calculators, free resources, and much more — all available in one place. </p>
+    <!-- Install App Section -->
+<div id="install-app-section" style="margin: 20px 0;">
+  <button id="install-app-btn" class="btn" style="background: linear-gradient(135deg, #350c48 0%, #ccae79 100%); margin-bottom: 15px;" onclick="handleInstallApp()">
+     Install App 
+  </button>
+</div>
+
+<!-- Install Help Modal -->
+<div id="install-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; backdrop-filter: blur(5px);">
+  <div style="max-width: 400px; margin: 50px auto; padding: 30px; background: rgba(53, 12, 72, 0.95); border-radius: 20px; color: white; position: relative; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);">
+    <!-- Close Button -->
+    <button onclick="closeInstallModal()" style="position: absolute; top: 15px; right: 20px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'">
+      ✕
+    </button>
+    
+    <h3 style="margin-top: 0; text-align: center; color: #ccae79;">Install SoulCode App</h3>
+    
+    <div id="install-instructions">
+      <!-- Instructions will be populated by JavaScript -->
+    </div>
+    
+    <div style="text-align: center; margin-top: 20px;">
+      <button onclick="showInstallHelp()" class="btn" style="background: linear-gradient(135deg, #ccae79 0%, #caafe0 100%); width: auto; padding: 10px 20px; font-size: 14px;">
+        📖 I Need Help
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Help Image Modal -->
+<div id="help-image-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1001; backdrop-filter: blur(5px);">
+  <div style="max-width: 90%; max-height: 90%; margin: 5% auto; position: relative; text-align: center;">
+    <button onclick="closeHelpModal()" style="position: absolute; top: -40px; right: 0; background: rgba(255,255,255,0.2); border: none; color: white; font-size: 24px; cursor: pointer; width: 35px; height: 35px; border-radius: 50%; backdrop-filter: blur(10px);">
+      ✕
+    </button>
+    <img id="help-screenshot" src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&h=600&fit=crop" alt="Installation Help" style="max-width: 100%; max-height: 100%; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+  </div>
+</div>
+
+<script>
+    let userAgent = navigator.userAgent.toLowerCase();
+
+function handleInstallApp() {
+  if (window.deferredPrompt || deferredPrompt) {
+    // Use whichever deferredPrompt exists
+    const prompt = window.deferredPrompt || deferredPrompt;
+    prompt.prompt();
+    prompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === 'accepted') {
+        console.log('User accepted the install prompt');
+      }
+    });
+  } else {
+    showInstallModal();
+  }
+}
+
+
+function showInstallModal() {
+  const modal = document.getElementById('install-modal');
+  const instructions = document.getElementById('install-instructions');
+  
+  let instructionText = '';
+  
+  if (userAgent.includes('iphone') || userAgent.includes('ipad')) {
+  instructionText = `
+    <div style="text-align: left; line-height: 1.6;">
+      <p><strong>To install SoulCode manually:</strong></p>
+      <br>
+      <p><strong>🍎 On iOS (Safari):</strong> Tap the Share button (🔗) > 'Add to Home Screen'.</p>
+    </div>
+  `;
+} else if (userAgent.includes('android')) {
+  instructionText = `
+    <div style="text-align: left; line-height: 1.6;">
+      <p><strong>To install SoulCode manually:</strong></p>
+      <br>
+      <p><strong>📱 On Android (Chrome):</strong> Tap the browser menu (⋮) > 'Add to Home screen'.</p>
+    </div>
+  `;
+} else {
+  instructionText = `
+    <div style="text-align: left; line-height: 1.6;">
+      <p><strong>To install SoulCode manually:</strong></p>
+      <br>
+      <p><strong>📱 On Android (Chrome):</strong> Tap the browser menu (⋮) > 'Add to Home screen'.</p>
+      <p><strong>🍎 On iOS (Safari):</strong> Tap the Share button (🔗) > 'Add to Home Screen'.</p>
+    </div>
+  `;
+}
+
+  
+  instructions.innerHTML = instructionText;
+  modal.style.display = 'block';
+}
+
+function closeInstallModal() {
+  document.getElementById('install-modal').style.display = 'none';
+}
+
+function showInstallHelp() {
+  document.getElementById('help-image-modal').style.display = 'block';
+}
+
+function closeHelpModal() {
+  document.getElementById('help-image-modal').style.display = 'none';
+}
+
+// Close modals when clicking outside
+document.getElementById('install-modal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeInstallModal();
+  }
+});
+
+document.getElementById('help-image-modal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeHelpModal();
+  }
+});
+
+</script>
+
         
     <!-- Social Login Icons -->
     <div style="display: flex; justify-content: center; gap: 30px; margin: 20px 0;">
