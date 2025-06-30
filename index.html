@@ -2415,7 +2415,7 @@ input:checked + .toggle-slider:before {
     <button onclick="closeHelpModal()" style="position: absolute; top: -40px; right: 0; background: rgba(255,255,255,0.2); border: none; color: white; font-size: 24px; cursor: pointer; width: 35px; height: 35px; border-radius: 50%; backdrop-filter: blur(10px);">
       ✕
     </button>
-    <img id="help-screenshot" src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&h=600&fit=crop" alt="Installation Help" style="max-width: 100%; max-height: 100%; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+    <img id="help-screenshot" src="https://i.imgur.com/BF4JXyY.png" alt="Installation Help" style="max-width: 100%; max-height: 100%; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
   </div>
 </div>
 
@@ -2575,6 +2575,11 @@ document.getElementById('help-image-modal').addEventListener('click', function(e
     <span>Notification Settings</span>
 </div>
 
+<div class="menu-item" id="recent-affirmations-btn" onclick="openRecentAffirmations()" style="display: flex; align-items: center; padding: 15px; margin: 10px 0; background: rgba(255, 255, 255, 0.1); border-radius: 12px; cursor: pointer; transition: all 0.3s ease; color: white;" onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.transform='translateX(5px)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.transform='translateX(0)'">
+    <span class="menu-icon">📋</span>
+    <span>Recent Affirmations</span>
+</div>
+
 
         </div>
     </div>
@@ -2593,6 +2598,45 @@ document.getElementById('help-image-modal').addEventListener('click', function(e
         <div class="modal-actions">
             <button class="btn" onclick="saveWish()">Save Wish</button>
             <button class="btn" onclick="viewSavedWishes()">View Saved Wishes</button>
+        </div>
+    </div>
+    </div>
+    
+    <!-- Recent Affirmations Modal -->
+<div id="recent-affirmations-modal" class="modal hidden" style="position: fixed !important; left: 50% !important; transform: translateX(-50%) !important; width: 450px !important; max-width: 450px !important;">
+    <div class="modal-content" style="background: linear-gradient(135deg, #ccae79 0%, #5a1a6b 50%, #caafe0 100%); border: 1px solid rgba(204, 174, 121, 0.3);">
+        <div class="modal-header" style="background: linear-gradient(135deg, #ccae79 0%, #caafe0 100%); color: #350c48; border-radius: 15px 15px 0 0;">
+            <h3 style="margin: 0; font-weight: bold;">📋 Recent Affirmations</h3>
+            <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.8;">Last 12 hours of sent affirmations</p>
+           <button class="close-modal" id="close-modal-btn" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color: #350c48; font-weight: bold;">×</button>
+
+
+        </div>
+        
+        <div class="modal-body" style="max-height: 400px; overflow-y: auto; padding: 20px;">
+            <!-- Loading state -->
+            <div id="affirmations-loading" style="text-align: center; color: #ccae79; padding: 40px;">
+                <div style="font-size: 24px; margin-bottom: 10px;">⏳</div>
+                <p>Loading your recent affirmations...</p>
+            </div>
+            
+            <!-- No affirmations state -->
+            <div id="no-affirmations" style="display: none; text-align: center; color: rgba(255,255,255,0.7); padding: 40px;">
+                <div style="font-size: 48px; margin-bottom: 15px;">✨</div>
+                <p>No affirmations in the last 12 hours</p>
+                <p style="font-size: 14px; opacity: 0.8;">Check your notification schedule settings</p>
+            </div>
+            
+            <!-- Affirmations list -->
+            <div id="affirmations-list" style="display: none;">
+                <!-- Affirmations will be populated here -->
+            </div>
+        </div>
+        
+        <div class="modal-footer" style="padding: 15px 20px; background: rgba(204, 174, 121, 0.1); border-radius: 0 0 15px 15px; text-align: center;">
+            <button id="refresh-affirmations-btn" style="background: linear-gradient(135deg, #ccae79 0%, #caafe0 100%); color: #350c48; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; font-weight: bold; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                   🔄 Refresh
+            </button>
         </div>
     </div>
 </div>
@@ -2656,13 +2700,13 @@ document.getElementById('help-image-modal').addEventListener('click', function(e
     </div>
     
     <div class="meditation-grid">
-        <div class="meditation-card" data-meditation="selflove">
+         <div class="meditation-card" data-meditation="personalized" onclick="showArcanaSelection()">
             <div class="meditation-image">
-                <img src="https://i.imgur.com/FlIjV2R.jpeg" alt="Self Love Meditation">
+                <img src="https://i.imgur.com/yibBjxT.jpeg" alt="Personalized Meditations">
                 <div class="image-overlay"></div>
             </div>
-            <h3>3D Self Love Neural Practice</h3>
-            <p>Transform your self-relationship</p>
+            <h3>Personalized Meditations</h3>
+            <p>Based on your birth arcana</p>
         </div>
         
         <div class="meditation-card" data-meditation="stress">
@@ -2700,14 +2744,7 @@ document.getElementById('help-image-modal').addEventListener('click', function(e
             <p>Neural practice for awareness</p>
         </div>
         
-        <div class="meditation-card" data-meditation="personalized" onclick="showArcanaSelection()">
-            <div class="meditation-image">
-                <img src="https://i.imgur.com/yibBjxT.jpeg" alt="Personalized Meditations">
-                <div class="image-overlay"></div>
-            </div>
-            <h3>Personalized Meditations</h3>
-            <p>Based on your birth arcana</p>
-        </div>
+       
     </div>
     
     <!-- Meditation Player -->
@@ -3207,7 +3244,7 @@ document.getElementById('help-image-modal').addEventListener('click', function(e
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
   import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-messaging.js";
-  import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+  import { getFirestore, doc, setDoc, collection, query, where, orderBy, limit, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
   import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, onAuthStateChanged, sendPasswordResetEmail, updatePassword, GoogleAuthProvider, signInWithPopup, OAuthProvider } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
 
 
@@ -3824,10 +3861,162 @@ onMessage(messaging, (payload) => {
   }
 });
 
+// Recent Affirmations Functions - INSIDE MODULE with Event Listeners
+
+function openRecentAffirmations() {
+    console.log('openRecentAffirmations called');
+    document.getElementById('recent-affirmations-modal').classList.remove('hidden');
+    showRealAffirmations();
+}
+
+function closeRecentAffirmations() {
+    console.log('closeRecentAffirmations called');
+    document.getElementById('recent-affirmations-modal').classList.add('hidden');
+}
+async function showRealAffirmations() {
+    console.log('Loading real affirmations...');
+    const loadingDiv = document.getElementById('affirmations-loading');
+    const noAffirmationsDiv = document.getElementById('no-affirmations');
+    const affirmationsListDiv = document.getElementById('affirmations-list');
+    
+    loadingDiv.style.display = 'block';
+    noAffirmationsDiv.style.display = 'none';
+    affirmationsListDiv.style.display = 'none';
+    
+    try {
+        // Simplified query - just get recent logs for this user
+        const q = query(
+            collection(db, 'notification_logs'),
+            where('userId', '==', currentUser.uid),
+            orderBy('sentAt', 'desc'),
+            limit(20)
+        );
+        
+        const snapshot = await getDocs(q);
+        const affirmations = [];
+        
+        // Filter in JavaScript instead of Firestore
+        const twelveHoursAgo = new Date();
+        twelveHoursAgo.setHours(twelveHoursAgo.getHours() - 12);
+        
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            // Filter for sent status and recent time
+            if (data.status === 'sent' && data.sentAt.toDate() >= twelveHoursAgo) {
+                affirmations.push({
+                    affirmationText: data.affirmationText,
+                    category: data.category,
+                    sentAt: data.sentAt.toDate()
+                });
+            }
+        });
+        
+        loadingDiv.style.display = 'none';
+        
+        if (affirmations.length === 0) {
+            noAffirmationsDiv.style.display = 'block';
+        } else {
+            displayRealAffirmations(affirmations);
+            affirmationsListDiv.style.display = 'block';
+        }
+        
+    } catch (error) {
+        console.error('Error loading affirmations:', error);
+        loadingDiv.style.display = 'none';
+        noAffirmationsDiv.style.display = 'block';
+    }
+}
+
+
+function displayRealAffirmations(affirmations) {
+    const affirmationsListDiv = document.getElementById('affirmations-list');
+    affirmationsListDiv.innerHTML = '';
+    
+    affirmations.forEach(data => {
+        const timeAgo = getTimeAgo(data.sentAt);
+        
+        const affirmationItem = document.createElement('div');
+        affirmationItem.style.cssText = `
+            background: linear-gradient(135deg, rgba(204, 174, 121, 0.1) 0%, rgba(202, 175, 224, 0.1) 100%);
+            border: 1px solid rgba(204, 174, 121, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            color: white;
+        `;
+        
+        affirmationItem.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                <span style="background: linear-gradient(135deg, #ccae79 0%, #caafe0 100%); color: #350c48; padding: 4px 8px; border-radius: 15px; font-size: 12px; font-weight: bold;">
+                    ${data.category || 'Daily Inspiration'}
+                </span>
+                <span style="font-size: 12px; color: rgba(255,255,255,0.7);">
+                    ${timeAgo}
+                </span>
+            </div>
+            <p style="margin: 0; line-height: 1.5; font-size: 14px;">
+                "${data.affirmationText}"
+            </p>
+        `;
+        
+        affirmationsListDiv.appendChild(affirmationItem);
+    });
+}
+
+function getTimeAgo(date) {
+    const now = new Date();
+    const diffInMinutes = Math.floor((now - date) / (1000 * 60));
+    
+    if (diffInMinutes < 60) {
+        return `${diffInMinutes}m ago`;
+    } else {
+        const diffInHours = Math.floor(diffInMinutes / 60);
+        return `${diffInHours}h ago`;
+    }
+}
+
+function refreshAffirmations() {
+    console.log('refreshAffirmations called');
+    showRealAffirmations();
+}
+
+// Add event listener here
+document.addEventListener('DOMContentLoaded', function() {
+    const btn = document.getElementById('recent-affirmations-btn');
+    if (btn) {
+        btn.addEventListener('click', openRecentAffirmations);
+    }
+    
+    const refreshBtn = document.getElementById('refresh-affirmations-btn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', refreshAffirmations);
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const btn = document.getElementById('recent-affirmations-btn');
+    if (btn) {
+        btn.addEventListener('click', openRecentAffirmations);
+    }
+    
+    // ADD THIS:
+    const closeBtn = document.getElementById('close-modal-btn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeRecentAffirmations);
+    }
+});
+
+
+
 </script>
+
+
+
 
     <!-- Scripts -->
     <script>
+        
+        
 let usedMessages = [];
 let allMessages = [];
 
@@ -4064,15 +4253,15 @@ const meditationUrls = {
   'depression': 'https://firebasestorage.googleapis.com/v0/b/soul-code-app.firebasestorage.app/o/ytmp3free.cc_relieve-depression-and-anxious-thought-guided-meditation-youtubemp3free.org.mp3?alt=media&token=e7b96c30-44a3-4b51-9685-2f1549efe86b',
   'mindfulness': 'https://firebasestorage.googleapis.com/v0/b/soul-code-app.firebasestorage.app/o/ytmp3free.cc_mindfulness-relaxation-guided-10-minutes-meditation-youtubemp3free.org.mp3?alt=media&token=3cdacd79-d83f-4ca0-a656-34d43461153d',
   // Arcana meditations - replace with your actual Firebase Storage URLs
-  'arcana1': 'https://firebasestorage.googleapis.com/v0/b/YOUR_PROJECT_ID.appspot.com/o/meditations%2Farcana1.mp3?alt=media',
-  'arcana2': 'https://firebasestorage.googleapis.com/v0/b/YOUR_PROJECT_ID.appspot.com/o/meditations%2Farcana2.mp3?alt=media',
-  'arcana3': 'https://firebasestorage.googleapis.com/v0/b/YOUR_PROJECT_ID.appspot.com/o/meditations%2Farcana3.mp3?alt=media',
-  'arcana4': 'https://firebasestorage.googleapis.com/v0/b/YOUR_PROJECT_ID.appspot.com/o/meditations%2Farcana4.mp3?alt=media',
-  'arcana5': 'https://firebasestorage.googleapis.com/v0/b/YOUR_PROJECT_ID.appspot.com/o/meditations%2Farcana5.mp3?alt=media',
-  'arcana6': 'https://firebasestorage.googleapis.com/v0/b/YOUR_PROJECT_ID.appspot.com/o/meditations%2Farcana6.mp3?alt=media',
-  'arcana7': 'https://firebasestorage.googleapis.com/v0/b/YOUR_PROJECT_ID.appspot.com/o/meditations%2Farcana7.mp3?alt=media',
-  'arcana8': 'https://firebasestorage.googleapis.com/v0/b/YOUR_PROJECT_ID.appspot.com/o/meditations%2Farcana8.mp3?alt=media',
-  'arcana9': 'https://firebasestorage.googleapis.com/v0/b/YOUR_PROJECT_ID.appspot.com/o/meditations%2Farcana9.mp3?alt=media'
+  'arcana1': 'https://firebasestorage.googleapis.com/v0/b/soul-code-app.firebasestorage.app/o/arcana1.mp3?alt=media&token=e80598ca-535d-4c6e-a717-650c3c77abbc',
+  'arcana2': 'https://firebasestorage.googleapis.com/v0/b/soul-code-app.firebasestorage.app/o/arcana2.mp3?alt=media&token=dc153c94-cf9a-4ee0-881b-c0bfb67a6fbc',
+  'arcana3': 'https://firebasestorage.googleapis.com/v0/b/soul-code-app.firebasestorage.app/o/arcana3.mp3?alt=media&token=5fc21025-a48b-406d-b11a-e2a015158e85',
+  'arcana4': 'https://firebasestorage.googleapis.com/v0/b/soul-code-app.firebasestorage.app/o/arcana4.mp3?alt=media&token=dcee1b56-a038-45f1-b7e8-80d8600cdbf7',
+  'arcana5': 'https://firebasestorage.googleapis.com/v0/b/soul-code-app.firebasestorage.app/o/arcana5.mp3?alt=media&token=ddcee584-3aa2-426e-a6ee-885fa6d2d57f',
+  'arcana6': 'https://firebasestorage.googleapis.com/v0/b/soul-code-app.firebasestorage.app/o/arcana6.mp3?alt=media&token=7361b698-ce1f-4615-952b-9f6844739799',
+  'arcana7': 'https://firebasestorage.googleapis.com/v0/b/soul-code-app.firebasestorage.app/o/arcana7.mp3?alt=media&token=6c31cc33-860a-4438-8ae5-b6c2faa5364f',
+  'arcana8': 'https://firebasestorage.googleapis.com/v0/b/soul-code-app.firebasestorage.app/o/arcana8.mp3?alt=media&token=7920072f-243c-47a3-858f-08ad68325a24',
+  'arcana9': 'https://firebasestorage.googleapis.com/v0/b/soul-code-app.firebasestorage.app/o/arcana9.mp3?alt=media&token=31634693-814b-42eb-9f98-e2f212c72228'
 };
 
 // Add meditation card click listeners
