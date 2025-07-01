@@ -1,3 +1,5 @@
+console.log('FIREBASE MESSAGING SW ACTIVE');
+
 importScripts('https://www.gstatic.com/firebasejs/11.9.1/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/11.9.1/firebase-messaging-compat.js');
 
