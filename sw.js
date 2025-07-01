@@ -1,4 +1,3 @@
-console.log('MAIN SW VERSION:', CACHE_VERSION);
 
 const CACHE_VERSION = 'v4.0.1';
 const CACHE_NAME = `soulcode-${CACHE_VERSION}`;
