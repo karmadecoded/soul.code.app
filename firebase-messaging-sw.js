@@ -44,7 +44,8 @@ self.addEventListener('notificationclick', function(event) {
   
   event.notification.close();
   
-  // Open the Recent Affirmations page instead of main app
+  const urlToOpen = `${self.location.origin}/?page=recent-affirmations`;
+  
   event.waitUntil(
     clients.matchAll({
       type: 'window',
@@ -54,18 +55,12 @@ self.addEventListener('notificationclick', function(event) {
       for (let i = 0; i < clientList.length; i++) {
         const client = clientList[i];
         if (client.url.includes(self.location.origin) && 'focus' in client) {
-          // Navigate to recent affirmations page
-          client.postMessage({
-            type: 'OPEN_RECENT_AFFIRMATIONS'
-          });
-          return client.focus();
+          return client.navigate(urlToOpen).then(client => client.focus());
         }
       }
       
       // If app is not open, open it with recent affirmations page
-      if (clients.openWindow) {
-        return clients.openWindow('/?page=recent-affirmations');
-      }
+      return clients.openWindow(urlToOpen);
     })
   );
 });
