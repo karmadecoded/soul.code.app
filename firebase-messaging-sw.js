@@ -43,6 +43,20 @@ self.addEventListener('notificationclick', function(event) {
   event.notification.close();
   
   event.waitUntil(
-    clients.openWindow('/?page=recent-affirmations')
+    clients.matchAll({
+      type: 'window',
+      includeUncontrolled: true
+    }).then(function(clientList) {
+      for (let i = 0; i < clientList.length; i++) {
+        const client = clientList[i];
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          client.postMessage({
+            type: 'OPEN_RECENT_AFFIRMATIONS'
+          });
+          return client.focus();
+        }
+      }
+      return clients.openWindow('/');
+    })
   );
 });
