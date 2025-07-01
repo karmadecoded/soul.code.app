@@ -183,7 +183,6 @@ self.addEventListener('message', event => {
     }
 });
 
-// Schedule notification function
 function scheduleNotification(payload) {
     const { time, affirmation, category } = payload;
     const now = new Date();
@@ -198,12 +197,13 @@ function scheduleNotification(payload) {
     
     const delay = scheduledTime.getTime() - now.getTime();
     
-    setTimeout(() => {
+    // Initial notification
+    const scheduleDaily = () => {
         self.registration.showNotification('SoulCode Affirmation', {
             body: affirmation,
             icon: '/icon-192.png',
             badge: '/icon-192.png',
-            tag: 'soulcode-affirmation',
+            tag: `soulcode-affirmation-${time}`, // Using time as unique identifier
             requireInteraction: false,
             silent: false,
             data: {
@@ -212,23 +212,13 @@ function scheduleNotification(payload) {
                 time: time
             }
         });
-        
-        // Schedule for next day
-        setInterval(() => {
-            self.registration.showNotification('SoulCode Affirmation', {
-                body: affirmation,
-                icon: '/icon-192.png',
-                badge: '/icon-192.png',
-                tag: 'soulcode-affirmation',
-                data: {
-                    category: category,
-                    affirmation: affirmation,
-                    time: time
-                }
-            });
-        }, 24 * 60 * 60 * 1000); // 24 hours
-        
-    }, delay);
+
+        // Schedule next notification for tomorrow at same time
+        setTimeout(scheduleDaily, 24 * 60 * 60 * 1000);
+    };
+
+    // Start the scheduling cycle
+    setTimeout(scheduleDaily, delay);
 }
 
 // Clear scheduled notifications
