@@ -6495,13 +6495,15 @@ function showMainApp() {
 
 // Add the new URL parameter detection here
 window.addEventListener('load', function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('page') === 'recent-affirmations') {
-        openRecentAffirmations();
-    }
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('page') === 'recent-affirmations') {
+    openRecentAffirmations();
+  }
+
+  if (location.hash === '#recent-affirmations') {
+    openRecentAffirmations();
+  }
 });
-
-
 
 </script>
 </body>
