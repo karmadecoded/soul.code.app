@@ -41,16 +41,20 @@ console.log('=== END DEBUG ===');
 // Notification click handler
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();
-  
+
+  const openUrl = '/#recent-affirmations';
+
   event.waitUntil(
-    clients.matchAll().then(function(clientList) {
-      clientList.forEach(client => {
-        client.postMessage({
-          command: 'openRecentAffirmations'
-        });
-      });
-      if (clientList.length === 0) {
-        return clients.openWindow('/');
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
+      for (let i = 0; i < clientList.length; i++) {
+        const client = clientList[i];
+        if (client.url.includes('/') && 'focus' in client) {
+          client.navigate(openUrl);
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(openUrl);
       }
     })
   );
