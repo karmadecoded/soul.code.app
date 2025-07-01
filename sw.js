@@ -10,20 +10,28 @@ const urlsToCache = [
     '/icon-512.png'
 ];
 
-// Install event - cache resources
 self.addEventListener('install', event => {
-    console.log('Service Worker: Installing...');
     event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then(cache => {
+        Promise.all([
+            // Force immediate activation and remove old versions
+            self.skipWaiting().then(() => {
+                // Clean up old service workers
+                self.registration.unregister().then(wasUnregistered => {
+                    if (wasUnregistered) {
+                        // Re-register only the current version
+                        navigator.serviceWorker.register('/sw.js');
+                    }
+                });
+            }),
+            // Cache resources
+            caches.open(CACHE_NAME).then(cache => {
                 console.log('Service Worker: Caching files');
                 return cache.addAll(urlsToCache);
             })
-            .catch(err => {
-                console.log('Service Worker: Cache failed', err);
-            })
+        ])
     );
 });
+
 
 // Activate event
 self.addEventListener('activate', event => {
