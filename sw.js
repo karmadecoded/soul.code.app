@@ -78,65 +78,6 @@ self.addEventListener('fetch', event => {
     );
 });
 
-// Push notifications
-self.addEventListener('push', event => {
-    console.log('Service Worker: Push received');
-    
-    const options = {
-        body: event.data ? event.data.text() : 'Your daily affirmation is ready!',
-        icon: '/icon-192.png',
-        badge: '/icon-192.png',
-        vibrate: [100, 50, 100],
-        data: {
-            dateOfArrival: Date.now(),
-            primaryKey: 1
-        },
-        actions: [
-            {
-                action: 'explore',
-                title: 'Open App',
-                icon: '/icon-192.png'
-            },
-            {
-                action: 'close',
-                title: 'Close',
-                icon: '/icon-192.png'
-            }
-        ]
-    };
-
-    event.waitUntil(
-        self.registration.showNotification('SoulCode Affirmation', options)
-    );
-});
-
-// Notification click handling
-self.addEventListener('notificationclick', event => {
-    console.log('Service Worker: Notification clicked', event);
-    
-    event.notification.close();
-    if (event.action === 'explore') {
-        event.waitUntil(
-            clients.matchAll().then(clientList => {
-                for (const client of clientList) {
-                    if (client.url === '/' && 'focus' in client) {
-                        return client.focus();
-                    }
-                }
-                if (clients.openWindow) {
-                    return clients.openWindow('/');
-                }
-            })
-        );
-    } else if (event.action === 'close') {
-        return;
-    } else {
-        event.waitUntil(
-            clients.openWindow('/')
-        );
-    }
-});
-
 // Handle failed network requests
 self.addEventListener('fetch', event => {
     if (event.request.destination === 'image') {
