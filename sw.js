@@ -140,26 +140,28 @@ self.addEventListener('notificationclick', event => {
     console.log('Service Worker: Notification clicked', event);
     
     event.notification.close();
+
     if (event.action === 'explore') {
-        // Open the app to Recent Affirmations page
+        // Open the app
         event.waitUntil(
             clients.matchAll().then(clientList => {
                 for (const client of clientList) {
-                    if (client.url.includes('/recent-affirmations') && 'focus' in client) {
+                    if (client.url === '/' && 'focus' in client) {
                         return client.focus();
                     }
                 }
                 if (clients.openWindow) {
-                    return clients.openWindow('/recent-affirmations');
+                    return clients.openWindow('/');
                 }
             })
         );
     } else if (event.action === 'close') {
+        // Just close the notification
         return;
     } else {
-        // Default action - open Recent Affirmations page
+        // Default action - open app
         event.waitUntil(
-            clients.openWindow('/recent-affirmations')
+            clients.openWindow('/')
         );
     }
 });
@@ -181,6 +183,7 @@ self.addEventListener('message', event => {
     }
 });
 
+// Schedule notification function
 function scheduleNotification(payload) {
     const { time, affirmation, category } = payload;
     const now = new Date();
@@ -195,13 +198,12 @@ function scheduleNotification(payload) {
     
     const delay = scheduledTime.getTime() - now.getTime();
     
-    // Initial notification
-    const scheduleDaily = () => {
+    setTimeout(() => {
         self.registration.showNotification('SoulCode Affirmation', {
             body: affirmation,
             icon: '/icon-192.png',
             badge: '/icon-192.png',
-            tag: `soulcode-affirmation-${time}`, // Using time as unique identifier
+            tag: 'soulcode-affirmation',
             requireInteraction: false,
             silent: false,
             data: {
@@ -210,13 +212,23 @@ function scheduleNotification(payload) {
                 time: time
             }
         });
-
-        // Schedule next notification for tomorrow at same time
-        setTimeout(scheduleDaily, 24 * 60 * 60 * 1000);
-    };
-
-    // Start the scheduling cycle
-    setTimeout(scheduleDaily, delay);
+        
+        // Schedule for next day
+        setInterval(() => {
+            self.registration.showNotification('SoulCode Affirmation', {
+                body: affirmation,
+                icon: '/icon-192.png',
+                badge: '/icon-192.png',
+                tag: 'soulcode-affirmation',
+                data: {
+                    category: category,
+                    affirmation: affirmation,
+                    time: time
+                }
+            });
+        }, 24 * 60 * 60 * 1000); // 24 hours
+        
+    }, delay);
 }
 
 // Clear scheduled notifications
@@ -335,4 +347,3 @@ self.addEventListener('fetch', event => {
 });
 
 console.log('Service Worker: Loaded successfully');
-
