@@ -6501,8 +6501,8 @@ window.addEventListener('load', function() {
     }
 });
 
-    navigator.serviceWorker.addEventListener('message', function(event) {
-  if (event.data && event.data.type === 'openRecentAffirmations()') {
+    navigator.serviceWorker.addEventListener('message', (event) => {
+  if (event.data && event.data.command === 'openRecentAffirmations') {
     openRecentAffirmations();
   }
 });
