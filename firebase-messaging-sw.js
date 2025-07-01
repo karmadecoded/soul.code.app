@@ -40,27 +40,9 @@ console.log('=== END DEBUG ===');
 });
 // Notification click handler
 self.addEventListener('notificationclick', function(event) {
-  console.log('[firebase-messaging-sw.js] Notification clicked', event);
-  
   event.notification.close();
   
-  const urlToOpen = `${self.location.origin}/?page=recent-affirmations`;
-  
   event.waitUntil(
-    clients.matchAll({
-      type: 'window',
-      includeUncontrolled: true
-    }).then(function(clientList) {
-      // Check if app is already open
-      for (let i = 0; i < clientList.length; i++) {
-        const client = clientList[i];
-        if (client.url.includes(self.location.origin) && 'focus' in client) {
-          return client.navigate(urlToOpen).then(client => client.focus());
-        }
-      }
-      
-      // If app is not open, open it with recent affirmations page
-      return clients.openWindow(urlToOpen);
-    })
+    clients.openWindow('/?page=recent-affirmations')
   );
 });
