@@ -1,6 +1,5 @@
 const CACHE_VERSION = 'v2.0.0';
 const CACHE_NAME = `soulcode-${CACHE_VERSION}`;
-
 const urlsToCache = [
     '/',
     '/index.html',
@@ -26,11 +25,7 @@ self.addEventListener('install', event => {
     );
 });
 
-
-
-
-
-// Add this new activate event
+// Activate event
 self.addEventListener('activate', event => {
     event.waitUntil(
         Promise.all([
@@ -48,19 +43,14 @@ self.addEventListener('activate', event => {
     );
 });
 
-
-
 // Fetch event - serve cached content when offline
 self.addEventListener('fetch', event => {
-    // Skip cross-origin requests
     if (!event.request.url.startsWith(self.location.origin)) {
         return;
     }
-
     event.respondWith(
         caches.match(event.request)
             .then(response => {
-                // Return cached version or fetch from network
                 if (response) {
                     console.log('Service Worker: Serving from cache', event.request.url);
                     return response;
@@ -69,38 +59,23 @@ self.addEventListener('fetch', event => {
                 console.log('Service Worker: Fetching from network', event.request.url);
                 return fetch(event.request)
                     .then(response => {
-                        // Don't cache if not a valid response
                         if (!response || response.status !== 200 || response.type !== 'basic') {
                             return response;
                         }
-
-                        // Clone the response
                         const responseToCache = response.clone();
-
                         caches.open(CACHE_NAME)
                             .then(cache => {
                                 cache.put(event.request, responseToCache);
                             });
-
                         return response;
                     })
                     .catch(() => {
-                        // Return offline page for navigation requests
                         if (event.request.destination === 'document') {
                             return caches.match('/index.html');
                         }
                     });
             })
     );
-});
-
-// Background sync for notifications
-self.addEventListener('sync', event => {
-    console.log('Service Worker: Background sync', event.tag);
-    
-    if (event.tag === 'affirmation-sync') {
-        event.waitUntil(sendScheduledAffirmations());
-    }
 });
 
 // Push notifications
@@ -140,9 +115,7 @@ self.addEventListener('notificationclick', event => {
     console.log('Service Worker: Notification clicked', event);
     
     event.notification.close();
-
     if (event.action === 'explore') {
-        // Open the app
         event.waitUntil(
             clients.matchAll().then(clientList => {
                 for (const client of clientList) {
@@ -156,175 +129,10 @@ self.addEventListener('notificationclick', event => {
             })
         );
     } else if (event.action === 'close') {
-        // Just close the notification
         return;
     } else {
-        // Default action - open app
         event.waitUntil(
             clients.openWindow('/')
-        );
-    }
-});
-
-// Message handling from main app
-self.addEventListener('message', event => {
-    console.log('Service Worker: Message received', event.data);
-    
-    if (event.data && event.data.type === 'SKIP_WAITING') {
-        self.skipWaiting();
-    }
-    
-    if (event.data && event.data.type === 'SCHEDULE_NOTIFICATION') {
-        scheduleNotification(event.data.payload);
-    }
-    
-    if (event.data && event.data.type === 'CLEAR_NOTIFICATIONS') {
-        clearScheduledNotifications();
-    }
-});
-
-// Schedule notification function
-function scheduleNotification(payload) {
-    const { time, affirmation, category } = payload;
-    const now = new Date();
-    const [hours, minutes] = time.split(':').map(Number);
-    const scheduledTime = new Date();
-    scheduledTime.setHours(hours, minutes, 0, 0);
-    
-    // If time has passed today, schedule for tomorrow
-    if (scheduledTime <= now) {
-        scheduledTime.setDate(scheduledTime.getDate() + 1);
-    }
-    
-    const delay = scheduledTime.getTime() - now.getTime();
-    
-    setTimeout(() => {
-        self.registration.showNotification('SoulCode Affirmation', {
-            body: affirmation,
-            icon: '/icon-192.png',
-            badge: '/icon-192.png',
-            tag: 'soulcode-affirmation',
-            requireInteraction: false,
-            silent: false,
-            data: {
-                category: category,
-                affirmation: affirmation,
-                time: time
-            }
-        });
-        
-        // Schedule for next day
-        setInterval(() => {
-            self.registration.showNotification('SoulCode Affirmation', {
-                body: affirmation,
-                icon: '/icon-192.png',
-                badge: '/icon-192.png',
-                tag: 'soulcode-affirmation',
-                data: {
-                    category: category,
-                    affirmation: affirmation,
-                    time: time
-                }
-            });
-        }, 24 * 60 * 60 * 1000); // 24 hours
-        
-    }, delay);
-}
-
-// Clear scheduled notifications
-function clearScheduledNotifications() {
-    self.registration.getNotifications().then(notifications => {
-        notifications.forEach(notification => {
-            if (notification.tag === 'soulcode-affirmation') {
-                notification.close();
-            }
-        });
-    });
-}
-
-// Send scheduled affirmations (for background sync)
-async function sendScheduledAffirmations() {
-    try {
-        // Get user data from IndexedDB or cache
-        const userData = await getUserData();
-        
-        if (userData && userData.selectedAffirmationCategories.length > 0) {
-            const randomCategory = userData.selectedAffirmationCategories[
-                Math.floor(Math.random() * userData.selectedAffirmationCategories.length)
-            ];
-            
-            const affirmation = getRandomAffirmation(randomCategory);
-            
-            await self.registration.showNotification('SoulCode Affirmation', {
-                body: affirmation,
-                icon: '/icon-192.png',
-                badge: '/icon-192.png',
-                tag: 'soulcode-affirmation',
-                data: {
-                    category: randomCategory,
-                    affirmation: affirmation
-                }
-            });
-        }
-    } catch (error) {
-        console.error('Service Worker: Error sending affirmation', error);
-    }
-}
-
-// Get user data helper function
-async function getUserData() {
-    try {
-        // Try to get from cache first
-        const cache = await caches.open(CACHE_NAME);
-        const response = await cache.match('/user-data');
-        
-        if (response) {
-            return await response.json();
-        }
-        
-        // Fallback to localStorage simulation
-        return null;
-    } catch (error) {
-        console.error('Service Worker: Error getting user data', error);
-        return null;
-    }
-}
-
-// Get random affirmation helper function
-function getRandomAffirmation(category) {
-    const defaultAffirmations = {
-        "Think Positively": [
-            "I choose to see the good in every situation.",
-            "My thoughts create my reality, and I choose positivity.",
-            "Each day brings new opportunities and reasons to smile.",
-            "I focus on what I can control and let go of what I can't.",
-            "I am surrounded by positive energy and uplifting people."
-        ],
-        "Build Self-Confidence": [
-            "I believe in myself and my abilities.",
-            "I am confident, capable, and strong.",
-            "I trust myself to make the right decisions.",
-            "I am proud of who I am becoming.",
-            "I have everything I need within me to succeed."
-        ]
-    };
-    
-    const affirmations = defaultAffirmations[category] || [
-        `I am growing stronger in ${category.toLowerCase()}.`,
-        `Each day I improve in ${category.toLowerCase()}.`,
-        `I embrace positive change in ${category.toLowerCase()}.`
-    ];
-    
-    return affirmations[Math.floor(Math.random() * affirmations.length)];
-}
-
-// Update cache when new version is available
-self.addEventListener('message', event => {
-    if (event.data && event.data.type === 'UPDATE_CACHE') {
-        event.waitUntil(
-            caches.open(CACHE_NAME).then(cache => {
-                return cache.addAll(urlsToCache);
-            })
         );
     }
 });
@@ -335,7 +143,6 @@ self.addEventListener('fetch', event => {
         event.respondWith(
             caches.match(event.request).then(response => {
                 return response || fetch(event.request).catch(() => {
-                    // Return placeholder image if image fails to load
                     return new Response(
                         '<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#cdb2e3"/><text x="50" y="50" text-anchor="middle" dy=".3em" fill="#4c135d">✨</text></svg>',
                         { headers: { 'Content-Type': 'image/svg+xml' } }
