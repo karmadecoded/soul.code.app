@@ -1,4 +1,6 @@
-const CACHE_NAME = 'soulcode-v1.0.0';
+const CACHE_VERSION = 'v2.0.0';
+const CACHE_NAME = `soulcode-${CACHE_VERSION}`;
+
 const urlsToCache = [
     '/',
     '/index.html',
@@ -24,22 +26,29 @@ self.addEventListener('install', event => {
     );
 });
 
-// Activate event - clean up old caches
+
+
+
+
+// Add this new activate event
 self.addEventListener('activate', event => {
-    console.log('Service Worker: Activating...');
     event.waitUntil(
-        caches.keys().then(cacheNames => {
-            return Promise.all(
-                cacheNames.map(cacheName => {
-                    if (cacheName !== CACHE_NAME) {
-                        console.log('Service Worker: Deleting old cache', cacheName);
-                        return caches.delete(cacheName);
-                    }
-                })
-            );
-        })
+        Promise.all([
+            caches.keys().then(cacheNames => {
+                return Promise.all(
+                    cacheNames.map(cacheName => {
+                        if (cacheName.startsWith('soulcode-') && cacheName !== CACHE_NAME) {
+                            return caches.delete(cacheName);
+                        }
+                    })
+                );
+            }),
+            clients.claim()
+        ])
     );
 });
+
+
 
 // Fetch event - serve cached content when offline
 self.addEventListener('fetch', event => {
@@ -338,5 +347,4 @@ self.addEventListener('fetch', event => {
 });
 
 console.log('Service Worker: Loaded successfully');
-
 
