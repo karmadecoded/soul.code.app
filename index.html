@@ -2381,6 +2381,15 @@ input:checked + .toggle-slider:before {
     -webkit-tap-highlight-color: transparent;
 }
 
+/* iOS-specific fix */
+.menu-item {
+    cursor: pointer;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+
     #recent-affirmations-modal {
         width: 90% !important;
         max-width: 90% !important;
@@ -4001,13 +4010,13 @@ function refreshAffirmations() {
 document.addEventListener('DOMContentLoaded', () => {
     const recentAffirmationsBtn = document.getElementById('recent-affirmations-btn');
     
-    ['click', 'touchstart'].forEach(eventType => {
-        recentAffirmationsBtn.addEventListener(eventType, (e) => {
-            e.preventDefault();
-            openRecentAffirmations();
-        });
-    });
+    recentAffirmationsBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openRecentAffirmations();
+    }, false);
 });
+
 // Add event listener here
 document.addEventListener('DOMContentLoaded', function() {
     const btn = document.getElementById('recent-affirmations-btn');
