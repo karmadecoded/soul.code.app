@@ -2370,7 +2370,24 @@ input:checked + .toggle-slider:before {
     min-width: 300px !important;
 }
 
+@media (max-width: 768px) {
+    .menu-item {
+        min-height: 44px;
+        padding: 15px 10px;
+        margin: 8px 0;
+    }
+    .menu-item {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
 
+    #recent-affirmations-modal {
+        width: 90% !important;
+        max-width: 90% !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+    }
+}
 
 
 </style>
@@ -3980,6 +3997,17 @@ function refreshAffirmations() {
     showRealAffirmations();
 }
 
+// Add the enhanced event listeners here
+document.addEventListener('DOMContentLoaded', () => {
+    const recentAffirmationsBtn = document.getElementById('recent-affirmations-btn');
+    
+    ['click', 'touchstart'].forEach(eventType => {
+        recentAffirmationsBtn.addEventListener(eventType, (e) => {
+            e.preventDefault();
+            openRecentAffirmations();
+        });
+    });
+});
 // Add event listener here
 document.addEventListener('DOMContentLoaded', function() {
     const btn = document.getElementById('recent-affirmations-btn');
