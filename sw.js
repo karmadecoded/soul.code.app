@@ -1,3 +1,5 @@
+console.log('MAIN SW VERSION:', CACHE_VERSION);
+
 const CACHE_VERSION = 'v3.0.1';
 const CACHE_NAME = `soulcode-${CACHE_VERSION}`;
 const urlsToCache = [
