@@ -140,28 +140,26 @@ self.addEventListener('notificationclick', event => {
     console.log('Service Worker: Notification clicked', event);
     
     event.notification.close();
-
     if (event.action === 'explore') {
-        // Open the app
+        // Open the app to Recent Affirmations page
         event.waitUntil(
             clients.matchAll().then(clientList => {
                 for (const client of clientList) {
-                    if (client.url === '/' && 'focus' in client) {
+                    if (client.url.includes('/recent-affirmations') && 'focus' in client) {
                         return client.focus();
                     }
                 }
                 if (clients.openWindow) {
-                    return clients.openWindow('/');
+                    return clients.openWindow('/recent-affirmations');
                 }
             })
         );
     } else if (event.action === 'close') {
-        // Just close the notification
         return;
     } else {
-        // Default action - open app
+        // Default action - open Recent Affirmations page
         event.waitUntil(
-            clients.openWindow('/')
+            clients.openWindow('/recent-affirmations')
         );
     }
 });
