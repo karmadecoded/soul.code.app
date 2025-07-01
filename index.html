@@ -6501,6 +6501,13 @@ window.addEventListener('load', function() {
     }
 });
 
+    navigator.serviceWorker.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'openRecentAffirmations()') {
+    openRecentAffirmations();
+  }
+});
+
+
 
 
 </script>
