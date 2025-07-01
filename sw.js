@@ -13,16 +13,8 @@ const urlsToCache = [
 self.addEventListener('install', event => {
     event.waitUntil(
         Promise.all([
-            // Force immediate activation and remove old versions
-            self.skipWaiting().then(() => {
-                // Clean up old service workers
-                self.registration.unregister().then(wasUnregistered => {
-                    if (wasUnregistered) {
-                        // Re-register only the current version
-                        navigator.serviceWorker.register('/sw.js');
-                    }
-                });
-            }),
+            // Force immediate activation
+            self.skipWaiting(),
             // Cache resources
             caches.open(CACHE_NAME).then(cache => {
                 console.log('Service Worker: Caching files');
@@ -31,6 +23,7 @@ self.addEventListener('install', event => {
         ])
     );
 });
+
 
 
 // Activate event
