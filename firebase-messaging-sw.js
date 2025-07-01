@@ -43,20 +43,15 @@ self.addEventListener('notificationclick', function(event) {
   event.notification.close();
   
   event.waitUntil(
-    clients.matchAll({
-      type: 'window',
-      includeUncontrolled: true
-    }).then(function(clientList) {
-      for (let i = 0; i < clientList.length; i++) {
-        const client = clientList[i];
-        if (client.url.includes(self.location.origin) && 'focus' in client) {
-          client.postMessage({
-            type: 'OPEN_RECENT_AFFIRMATIONS'
-          });
-          return client.focus();
-        }
+    clients.matchAll().then(function(clientList) {
+      clientList.forEach(client => {
+        client.postMessage({
+          command: 'openRecentAffirmations'
+        });
+      });
+      if (clientList.length === 0) {
+        return clients.openWindow('/');
       }
-      return clients.openWindow('/');
     })
   );
 });
