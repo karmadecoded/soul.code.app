@@ -3890,8 +3890,8 @@ Notification.requestPermission().then((permission) => {
 
 onMessage(messaging, (payload) => {
   console.log('Foreground message received:', payload);
-
-  if (Notification.permission === 'granted') {
+  // Only show notification if we're on Android
+  if (Notification.permission === 'granted' && /Android/i.test(navigator.userAgent)) {
     new Notification('SoulCode', {
       body: payload.notification.body,
       icon: '/icon-192.png',
@@ -3900,6 +3900,7 @@ onMessage(messaging, (payload) => {
     });
   }
 });
+
 
 // Recent Affirmations Functions - INSIDE MODULE with Event Listeners
 
