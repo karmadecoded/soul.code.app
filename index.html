@@ -3888,9 +3888,8 @@ Notification.requestPermission().then((permission) => {
   }
 });
 
-onMessage(messaging, (payload) => {
+/* onMessage(messaging, (payload) => {
   console.log('Foreground message received:', payload);
-
   if (Notification.permission === 'granted') {
     new Notification('SoulCode', {
       body: payload.notification.body,
@@ -3899,7 +3898,8 @@ onMessage(messaging, (payload) => {
       vibrate: [200, 100, 200],
     });
   }
-});
+}); */
+
 
 // Recent Affirmations Functions - INSIDE MODULE with Event Listeners
 
