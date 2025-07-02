@@ -3890,17 +3890,16 @@ Notification.requestPermission().then((permission) => {
 
 onMessage(messaging, (payload) => {
   console.log('Foreground message received:', payload);
-  if (Notification.permission === 'granted' && /Android/i.test(navigator.userAgent)) {
+
+  if (Notification.permission === 'granted') {
     new Notification('SoulCode', {
       body: payload.notification.body,
       icon: '/icon-192.png',
       badge: '/icon-192.png',
       vibrate: [200, 100, 200],
-      tag: 'soulcode-affirmation' // Add this line
     });
   }
 });
-
 
 // Recent Affirmations Functions - INSIDE MODULE with Event Listeners
 
