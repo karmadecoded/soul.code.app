@@ -53,8 +53,8 @@ self.addEventListener('notificationclick', function(event) {
         if (client.url.includes(self.location.origin) && 'focus' in client) {
           // Navigate to recent affirmations page
           client.postMessage({
-  command: 'openRecentAffirmations'
-});
+            type: 'OPEN_RECENT_AFFIRMATIONS'
+          });
           return client.focus();
         }
       }
