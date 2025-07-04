@@ -3308,10 +3308,15 @@ document.getElementById('help-image-modal').addEventListener('click', function(e
   let currentUser = null;
   const auth = getAuth(app);
 
-  // AUTHENTICATION STATE LISTENER - FIXED:  
+ // AUTHENTICATION STATE LISTENER - FIXED:  
 onAuthStateChanged(auth, (user) => {
   console.log('Auth state changed:', user);
   if (user) {
+    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    setDoc(doc(db, "users", user.uid), { timezone: userTimezone }, { merge: true })
+      .then(() => console.log('Timezone saved:', userTimezone))
+      .catch((err) => console.error('Error saving timezone:', err));
+    
     window.currentUser = user;
     currentUser = user;
     console.log('User signed in:', user.email);
