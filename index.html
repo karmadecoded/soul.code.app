@@ -3313,7 +3313,7 @@ onAuthStateChanged(auth, (user) => {
   console.log('Auth state changed:', user);
   if (user) {
     const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    setDoc(doc(db, "users", user.uid), { timezone: userTimezone }, { merge: true })
+    updateDoc(doc(db, "users", user.uid), { timezone: userTimezone })
       .then(() => console.log('Timezone saved:', userTimezone))
       .catch((err) => console.error('Error saving timezone:', err));
     
