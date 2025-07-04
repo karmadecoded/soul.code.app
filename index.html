@@ -3287,7 +3287,8 @@ document.getElementById('help-image-modal').addEventListener('click', function(e
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
   import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-messaging.js";
-  import { getFirestore, doc, setDoc, collection, query, where, orderBy, limit, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+  import { getFirestore, doc, setDoc, updateDoc, collection, query, where, orderBy, limit, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+
   import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, onAuthStateChanged, sendPasswordResetEmail, updatePassword, GoogleAuthProvider, signInWithPopup, OAuthProvider } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
 
 
@@ -3308,12 +3309,12 @@ document.getElementById('help-image-modal').addEventListener('click', function(e
   let currentUser = null;
   const auth = getAuth(app);
 
- // AUTHENTICATION STATE LISTENER - FIXED:  
+ // AUTHENTICATION STATE LISTENER - FIXED:
 onAuthStateChanged(auth, (user) => {
   console.log('Auth state changed:', user);
   if (user) {
     const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    updateDoc(doc(db, "users", user.uid), { timezone: userTimezone })
+    setDoc(doc(db, "users", user.uid), { timezone: userTimezone }, { merge: true })
       .then(() => console.log('Timezone saved:', userTimezone))
       .catch((err) => console.error('Error saving timezone:', err));
     
@@ -3321,7 +3322,6 @@ onAuthStateChanged(auth, (user) => {
     currentUser = user;
     console.log('User signed in:', user.email);
     console.log('About to call showMainApp()');
-    // Add small delay to ensure DOM is ready
     setTimeout(() => {
       showMainApp();
     }, 100);
@@ -3331,6 +3331,7 @@ onAuthStateChanged(auth, (user) => {
     showAuthScreen();
   }
 });
+
 
   // UTILITY FUNCTIONS:
   function generateRandomPassword(length = 12) {
