@@ -33,8 +33,7 @@ console.log('=== END DEBUG ===');
       { action: 'close', title: 'Close', icon: '/icon-192.png' }
     ]
   };
-  return self.registration.showNotification(notificationTitle, notificationOptions);
-
+  self.registration.showNotification(notificationTitle, notificationOptions);
 });
 // Notification click handler
 self.addEventListener('notificationclick', function(event) {
