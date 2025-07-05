@@ -3102,12 +3102,17 @@ document.getElementById('help-image-modal').addEventListener('click', function(e
         </select>
     </div>
     
-    <!-- Start Time Selection -->
-    <div class="start-time-selection">
-        <h4>What time should the first affirmation be sent?</h4>
-        <input type="time" id="start-time" value="09:00">
-    </div>
-    
+   <!-- Start Time Selection -->
+<div class="start-time-selection">
+    <h4>Select your first affirmation time:</h4>
+    <select id="start-time">
+        <option value="07:00">7:00 AM</option>
+        <option value="09:00">9:00 AM</option>
+        <option value="11:00">11:00 AM</option>
+        <option value="13:00">1:00 PM</option>
+        <option value="15:00">3:00 PM</option>
+    </select>
+</div>
     <!-- Save Button -->
     <button id="save-settings" class="btn save-btn">Save and Grant Permission </button>
             
