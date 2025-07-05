@@ -3812,12 +3812,15 @@ window.signInWithApple = async function() {
   }
 
   // KEEP ALL OTHER FUNCTIONS UNCHANGED:
- window.saveUserPreferences = async function(userId, categories, schedule) {
+window.saveUserPreferences = async function(userId, categories, schedule) {
   if (!currentUser) {
     alert('Please sign in first');
     return;
   }
   try {
+    // Get user's timezone automatically
+    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    
     const selectedAffirmations = {};
     categories.forEach(categoryKey => {
       selectedAffirmations[categoryKey] = {
@@ -3825,6 +3828,7 @@ window.signInWithApple = async function() {
         selected: true
       };
     });
+
 
     // Get FCM token
     let pushToken = null;
@@ -3845,7 +3849,8 @@ window.signInWithApple = async function() {
       selectedCategories: categories,
       selectedAffirmations: selectedAffirmations,
       schedule: schedule,
-      pushToken: pushToken, // ADD THIS LINE
+      pushToken: pushToken,
+      timezone: userTimezone,
       createdAt: new Date()
     });
     console.log("Preferences saved to Firestore successfully!");
