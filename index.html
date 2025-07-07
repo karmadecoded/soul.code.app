@@ -3298,7 +3298,7 @@ document.getElementById('help-image-modal').addEventListener('click', function(e
   import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, onAuthStateChanged, sendPasswordResetEmail, updatePassword, GoogleAuthProvider, signInWithPopup, OAuthProvider } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
 
 
-  const firebaseConfig = {
+ const firebaseConfig = {
     apiKey: "AIzaSyAPCFjjC6SqtQEauTQ6Hs7Ex-B2tj6PuXM",
     authDomain: "soul-code-app.firebaseapp.com",
     projectId: "soul-code-app",
@@ -3306,22 +3306,27 @@ document.getElementById('help-image-modal').addEventListener('click', function(e
     messagingSenderId: "339179205157",
     appId: "1:339179205157:web:e801c0ad054cbc6a1c05cc",
     measurementId: "G-C1K5PGZJB7"
-  };
+};
 
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-  const messaging = getMessaging(app);
-  const db = getFirestore(app);
-  let currentUser = null;
-  const auth = getAuth(app);
-  
-  if ('Notification' in window) {
-    Notification.requestPermission().then(function(permission) {
-        if (permission === 'granted') {
-            console.log('Notification permission granted');
-        }
-    });
-}
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const messaging = getMessaging(app);
+const db = getFirestore(app);
+let currentUser = null;
+const auth = getAuth(app);
+
+Notification.requestPermission().then((permission) => {
+    console.log('Notification permission status:', permission);
+    if (permission === 'granted') {
+        getFcmToken();
+    } else {
+        console.warn('Notification permission not granted');
+    }
+});
+
+// AUTHENTICATION STATE LISTENER - FIXED:
+onAuthStateChanged(auth, (user) => {
+
 
 
   // AUTHENTICATION STATE LISTENER - FIXED:  
