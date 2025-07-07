@@ -1,5 +1,5 @@
 
-const CACHE_VERSION = 'v9.0.0';
+const CACHE_VERSION = 'v9.0.1';
 const CACHE_NAME = `soulcode-${CACHE_VERSION}`;
 const urlsToCache = [
     '/',
