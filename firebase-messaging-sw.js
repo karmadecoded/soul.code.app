@@ -16,11 +16,12 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage(function(payload) {
   console.log('[firebase-messaging-sw.js] Received background message ', payload);
   console.log('=== DEBUG PAYLOAD ===');
-console.log('Full payload:', JSON.stringify(payload, null, 2));
-console.log('notification.title:', payload.notification?.title);
-console.log('notification.body:', payload.notification?.body);
-console.log('data object:', payload.data);
-console.log('=== END DEBUG ===');
+  console.log('Full payload:', JSON.stringify(payload, null, 2));
+  console.log('notification.title:', payload.notification?.title);
+  console.log('notification.body:', payload.notification?.body);
+  console.log('data object:', payload.data);
+  console.log('=== END DEBUG ===');
+
   const notificationTitle = payload.notification?.title || 'SoulCode Affirmation';
   const notificationOptions = {
     body: typeof payload.notification?.body === 'string' ? payload.notification.body : 'Your daily affirmation is ready!',
@@ -29,21 +30,30 @@ console.log('=== END DEBUG ===');
     vibrate: [200, 100, 200],
     data: payload.data || {},
     actions: [
-      { action: 'explore', title: 'Open App', icon: '/icon-192.png' },
-      { action: 'close', title: 'Close', icon: '/icon-192.png' }
+        { action: 'explore', title: 'Open App', icon: '/icon-192.png' },
+        { action: 'close', title: 'Close', icon: '/icon-192.png' }
     ],
-   android: {
-      channelId: "default",
-      importance: "high",
-      priority: "high",
-      sound: "default",
-      vibrate: true,
-      visibility: "public"
+    android: {
+        channelId: "high_importance_channel",
+        priority: "max",
+        importance: "max",
+        sound: "default",
+        vibrate: [200, 100, 200],
+        visibility: "public",
+        defaultSound: true,
+        defaultVibrateTimings: true,
+        notification: {
+            sound: "default",
+            clickAction: "FLUTTER_NOTIFICATION_CLICK"
+        }
     },
     requireInteraction: true,
     renotify: true,
     tag: 'soul-code-notification'
-};
+  };
+
+  
+
   self.registration.showNotification(notificationTitle, notificationOptions);
 });
 // Notification click handler
