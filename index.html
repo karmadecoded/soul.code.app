@@ -3302,13 +3302,37 @@ document.getElementById('help-image-modal').addEventListener('click', function(e
   };
 
   const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-  const messaging = getMessaging(app);
-  const db = getFirestore(app);
-  let currentUser = null;
-  const auth = getAuth(app);
+const analytics = getAnalytics(app);
+const messaging = getMessaging(app);
+const db = getFirestore(app);
+let currentUser = null;
+const auth = getAuth(app);
 
-  // AUTHENTICATION STATE LISTENER - FIXED:  
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/service-worker.js')
+    .then(registration => {
+      console.log('Main ServiceWorker registered successfully');
+    });
+
+  navigator.serviceWorker.register('/firebase-messaging-sw.js')
+    .then(registration => {
+      console.log('Firebase ServiceWorker registered successfully');
+    });
+}
+
+async function requestAndroidPushToken() {
+  const registration = await navigator.serviceWorker.ready;
+  const permission = await Notification.requestPermission();
+  
+  if (permission === 'granted') {
+    const subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: 'AIzaSyAPCFjjC6SqtQEauTQ6Hs7Ex-B2tj6PuXM'
+    });
+    return subscription;
+  }
+}
+
 onAuthStateChanged(auth, (user) => {
   console.log('Auth state changed:', user);
   if (user) {
@@ -3316,7 +3340,6 @@ onAuthStateChanged(auth, (user) => {
     currentUser = user;
     console.log('User signed in:', user.email);
     console.log('About to call showMainApp()');
-    // Add small delay to ensure DOM is ready
     setTimeout(() => {
       showMainApp();
     }, 100);
@@ -4717,9 +4740,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         `;
         document.head.appendChild(style);
-        
-        // Affirmations functionality
-class AffirmationsManager {
+       class AffirmationsManager {
     constructor() {
         this.selectedCategories = new Set();
         this.settings = {
@@ -4744,11 +4765,23 @@ class AffirmationsManager {
         }, 500);
     }
 
+    async scheduleNotifications() {
+        const registration = await navigator.serviceWorker.ready;
+        
+        return registration.showNotification('Your Affirmation', {
+            body: 'Your daily affirmation is ready!',
+            icon: '/icon-192.png',
+            badge: '/icon-192.png',
+            vibrate: [200, 100, 200],
+            tag: 'affirmation-notification'
+        });
+    }
+
     loadSavedSettings() {
         const saved = localStorage.getItem('affirmationSettings');
         if (saved) {
             const data = JSON.parse(saved);
-            
+
             // Load categories
             data.categories.forEach(category => {
                 this.selectedCategories.add(category);
