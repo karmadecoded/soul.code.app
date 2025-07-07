@@ -3308,30 +3308,44 @@ const db = getFirestore(app);
 let currentUser = null;
 const auth = getAuth(app);
 
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/service-worker.js')
-    .then(registration => {
-      console.log('Main ServiceWorker registered successfully');
-    });
+async function getFcmToken() {
+    if (!firebase.messaging.isSupported()) {
+        console.log('Firebase messaging not supported on this browser');
+        return null;
+    }
+}
 
-  navigator.serviceWorker.register('/firebase-messaging-sw.js')
-    .then(registration => {
-      console.log('Firebase ServiceWorker registered successfully');
-    });
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+        .then(registration => {
+            console.log('ServiceWorker registration successful');
+        });
+
+    navigator.serviceWorker.register('/firebase-messaging-sw.js')
+        .then(registration => {
+            console.log('Firebase ServiceWorker registered successful');
+        });
 }
 
 async function requestAndroidPushToken() {
-    await navigator.serviceWorker.ready;
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Give IndexedDB time to initialize
+    const registration = await navigator.serviceWorker.ready;
+    await new Promise(resolve => setTimeout(resolve, 1000));
     const permission = await Notification.requestPermission();
     if (permission === 'granted' && currentUser && currentUser.uid) {
         const subscription = await registration.pushManager.subscribe({
             userVisibleOnly: true,
-            applicationServerKey: 'YOUR_KEY'
+            applicationServerKey: 'BFeiQnMxZlXHXxtQrAPvWSJ_1XnTklpH2IEcPAG_qjoxKKwHICnJOaEjzK3rq5zNMyaD02_gjJPqtBA6WYGu20U'
         });
         return subscription;
     }
 }
+
+// Add the new function here
+async function requestPushToken() {
+    if (!indexedDB) {
+        console.log('IndexedDB not supported');
+        return null;
+    }
 
 
 onAuthStateChanged(auth, (user) => {
