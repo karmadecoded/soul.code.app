@@ -3795,38 +3795,28 @@ window.signInWithApple = async function() {
 
 
   // UPDATED SCREEN FUNCTIONS:
-function showAuthScreen() {
+  function showAuthScreen() {
     console.log('Showing auth screen');
     const authScreen = document.getElementById('auth-screen');
     const mainApp = document.getElementById('main-app');
     
     if (authScreen) authScreen.style.display = 'block';
     if (mainApp) mainApp.style.display = 'none';
-}
+  }
 
-function showMainApp() {
+  function showMainApp() {
     console.log('Showing main app');
     const authScreen = document.getElementById('auth-screen');
     const mainApp = document.getElementById('main-app');
-
+    
     if (authScreen) authScreen.style.display = 'none';
     if (mainApp) {
-        mainApp.style.display = 'block';
-        console.log('Main app is now visible');
-        
-        // Notification permission request here
-        Notification.requestPermission().then((permission) => {
-            console.log('Notification permission status:', permission);
-            if (permission === 'granted') {
-                getFcmToken();
-            } else {
-                console.warn('Notification permission not granted');
-            }
-        });
+      mainApp.style.display = 'block';
+      console.log('Main app is now visible');
     } else {
-        console.error('Main app element not found - check your HTML element ID');
+      console.error('Main app element not found - check your HTML element ID');
     }
-}
+  }
 
   // KEEP ALL OTHER FUNCTIONS UNCHANGED:
 window.saveUserPreferences = async function(userId, categories, schedule) {
