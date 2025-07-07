@@ -1,5 +1,5 @@
 
-const CACHE_VERSION = 'v9.0.4';
+const CACHE_VERSION = 'v9.0.9';
 const CACHE_NAME = `soulcode-${CACHE_VERSION}`;
 const urlsToCache = [
     '/',
@@ -10,6 +10,21 @@ const urlsToCache = [
     '/icon-192.png',
     '/icon-512.png'
 ];
+self.addEventListener('push', event => {
+    const options = {
+        body: event.data ? event.data.text() : 'Default notification message',
+        icon: '/icon-192.png',
+        badge: '/icon-192.png',
+        vibrate: [100, 50, 100],
+        data: {
+            dateOfArrival: Date.now(),
+            primaryKey: 1
+        }
+    };
+    event.waitUntil(
+        self.registration.showNotification('Soul Code', options)
+    );
+});
 
 self.addEventListener('install', event => {
     event.waitUntil(
