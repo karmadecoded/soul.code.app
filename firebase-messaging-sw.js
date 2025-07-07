@@ -16,49 +16,53 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage(function(payload) {
   console.log('[firebase-messaging-sw.js] Received background message ', payload);
   console.log('=== DEBUG PAYLOAD ===');
-  console.log('Full payload:', JSON.stringify(payload, null, 2));
-  console.log('notification.title:', payload.notification?.title);
-  console.log('notification.body:', payload.notification?.body);
-  console.log('data object:', payload.data);
-  console.log('=== END DEBUG ===');
-
-  fetch('/notification-config.json')
-    .then(response => response.json())
-    .then(config => {
-      const androidConfig = config.notification_settings;
-      const notificationTitle = payload.notification?.title || 'SoulCode Affirmation';
-      const notificationOptions = {
-        body: typeof payload.notification?.body === 'string' ? payload.notification.body : 'Your daily affirmation is ready!',
-        icon: '/icon-192.png',
-        badge: '/icon-192.png',
-        vibrate: [200, 100, 200],
-        data: payload.data || {},
-        actions: [
-          { action: 'explore', title: 'Open App', icon: '/icon-192.png' },
-          { action: 'close', title: 'Close', icon: '/icon-192.png' }
-        ],
-        android: androidConfig,
-        requireInteraction: true,
-        renotify: true,
-        tag: 'soul-code-notification'
-      };
-      self.registration.showNotification(notificationTitle, notificationOptions);
-    });
+console.log('Full payload:', JSON.stringify(payload, null, 2));
+console.log('notification.title:', payload.notification?.title);
+console.log('notification.body:', payload.notification?.body);
+console.log('data object:', payload.data);
+console.log('=== END DEBUG ===');
+  const notificationTitle = payload.notification?.title || 'SoulCode Affirmation';
+  const notificationOptions = {
+    body: typeof payload.notification?.body === 'string' ? payload.notification.body : 'Your daily affirmation is ready!',
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
+    vibrate: [200, 100, 200],
+    data: payload.data || {},
+    actions: [
+      { action: 'explore', title: 'Open App', icon: '/icon-192.png' },
+      { action: 'close', title: 'Close', icon: '/icon-192.png' }
+    ],
+   android: {
+      channelId: "default",
+      importance: "high",
+      priority: "high",
+      sound: "default",
+      vibrate: true,
+      visibility: "public"
+    },
+    requireInteraction: true,
+    renotify: true,
+    tag: 'soul-code-notification'
+};
+  self.registration.showNotification(notificationTitle, notificationOptions);
 });
-
+// Notification click handler
 self.addEventListener('notificationclick', function(event) {
   console.log('[firebase-messaging-sw.js] Notification clicked', event);
   
   event.notification.close();
   
+  // Open the Recent Affirmations page instead of main app
   event.waitUntil(
     clients.matchAll({
       type: 'window',
       includeUncontrolled: true
     }).then(function(clientList) {
+      // Check if app is already open
       for (let i = 0; i < clientList.length; i++) {
         const client = clientList[i];
         if (client.url.includes(self.location.origin) && 'focus' in client) {
+          // Navigate to recent affirmations page
           client.postMessage({
             type: 'OPEN_RECENT_AFFIRMATIONS'
           });
@@ -66,6 +70,7 @@ self.addEventListener('notificationclick', function(event) {
         }
       }
       
+      // If app is not open, open it with recent affirmations page
       if (clients.openWindow) {
         return clients.openWindow('/?page=recent-affirmations');
       }
