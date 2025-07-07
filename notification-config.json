@@ -1,0 +1,10 @@
+{
+  "android_channel_id": "high_importance_channel",
+  "notification_settings": {
+    "priority": "high",
+    "sound": "default",
+    "vibrate": true,
+    "icon": "/icon-192.png",
+    "visibility": "public"
+  }
+}
