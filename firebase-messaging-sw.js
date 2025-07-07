@@ -31,20 +31,19 @@ console.log('=== END DEBUG ===');
     actions: [
       { action: 'explore', title: 'Open App', icon: '/icon-192.png' },
       { action: 'close', title: 'Close', icon: '/icon-192.png' }
+    ],
    android: {
-        channelId: "default-channel-id",
-        priority: "high",
-        importance: "high",
-        sound: "default",
-        vibrate: true,
-        visibility: "public",
-        defaultSound: true,
-        defaultVibrateTimings: true
+      channelId: "default",
+      importance: "high",
+      priority: "high",
+      sound: "default",
+      vibrate: true,
+      visibility: "public"
     },
     requireInteraction: true,
     renotify: true,
     tag: 'soul-code-notification'
-}
+};
   self.registration.showNotification(notificationTitle, notificationOptions);
 });
 // Notification click handler
