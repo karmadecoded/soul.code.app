@@ -3298,7 +3298,7 @@ document.getElementById('help-image-modal').addEventListener('click', function(e
   import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, onAuthStateChanged, sendPasswordResetEmail, updatePassword, GoogleAuthProvider, signInWithPopup, OAuthProvider } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
 
 
- const firebaseConfig = {
+  const firebaseConfig = {
     apiKey: "AIzaSyAPCFjjC6SqtQEauTQ6Hs7Ex-B2tj6PuXM",
     authDomain: "soul-code-app.firebaseapp.com",
     projectId: "soul-code-app",
@@ -3306,28 +3306,14 @@ document.getElementById('help-image-modal').addEventListener('click', function(e
     messagingSenderId: "339179205157",
     appId: "1:339179205157:web:e801c0ad054cbc6a1c05cc",
     measurementId: "G-C1K5PGZJB7"
-};
+  };
 
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-const messaging = getMessaging(app);
-const db = getFirestore(app);
-let currentUser = null;
-const auth = getAuth(app);
-
-Notification.requestPermission().then((permission) => {
-    console.log('Notification permission status:', permission);
-    if (permission === 'granted') {
-        getFcmToken();
-    } else {
-        console.warn('Notification permission not granted');
-    }
-});
-
-// AUTHENTICATION STATE LISTENER - FIXED:
-onAuthStateChanged(auth, (user) => {
-
-
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const messaging = getMessaging(app);
+  const db = getFirestore(app);
+  let currentUser = null;
+  const auth = getAuth(app);
 
   // AUTHENTICATION STATE LISTENER - FIXED:  
 onAuthStateChanged(auth, (user) => {
@@ -3809,28 +3795,38 @@ window.signInWithApple = async function() {
 
 
   // UPDATED SCREEN FUNCTIONS:
-  function showAuthScreen() {
+function showAuthScreen() {
     console.log('Showing auth screen');
     const authScreen = document.getElementById('auth-screen');
     const mainApp = document.getElementById('main-app');
     
     if (authScreen) authScreen.style.display = 'block';
     if (mainApp) mainApp.style.display = 'none';
-  }
+}
 
-  function showMainApp() {
+function showMainApp() {
     console.log('Showing main app');
     const authScreen = document.getElementById('auth-screen');
     const mainApp = document.getElementById('main-app');
-    
+
     if (authScreen) authScreen.style.display = 'none';
     if (mainApp) {
-      mainApp.style.display = 'block';
-      console.log('Main app is now visible');
+        mainApp.style.display = 'block';
+        console.log('Main app is now visible');
+        
+        // Notification permission request here
+        Notification.requestPermission().then((permission) => {
+            console.log('Notification permission status:', permission);
+            if (permission === 'granted') {
+                getFcmToken();
+            } else {
+                console.warn('Notification permission not granted');
+            }
+        });
     } else {
-      console.error('Main app element not found - check your HTML element ID');
+        console.error('Main app element not found - check your HTML element ID');
     }
-  }
+}
 
   // KEEP ALL OTHER FUNCTIONS UNCHANGED:
 window.saveUserPreferences = async function(userId, categories, schedule) {
