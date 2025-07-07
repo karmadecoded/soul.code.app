@@ -1,5 +1,5 @@
 
-const CACHE_VERSION = 'v7.0.1';
+const CACHE_VERSION = 'v7.4.7';
 const CACHE_NAME = `soulcode-${CACHE_VERSION}`;
 const urlsToCache = [
     '/',
@@ -97,3 +97,31 @@ self.addEventListener('fetch', event => {
 });
 
 console.log('Service Worker: Loaded successfully');
+
+self.addEventListener('push', function(event) {
+  const options = {
+    android: {
+      channelId: "default",
+      importance: 4, // HIGH
+      priority: 2, // HIGH
+      visibility: 1,
+      vibrate: [200, 100, 200],
+      sound: true
+    },
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
+    tag: 'soul-code-notification',
+    renotify: true,
+    requireInteraction: true
+  };
+
+  if (event.data) {
+    const payload = event.data.json();
+    options.title = payload.notification.title;
+    options.body = payload.notification.body;
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(options.title, options)
+  );
+});
