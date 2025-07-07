@@ -4656,6 +4656,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
             });
         }
+        
+        // Add push notification subscription
+navigator.serviceWorker.ready.then(registration => {
+    if (registration.pushManager) {
+        registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: 'BFeiQnMxZlXHXxtQrAPvWSJ_1XnTklpH2IEcPAG_qjoxKKwHICnJOaEjzK3rq5zNMyaD02_gjJPqtBA6WYGu20U'
+        });
+    }
+});
 
         // Hide loading screen when app loads
         window.addEventListener('load', () => {
