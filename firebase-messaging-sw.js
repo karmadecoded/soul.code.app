@@ -14,23 +14,39 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(function(payload) {
-    return self.registration.showNotification('SoulCode', {
-        body: payload.notification.body,
+    console.log('Background message received:', payload);
+    
+    // Extract the clean title and body
+    const notificationTitle = payload.notification?.title || 'Soul Code';
+    const notificationBody = payload.notification?.body || 'Your daily affirmation is ready!';
+    
+    const notificationOptions = {
+        body: notificationBody,
         icon: '/icon-192.png',
         badge: '/icon-192.png',
-        tag: 'soulcode-affirmation'
-    });
+        tag: 'soulcode-affirmation',
+        data: payload.data, // Store data for click handling
+        requireInteraction: false,
+        silent: false
+    };
+    
+    return self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
 self.addEventListener('notificationclick', function(event) {
+    console.log('Notification clicked:', event.notification);
     event.notification.close();
+    
     event.waitUntil(
         clients.matchAll({type: 'window', includeUncontrolled: true})
             .then(function(clientList) {
                 if (clientList.length > 0) {
                     let client = clientList[0];
                     client.focus();
-                    client.postMessage({type: 'OPEN_RECENT_AFFIRMATIONS'});
+                    client.postMessage({
+                        type: 'OPEN_RECENT_AFFIRMATIONS',
+                        data: event.notification.data
+                    });
                     return;
                 }
                 clients.openWindow('/?page=recent-affirmations');
