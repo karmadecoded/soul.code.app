@@ -1,5 +1,4 @@
-
-const CACHE_VERSION = 'v12.0.0';
+const CACHE_VERSION = 'v12.0.1';
 const CACHE_NAME = `soulcode-${CACHE_VERSION}`;
 const urlsToCache = [
     '/',
@@ -10,28 +9,13 @@ const urlsToCache = [
     '/icon-192.png',
     '/icon-512.png'
 ];
-self.addEventListener('push', event => {
-    const options = {
-        body: event.data ? event.data.text() : 'Default notification message',
-        icon: '/icon-192.png',
-        badge: '/icon-192.png',
-        vibrate: [100, 50, 100],
-        data: {
-            dateOfArrival: Date.now(),
-            primaryKey: 1
-        }
-    };
-    event.waitUntil(
-        self.registration.showNotification('Soul Code', options)
-    );
-});
+
+// REMOVED THE PUSH EVENT LISTENER - Firebase messaging will handle all notifications
 
 self.addEventListener('install', event => {
     event.waitUntil(
         Promise.all([
-            // Force immediate activation
             self.skipWaiting(),
-            // Cache resources
             caches.open(CACHE_NAME).then(cache => {
                 console.log('Service Worker: Caching files');
                 return cache.addAll(urlsToCache);
@@ -40,9 +24,6 @@ self.addEventListener('install', event => {
     );
 });
 
-
-
-// Activate event
 self.addEventListener('activate', event => {
     event.waitUntil(
         Promise.all([
@@ -60,7 +41,6 @@ self.addEventListener('activate', event => {
     );
 });
 
-// Fetch event - serve cached content when offline
 self.addEventListener('fetch', event => {
     if (!event.request.url.startsWith(self.location.origin)) {
         return;
@@ -95,7 +75,6 @@ self.addEventListener('fetch', event => {
     );
 });
 
-// Handle failed network requests
 self.addEventListener('fetch', event => {
     if (event.request.destination === 'image') {
         event.respondWith(
@@ -112,4 +91,3 @@ self.addEventListener('fetch', event => {
 });
 
 console.log('Service Worker: Loaded successfully');
-
