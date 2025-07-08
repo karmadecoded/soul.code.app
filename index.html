@@ -3311,6 +3311,12 @@ document.getElementById('help-image-modal').addEventListener('click', function(e
   const db = getFirestore(app);
   let currentUser = null;
   const auth = getAuth(app);
+  
+  // Add timezone handling
+const userTimeZone = {
+  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  offset: new Date().getTimezoneOffset()
+};
 
   // AUTHENTICATION STATE LISTENER - FIXED:  
 onAuthStateChanged(auth, (user) => {
@@ -3830,7 +3836,6 @@ window.signInWithApple = async function() {
       };
     });
 
-    // Get FCM token
     let pushToken = null;
     try {
       const permission = await Notification.requestPermission();
@@ -3838,20 +3843,22 @@ window.signInWithApple = async function() {
         pushToken = await getToken(messaging, {
           vapidKey: 'BFeiQnMxZlXHXxtQrAPvWSJ_1XnTklpH2IEcPAG_qjoxKKwHICnJOaEjzK3rq5zNMyaD02_gjJPqtBA6WYGu20U'
         });
-        console.log('Push token obtained:', pushToken);
       }
     } catch (tokenError) {
       console.error('Error getting push token:', tokenError);
     }
-        
+
     await setDoc(doc(db, "users", currentUser.uid), {
       email: currentUser.email,
       selectedCategories: categories,
       selectedAffirmations: selectedAffirmations,
       schedule: schedule,
-      pushToken: pushToken, // ADD THIS LINE
+      pushToken: pushToken,
+      timezone: userTimeZone.timezone,
+      timezoneOffset: userTimeZone.offset,
       createdAt: new Date()
     });
+
     console.log("Preferences saved to Firestore successfully!");
   } catch (error) {
     console.error("Error saving preferences:", error);
