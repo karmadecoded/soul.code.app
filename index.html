@@ -6034,14 +6034,38 @@ function saveNotificationSettings() {
     const startTime = document.getElementById('start-time').value;
     
     // Save notification settings
-    const notificationSettings = {
-        categories: selectedCategories,
-        days: selectedDays,
-        frequency: parseInt(frequency),
-        startTime: startTime,
-        enabled: true,
-        createdAt: new Date().toISOString()
-    };
+const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+const notificationSettings = {
+    categories: selectedCategories,
+    days: selectedDays,
+    frequency: parseInt(frequency),
+    startTime: startTime,
+    timezone: userTimezone,
+    enabled: true,
+    createdAt: new Date().toISOString()
+};
+
+// Save to localStorage
+localStorage.setItem('notificationSettings', JSON.stringify(notificationSettings));
+
+// Save to Firebase for Cloud Function
+if (auth.currentUser) {
+    db.collection('users').doc(auth.currentUser.uid).update({
+        schedule: {
+            days: selectedDays,
+            frequency: parseInt(frequency),
+            startTime: startTime,
+            timezone: userTimezone
+        },
+        selectedCategories: selectedCategories
+    }).then(() => {
+        console.log('Settings saved to Firebase successfully!');
+    }).catch((error) => {
+        console.error('Error saving to Firebase:', error);
+    });
+}
+
     
     localStorage.setItem('notificationSettings', JSON.stringify(notificationSettings));
     
