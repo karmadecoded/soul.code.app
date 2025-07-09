@@ -1,5 +1,5 @@
 
-const CACHE_VERSION = 'v12.0.2';
+const CACHE_VERSION = 'v12.0.3';
 const CACHE_NAME = `soulcode-${CACHE_VERSION}`;
 const urlsToCache = [
     '/',
@@ -12,7 +12,7 @@ const urlsToCache = [
 ];
 self.addEventListener('push', event => {
     const options = {
-        body: event.data ? event.data.text() : 'Default notification message',
+        body: event.data ? (event.data.json().notification?.body || event.data.json().body || 'Your daily affirmation is ready!') : 'Default notification message',
         icon: '/icon-192.png',
         badge: '/icon-192.png',
         vibrate: [100, 50, 100],
