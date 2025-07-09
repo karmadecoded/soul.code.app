@@ -3049,154 +3049,166 @@ document.getElementById('help-image-modal').addEventListener('click', function(e
    
        <div class="notification-setup" style="display: none;">
   
-    <!-- Days Selection -->
-    <div class="days-selection">
-        <h4>Select Days:</h4>
-        <div class="days-grid">
-            <label class="day-checkbox">
-                <input type="checkbox" value="monday" id="day-monday">
-                <span>Mon</span>
-            </label>
-            <label class="day-checkbox">
-                <input type="checkbox" value="tuesday" id="day-tuesday">
-                <span>Tue</span>
-            </label>
-            <label class="day-checkbox">
-                <input type="checkbox" value="wednesday" id="day-wednesday">
-                <span>Wed</span>
-            </label>
-            <label class="day-checkbox">
-                <input type="checkbox" value="thursday" id="day-thursday">
-                <span>Thu</span>
-            </label>
-            <label class="day-checkbox">
-                <input type="checkbox" value="friday" id="day-friday">
-                <span>Fri</span>
-            </label>
-            <label class="day-checkbox">
-                <input type="checkbox" value="saturday" id="day-saturday">
-                <span>Sat</span>
-            </label>
-            <label class="day-checkbox">
-                <input type="checkbox" value="sunday" id="day-sunday">
-                <span>Sun</span>
-            </label>
-        </div>
-    </div>
-    
-    <!-- Frequency Selection -->
-    <div class="frequency-selection">
-        <h4>How often do you want to receive affirmations?</h4>
-        <select id="frequency-select">
-            <option value="1">Every hour</option>
-            <option value="2">Every 2 hours</option>
-            <option value="3">Every 3 hours</option>
-            <option value="4">Every 4 hours</option>
-            <option value="5">Every 5 hours</option>
-        </select>
-    </div>
-    
-    <!-- Start Time Selection -->
-    <div class="start-time-selection">
-        <h4>What time should the first affirmation be sent?</h4>
-        <input type="time" id="start-time" value="09:00">
-    </div>
-    
-    <!-- Save Button -->
-    <button id="save-settings" class="btn save-btn">Save and Grant Permission </button>
-            
-    <!-- Preview Schedule -->
-    <div id="schedule-preview" class="schedule-preview">
-        <h4>Your Schedule Preview:</h4>
-        <div id="preview-content"></div>
+   <!-- Days Selection -->
+<div class="days-selection">
+    <h4>Select Days:</h4>
+    <div class="days-grid">
+        <label class="day-checkbox">
+            <input type="checkbox" value="monday" id="day-monday">
+            <span>Mon</span>
+        </label>
+        <label class="day-checkbox">
+            <input type="checkbox" value="tuesday" id="day-tuesday">
+            <span>Tue</span>
+        </label>
+        <label class="day-checkbox">
+            <input type="checkbox" value="wednesday" id="day-wednesday">
+            <span>Wed</span>
+        </label>
+        <label class="day-checkbox">
+            <input type="checkbox" value="thursday" id="day-thursday">
+            <span>Thu</span>
+        </label>
+        <label class="day-checkbox">
+            <input type="checkbox" value="friday" id="day-friday">
+            <span>Fri</span>
+        </label>
+        <label class="day-checkbox">
+            <input type="checkbox" value="saturday" id="day-saturday">
+            <span>Sat</span>
+        </label>
+        <label class="day-checkbox">
+            <input type="checkbox" value="sunday" id="day-sunday">
+            <span>Sun</span>
+        </label>
     </div>
 </div>
 
+<!-- Frequency Selection -->
+<div class="frequency-selection">
+    <h4>How often do you want to receive affirmations?</h4>
+    <select id="frequency-select">
+        <option value="1">Every hour</option>
+        <option value="2">Every 2 hours</option>
+        <option value="3">Every 3 hours</option>
+        <option value="4">Every 4 hours</option>
+        <option value="5">Every 5 hours</option>
+    </select>
+</div>
 
-      <!-- CALCULATORS PAGE -->
+<!-- Start Time Selection -->
+<div class="start-time-selection">
+    <h4>Select your first affirmation time:</h4>
+    <select id="start-time">
+        <option value="07:00">7:00 AM</option>
+        <option value="09:00">9:00 AM</option>
+        <option value="11:00">11:00 AM</option>
+        <option value="13:00">1:00 PM</option>
+    </select>
+</div>
+
+<!-- Save Button -->
+<button id="save-settings" class="btn save-btn">Save and Grant Permission</button>
+
+<!-- Preview Schedule -->
+<div id="schedule-preview" class="schedule-preview">
+    <h4>Your Schedule Preview:</h4>
+    <div id="preview-content"></div>
+</div>
+
+<!-- CLOSE THE PARENT CONTAINER HERE -->
+</div>
+
+<!-- CALCULATORS PAGE -->
 <div id="calculators-page" class="page">
     <div class="page-header">
         <h1>Calculators</h1>
         <p>Fast access to your money energy and forecast descriptions. Get answers anytime, instantly.</p>
     </div>
+     <br><br>
+    
+    
     <div class="calculators-section">
         <div class="calculators-grid">
-
-        <!-- Money Code Calculator -->
-<div class="title-with-lock" data-calculator="money-code" onclick="showCodeInput('money-code')">
-    <h3 class="calculator-title">MONEY CODE CALCULATOR</h3>
-    <div class="lock-overlay">
-        <div class="lock-icon">🔒</div>
-        <p class="unlock-text">Unlock with Access Code</p>
-    </div>
-</div>
-
-<div class="calculator-image">
-    <img src="https://i.imgur.com/I7CUbj8.png" alt="Money Code Calculator">
-</div>
-
-<br><br>
-
-
-            </div>
-            <div class="calculator-description">
-                <p><strong>What's Your Money Code? </strong></p>
-                <p>Your birth date carries a unique money blueprint, a personal energy pattern that reveals how you naturally attract wealth, where your financial power lies, and what may be quietly blocking your abundance.</p>
-                <br><br>
+            
+            <!-- Money Code Calculator -->
+            <div class="calculator-card" data-calculator="money-code">
+                <div class="title-with-lock" onclick="showCodeInput('money-code')">
+                    <h3 class="calculator-title">MONEY CODE CALCULATOR</h3>
+                    <div class="lock-overlay">
+                        <div class="lock-icon">🔒</div>
+                        <p class="unlock-text">Unlock with Access Code</p>
+                    </div>
+                </div>
                 
-                <p>With just one click, this calculator decodes your Money Triangle: all six programs decoded. You'll uncover:</p>
-                <ul>
-                    <li>✔ Your natural paths to generating income</li>
-                    <li>✔ The hidden blocks that may be limiting your financial flow</li>
-                    <li>✔ Personalized ways to grow your wealth in alignment with your energy</li>
-                    <li>✔ How to use money as a tool for purpose, growth, and freedom</li>
-                </ul>
-                <p>Whether you're feeling stuck or ready to thrive, this is your first step to a more conscious, empowered relationship with money.</p>
+                <div class="calculator-image">
+                    <img src="https://i.imgur.com/I7CUbj8.png" alt="Money Code Calculator">
+                </div>
                 <br><br>
+    
+                <div class="calculator-description">
+                    <p><strong>What's Your Money Code?</strong></p>
+                    <p>Your birth date carries a unique money blueprint, a personal energy pattern that reveals how you naturally attract wealth, where your financial power lies, and what may be quietly blocking your abundance.</p>
+                     <br><br>
+    
+                    <p>With just one click, this calculator decodes your Money Triangle: all six programs decoded. You'll uncover:</p>
+                    <ul>
+                        <li>✔ Your natural paths to generating income</li>
+                        <li>✔ The hidden blocks that may be limiting your financial flow</li>
+                        <li>✔ Personalized ways to grow your wealth in alignment with your energy</li>
+                        <li>✔ How to use money as a tool for purpose, growth, and freedom</li>
+                    </ul>
+                    <p>Whether you're feeling stuck or ready to thrive, this is your first step to a more conscious, empowered relationship with money.</p>
+                </div>
+                 <br><br>
+    
+                <div class="calculator-buttons">
+                    <button class="btn get-access-btn" onclick="window.open('https://payhip.com/b/fPRZK', '_blank')">Get Access Here</button>
+                    <button class="btn unlock-btn" onclick="showCodeInput('money-code')">I Have Access Code</button>
+                </div>
+            </div>
+
+            <!-- Forecast Calculator -->
+            <div class="calculator-card" data-calculator="forecast">
+                <div class="title-with-lock">
+                    <h3 class="calculator-title">FORECAST CALCULATOR</h3>
+                    <div class="lock-overlay">
+                        <div class="lock-icon">🔒</div>
+                        <p class="unlock-text">Unlock with Access Code</p>
+                    </div>
+                </div>
                 
-            </div>
-            <div class="calculator-buttons">
-                <button class="btn get-access-btn" onclick="window.open('https://payhip.com/b/fPRZK', '_blank')">Get Access Here</button>
-                <button class="btn unlock-btn" onclick="showCodeInput('money-code')">I Have Access Code</button>
-            </div>
-        </div>
-<!-- Forecast Calculator -->
-<div class="calculator-card" data-calculator="forecast">
-    <div class="title-with-lock">
-        <h3 class="calculator-title"> FORECAST CALCULATOR</h3>
-        <div class="lock-overlay">
-            <div class="lock-icon">🔒</div>
-            <p class="unlock-text">Unlock with Access Code</p>
-        </div>
-    </div>
-    <div class="calculator-image">
-        <img src="https://i.imgur.com/8ZfupjB.png" alt="Forecast Calculator">
-    </div>
-    <br><br>
+                <div class="calculator-image">
+                    <img src="https://i.imgur.com/8ZfupjB.png" alt="Forecast Calculator">
+                </div>
+                <br><br>
     
-    <div class="calculator-description">
-        <p><strong>Your Personal Energy Forecast — Aligned Guidance for Your Day, Month & Year</strong></p>
-        <p>Imagine waking up and knowing exactly what kind of energy surrounds you — and how to make the most of it. This calculator reveals your unique daily, monthly, and yearly forecasts, based on your date of birth.</p>
-        <br><br>
-        
-        <p>Get practical and intuitive guidance tailored to your personal rhythm:</p>
-        <ul>
-            <li>✔ The energetic tone of your day, month, and year</li>
-            <li>✔ Personalized tips for your health, money, and relationships</li>
-            <li>✔ What to embrace — and what to avoid — to stay aligned</li>
-            <li>✔ How to navigate challenges with more clarity and confidence</li>
-        </ul>
-        <p>Whether you're planning your day or realigning your year, this tool helps you work with your energy, not against it.</p>
-    </div>
-    <br><br>
+                <div class="calculator-description">
+                    <p><strong>Your Personal Energy Forecast — Aligned Guidance for Your Day, Month & Year.</strong></p>
+                    <p>Imagine waking up and knowing exactly what kind of energy surrounds you — and how to make the most of it. This calculator reveals your unique daily, monthly, and yearly forecasts, based on your date of birth.</p>
+                    
+                    <p>Get practical and intuitive guidance tailored to your personal rhythm:</p>
+                    <ul>
+                        <li>✔ The energetic tone of your day, month, and year.</li>
+                        <li>✔ Personalized tips for your health, money, and relationships.</li>
+                        <li>✔ What to embrace — and what to avoid — to stay aligned.</li>
+                        <li>✔ How to navigate challenges with more clarity and confidence.</li>
+                    </ul>
+                     <br><br>
     
-    <div class="calculator-buttons">
-        <button class="btn get-access-btn" onclick="window.open('https://payhip.com/b/KOfjY', '_blank')">Get Access Here</button>
-        <button class="btn unlock-btn" onclick="showCodeInput('forecast')">I Have Access Code</button>
-    </div>
-</div>
- </div>
-</div>
+                    <p>Whether you're planning your day or realigning your year, this tool helps you work with your energy, not against it.</p>
+                </div>
+                 <br><br>
+    
+                <div class="calculator-buttons">
+                    <button class="btn get-access-btn" onclick="window.open('https://payhip.com/b/KOfjY', '_blank')">Get Access Here</button>
+                    <button class="btn unlock-btn" onclick="showCodeInput('forecast')">I Have Access Code</button>
+                </div>
+            </div>
+            
+        </div> <!-- Close calculators-grid -->
+    </div> <!-- Close calculators-section -->
+</div> <!-- Close calculators-page -->
 
        <!-- YOUR LIFE MAP PAGE -->
 <div id="lifemap-page" class="page">
