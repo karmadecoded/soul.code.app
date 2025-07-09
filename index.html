@@ -3103,14 +3103,10 @@ document.getElementById('help-image-modal').addEventListener('click', function(e
     </div>
     
     <!-- Start Time Selection -->
-<div class="start-time-selection">
-    <h4>Select your first affirmation time:</h4>
-    <select id="start-time">
-        <option value="07:00">7:00 AM</option>
-        <option value="09:00">9:00 AM</option>
-        <option value="11:00">11:00 AM</option>
-        <option value="13:00">1:00 PM</option>
-            </select>
+    <div class="start-time-selection">
+        <h4>What time should the first affirmation be sent?</h4>
+        <input type="time" id="start-time" value="09:00">
+    </div>
     
     <!-- Save Button -->
     <button id="save-settings" class="btn save-btn">Save and Grant Permission </button>
@@ -3311,12 +3307,6 @@ document.getElementById('help-image-modal').addEventListener('click', function(e
   const db = getFirestore(app);
   let currentUser = null;
   const auth = getAuth(app);
-  
-  // Add timezone handling
-const userTimeZone = {
-  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-  offset: new Date().getTimezoneOffset()
-};
 
   // AUTHENTICATION STATE LISTENER - FIXED:  
 onAuthStateChanged(auth, (user) => {
@@ -3836,6 +3826,7 @@ window.signInWithApple = async function() {
       };
     });
 
+    // Get FCM token
     let pushToken = null;
     try {
       const permission = await Notification.requestPermission();
@@ -3843,22 +3834,20 @@ window.signInWithApple = async function() {
         pushToken = await getToken(messaging, {
           vapidKey: 'BFeiQnMxZlXHXxtQrAPvWSJ_1XnTklpH2IEcPAG_qjoxKKwHICnJOaEjzK3rq5zNMyaD02_gjJPqtBA6WYGu20U'
         });
+        console.log('Push token obtained:', pushToken);
       }
     } catch (tokenError) {
       console.error('Error getting push token:', tokenError);
     }
-
+        
     await setDoc(doc(db, "users", currentUser.uid), {
       email: currentUser.email,
       selectedCategories: categories,
       selectedAffirmations: selectedAffirmations,
       schedule: schedule,
-      pushToken: pushToken,
-      timezone: userTimeZone.timezone,
-      timezoneOffset: userTimeZone.offset,
+      pushToken: pushToken, // ADD THIS LINE
       createdAt: new Date()
     });
-
     console.log("Preferences saved to Firestore successfully!");
   } catch (error) {
     console.error("Error saving preferences:", error);
@@ -3914,8 +3903,6 @@ onMessage(messaging, (payload) => {
     });
   }
 });
-
-
 
 
 // Recent Affirmations Functions - INSIDE MODULE with Event Listeners
