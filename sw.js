@@ -1,5 +1,5 @@
 
-const CACHE_VERSION = 'v12.0.4';
+const CACHE_VERSION = 'v12.0.5';
 const CACHE_NAME = `soulcode-${CACHE_VERSION}`;
 const urlsToCache = [
     '/',
@@ -11,8 +11,18 @@ const urlsToCache = [
     '/icon-512.png'
 ];
 self.addEventListener('push', event => {
+    let affirmationText = 'Your daily affirmation is ready!';
+    try {
+        const payload = event.data?.json();
+        if (payload?.data?.affirmation) {
+            affirmationText = payload.data.affirmation;
+        }
+    } catch (e) {
+        console.error('Error parsing push payload:', e);
+    }
+
     const options = {
-        body: event.data ? (event.data.json().notification?.body || event.data.json().body || 'Your daily affirmation is ready!') : 'Default notification message',
+        body: affirmationText,
         icon: '/icon-192.png',
         badge: '/icon-192.png',
         vibrate: [100, 50, 100],
@@ -21,10 +31,12 @@ self.addEventListener('push', event => {
             primaryKey: 1
         }
     };
+
     event.waitUntil(
         self.registration.showNotification('Soul Code', options)
     );
 });
+
 
 self.addEventListener('install', event => {
     event.waitUntil(
