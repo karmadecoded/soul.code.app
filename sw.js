@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v13.0.7';
+const CACHE_VERSION = 'v13.0.8';
 const CACHE_NAME = `soulcode-${CACHE_VERSION}`;
 
 const urlsToCache = [
@@ -17,8 +17,6 @@ self.addEventListener('push', event => {
     try {
         if (event.data) {
             const payload = event.data.json();
-            
-            // 🔧 Use Version 1's working logic with Version 2's clean structure
             affirmationText = payload?.notification?.body || 
                             payload?.body || 
                             payload?.data?.affirmation || 
@@ -28,7 +26,6 @@ self.addEventListener('push', event => {
         console.error('Error parsing push payload:', e);
     }
 
-    // 🎨 Version 2's nice notification structure
     const options = {
         body: affirmationText,
         icon: '/icon-192.png',
@@ -74,9 +71,11 @@ self.addEventListener('activate', event => {
     );
 });
 
+// 🔧 BACK TO VERSION 1 STRUCTURE - Two separate fetch handlers
 self.addEventListener('fetch', event => {
-    if (!event.request.url.startsWith(self.location.origin)) return;
-    
+    if (!event.request.url.startsWith(self.location.origin)) {
+        return;
+    }
     event.respondWith(
         caches.match(event.request)
             .then(response => {
@@ -84,35 +83,43 @@ self.addEventListener('fetch', event => {
                     console.log('Service Worker: Serving from cache', event.request.url);
                     return response;
                 }
-                
+                                
+                console.log('Service Worker: Fetching from network', event.request.url);
                 return fetch(event.request)
-                    .then(networkResponse => {
-                        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-                            return networkResponse;
+                    .then(response => {
+                        if (!response || response.status !== 200 || response.type !== 'basic') {
+                            return response;
                         }
-                        
-                        const responseToCache = networkResponse.clone();
-                        caches.open(CACHE_NAME).then(cache => {
-                            cache.put(event.request, responseToCache);
-                        });
-                        
-                        return networkResponse;
+                        const responseToCache = response.clone();
+                        caches.open(CACHE_NAME)
+                            .then(cache => {
+                                cache.put(event.request, responseToCache);
+                            });
+                        return response;
                     })
                     .catch(() => {
                         if (event.request.destination === 'document') {
                             return caches.match('/index.html');
-                        } else if (event.request.destination === 'image') {
-                            return new Response(
-                                `<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
-                                    <rect width="100" height="100" fill="#cdb2e3"/>
-                                    <text x="50" y="50" text-anchor="middle" dy=".3em" fill="#4c135d">✨</text>
-                                </svg>`,
-                                { headers: { 'Content-Type': 'image/svg+xml' } }
-                            );
                         }
                     });
             })
     );
+});
+
+// Second fetch handler for images (EXACTLY like Version 1)
+self.addEventListener('fetch', event => {
+    if (event.request.destination === 'image') {
+        event.respondWith(
+            caches.match(event.request).then(response => {
+                return response || fetch(event.request).catch(() => {
+                    return new Response(
+                        '<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#cdb2e3"/><text x="50" y="50" text-anchor="middle" dy=".3em" fill="#4c135d">✨</text></svg>',
+                        { headers: { 'Content-Type': 'image/svg+xml' } }
+                    );
+                });
+            })
+        );
+    }
 });
 
 console.log('Service Worker: Loaded successfully');
