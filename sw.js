@@ -1,6 +1,6 @@
-
-const CACHE_VERSION = 'v13.0.5';
+const CACHE_VERSION = 'v13.0.7';
 const CACHE_NAME = `soulcode-${CACHE_VERSION}`;
+
 const urlsToCache = [
     '/',
     '/index.html',
@@ -10,17 +10,25 @@ const urlsToCache = [
     '/icon-192.png',
     '/icon-512.png'
 ];
+
 self.addEventListener('push', event => {
     let affirmationText = 'Your daily affirmation is ready!';
+    
     try {
-        const payload = event.data?.json();
-        if (payload?.data?.affirmation) {
-            affirmationText = payload.data.affirmation;
+        if (event.data) {
+            const payload = event.data.json();
+            
+            // 🔧 Use Version 1's working logic with Version 2's clean structure
+            affirmationText = payload?.notification?.body || 
+                            payload?.body || 
+                            payload?.data?.affirmation || 
+                            'Your daily affirmation is ready!';
         }
     } catch (e) {
         console.error('Error parsing push payload:', e);
     }
 
+    // 🎨 Version 2's nice notification structure
     const options = {
         body: affirmationText,
         icon: '/icon-192.png',
@@ -37,13 +45,10 @@ self.addEventListener('push', event => {
     );
 });
 
-
 self.addEventListener('install', event => {
     event.waitUntil(
         Promise.all([
-            // Force immediate activation
             self.skipWaiting(),
-            // Cache resources
             caches.open(CACHE_NAME).then(cache => {
                 console.log('Service Worker: Caching files');
                 return cache.addAll(urlsToCache);
@@ -52,9 +57,6 @@ self.addEventListener('install', event => {
     );
 });
 
-
-
-// Activate event
 self.addEventListener('activate', event => {
     event.waitUntil(
         Promise.all([
@@ -72,11 +74,9 @@ self.addEventListener('activate', event => {
     );
 });
 
-// Fetch event - serve cached content when offline
 self.addEventListener('fetch', event => {
-    if (!event.request.url.startsWith(self.location.origin)) {
-        return;
-    }
+    if (!event.request.url.startsWith(self.location.origin)) return;
+    
     event.respondWith(
         caches.match(event.request)
             .then(response => {
@@ -85,43 +85,34 @@ self.addEventListener('fetch', event => {
                     return response;
                 }
                 
-                console.log('Service Worker: Fetching from network', event.request.url);
                 return fetch(event.request)
-                    .then(response => {
-                        if (!response || response.status !== 200 || response.type !== 'basic') {
-                            return response;
+                    .then(networkResponse => {
+                        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+                            return networkResponse;
                         }
-                        const responseToCache = response.clone();
-                        caches.open(CACHE_NAME)
-                            .then(cache => {
-                                cache.put(event.request, responseToCache);
-                            });
-                        return response;
+                        
+                        const responseToCache = networkResponse.clone();
+                        caches.open(CACHE_NAME).then(cache => {
+                            cache.put(event.request, responseToCache);
+                        });
+                        
+                        return networkResponse;
                     })
                     .catch(() => {
                         if (event.request.destination === 'document') {
                             return caches.match('/index.html');
+                        } else if (event.request.destination === 'image') {
+                            return new Response(
+                                `<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
+                                    <rect width="100" height="100" fill="#cdb2e3"/>
+                                    <text x="50" y="50" text-anchor="middle" dy=".3em" fill="#4c135d">✨</text>
+                                </svg>`,
+                                { headers: { 'Content-Type': 'image/svg+xml' } }
+                            );
                         }
                     });
             })
     );
 });
 
-// Handle failed network requests
-self.addEventListener('fetch', event => {
-    if (event.request.destination === 'image') {
-        event.respondWith(
-            caches.match(event.request).then(response => {
-                return response || fetch(event.request).catch(() => {
-                    return new Response(
-                        '<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#cdb2e3"/><text x="50" y="50" text-anchor="middle" dy=".3em" fill="#4c135d">✨</text></svg>',
-                        { headers: { 'Content-Type': 'image/svg+xml' } }
-                    );
-                });
-            })
-        );
-    }
-});
-
 console.log('Service Worker: Loaded successfully');
-
