@@ -3858,13 +3858,15 @@ window.signInWithApple = async function() {
     }
         
     await setDoc(doc(db, "users", currentUser.uid), {
-      email: currentUser.email,
-      selectedCategories: categories,
-      selectedAffirmations: selectedAffirmations,
-      schedule: schedule,
-      pushToken: pushToken, // ADD THIS LINE
-      createdAt: new Date()
-    });
+  email: currentUser.email,
+  selectedCategories: categories,
+  selectedAffirmations: selectedAffirmations,
+  schedule: schedule,
+  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,  
+  pushToken: pushToken,
+  createdAt: new Date()
+});
+
     console.log("Preferences saved to Firestore successfully!");
   } catch (error) {
     console.error("Error saving preferences:", error);
@@ -6047,17 +6049,19 @@ function saveNotificationSettings() {
     const frequency = document.getElementById('frequency-select').value;
     const startTime = document.getElementById('start-time').value;
     
-    // Save notification settings
-    const notificationSettings = {
-        categories: selectedCategories,
-        days: selectedDays,
-        frequency: parseInt(frequency),
-        startTime: startTime,
-        enabled: true,
-        createdAt: new Date().toISOString()
-    };
-    
-    localStorage.setItem('notificationSettings', JSON.stringify(notificationSettings));
+   // Save notification settings
+const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+const notificationSettings = {
+    categories: selectedCategories,
+    days: selectedDays,
+    frequency: parseInt(frequency),
+    startTime: startTime,
+    timezone: userTimezone,
+    enabled: true,
+    createdAt: new Date().toISOString()
+};
+        localStorage.setItem('notificationSettings', JSON.stringify(notificationSettings));
     
     // Create affirmation entries for each category
     selectedCategories.forEach(category => {
