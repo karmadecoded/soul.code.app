@@ -2389,11 +2389,6 @@ input:checked + .toggle-slider:before {
     user-select: none;
 }
 
-.spacer-2rem {
-    margin: 2rem 0;
-}
-
-
 
     #recent-affirmations-modal {
         width: 90% !important;
@@ -2690,45 +2685,42 @@ document.getElementById('help-image-modal').addEventListener('click', function(e
         </div>
         <div id="card-result"></div>
     </div>
-  <div class="quick-actions" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; justify-content: center; padding: 0 10px; max-width: 100%; box-sizing: border-box;">
-    <div class="action-card" data-page="meditations" style="width: 100%; max-width: 160px; justify-self: center; box-sizing: border-box;">
-        <div class="action-image" style="height: 140px;">
-            <img src="https://i.imgur.com/jgzqQji.png" style="width: 100%; height: 100%; object-fit: cover;" />
-        </div>
-        <div class="action-title" style="padding: 18px; margin-top: 5px; text-align: center;">Meditations</div>
-    </div>
     
-    <div class="action-card" data-page="affirmations" style="width: 100%; max-width: 160px; justify-self: center; box-sizing: border-box;">
-        <div class="action-image" style="height: 140px;">
-            <img src="https://i.imgur.com/WYN9CEQ.png" alt="Affirmations" style="width: 100%; height: 100%; object-fit: cover;" />
-        </div>
-        <div class="action-title" style="padding: 18px; margin-top: 5px; text-align: center;">Affirmations</div>
+    <div class="quick-actions">
+        <div class="action-card" data-page="meditations" style="width: 190px; max-width: 190px;">
+    <div class="action-image" style="height: 200px;">
+        <img src="https://i.imgur.com/jgzqQji.png" style="width: 100%; height: 100%; object-fit: cover;" />
     </div>
-    
-    <div class="action-card" data-page="calculators" style="width: 100%; max-width: 160px; justify-self: center; box-sizing: border-box;">
-        <div class="action-image" style="height: 140px;">
-            <img src="https://i.imgur.com/nhX7zTJ.png" alt="Calculators" style="width: 100%; height: 100%; object-fit: cover;" />
-        </div>
-        <div class="action-title" style="padding: 18px; margin-top: 5px; text-align: center;">Calculators</div>
+    <div class="action-title">Meditations</div>
+</div>
+<div class="action-card" data-page="affirmations" style="width: 190px; max-width: 190px;">
+    <div class="action-image" style="height: 200px;">
+        <img src="https://i.imgur.com/WYN9CEQ.png" alt="Affirmations" style="width: 100%; height: 100%; object-fit: cover;" />
     </div>
-    
-    <div class="action-card" data-page="lifemap" style="width: 100%; max-width: 160px; justify-self: center; box-sizing: border-box;">
-        <div class="action-image" style="height: 140px;">
-            <img src="https://i.imgur.com/4SYPpLZ.png" alt="Life Energy" style="width: 100%; height: 100%; object-fit: cover;" />
-        </div>
-        <div class="action-title" style="padding: 18px; margin-top: 5px; text-align: center;">Life Energy</div>
+    <div class="action-title">Affirmations</div>
+</div>
+<div class="action-card" data-page="calculators" style="width: 190px; max-width: 190px;">
+    <div class="action-image" style="height: 200px;">
+        <img src="https://i.imgur.com/nhX7zTJ.png" alt="Calculators" style="width: 100%; height: 100%; object-fit: cover;" />
     </div>
-    
-    <!-- Free Resources Card - KEPT EXACTLY AS YOU HAD IT -->
-   <div class="action-card" onclick="openFreeResources()" style="width: 150px; max-width: 150px; grid-column: span 2; justify-self: center; margin-top: 20px;">
-    <div class="action-image" style="height: 150px;">
+    <div class="action-title">Calculators</div>
+</div>
+<div class="action-card" data-page="lifemap" style="width: 190px; max-width: 190px;">
+    <div class="action-image" style="height: 200px;">
+        <img src="https://i.imgur.com/4SYPpLZ.png" alt="Calculators" style="width: 100%; height: 100%; object-fit: cover;" />
+    </div>
+    <div class="action-title">Your Life Map</div>
+</div>
+        <!-- Free Resources Card - Lifted Above Footer -->
+
+<div class="action-card" onclick="openFreeResources()" style="width: 190px; max-width: 190px; grid-column: span 2; justify-self: center; margin-top: 20px;">
+    <div class="action-image" style="height: 200px;">
         <img src="https://i.imgur.com/4SYPpLZ.png" alt="Free Resources" style="width: 100%; height: 100%; object-fit: cover;" />
     </div>
     <div class="action-title" style="font-size: 16px; padding: 12px; text-align: center;">Free Resources</div>
 </div>
     </div>
 </div>
-
 
 
        <!-- MEDITATIONS PAGE -->
@@ -3102,32 +3094,28 @@ document.getElementById('help-image-modal').addEventListener('click', function(e
         </select>
     </div>
     
-  <!-- Start Time Selection -->
-<div class="start-time-selection">
-    <h4>Select your first affirmation time:</h4>
-    <select id="start-time">
-        <option value="07:00">7:00 AM</option>
-        <option value="09:00">9:00 AM</option>
-        <option value="11:00">11:00 AM</option>
-        <option value="13:00">1:00 PM</option>
-    </select>
+    <!-- Start Time Selection -->
+    <div class="start-time-selection">
+        <h4>What time should the first affirmation be sent?</h4>
+        <input type="time" id="start-time" value="09:00">
+    </div>
+    
+    <!-- Save Button -->
+    <button id="save-settings" class="btn save-btn">Save and Grant Permission </button>
+            
+    <!-- Preview Schedule -->
+    <div id="schedule-preview" class="schedule-preview">
+        <h4>Your Schedule Preview:</h4>
+        <div id="preview-content"></div>
+    </div>
 </div>
 
-<!-- Save Button -->
-<button id="save-settings" class="btn save-btn">Save and Grant Permission</button>
 
-<!-- Preview Schedule -->
-<div id="schedule-preview" class="schedule-preview">
-    <h4>Your Schedule Preview:</h4>
-    <div id="preview-content"></div>
-</div>
-</div>
-
-       <!-- CALCULATORS PAGE -->
+      <!-- CALCULATORS PAGE -->
 <div id="calculators-page" class="page">
     <div class="page-header">
         <h1>Calculators</h1>
-        <p>Unlock your spiritual insights with our premium calculators</p>
+        <p>Fast access to your money energy and forecast descriptions. Get answers anytime, instantly.</p>
     </div>
     <div class="calculators-section">
         <div class="calculators-grid">
@@ -3145,14 +3133,16 @@ document.getElementById('help-image-modal').addEventListener('click', function(e
     <img src="https://i.imgur.com/I7CUbj8.png" alt="Money Code Calculator">
 </div>
 
-
+<br><br>
 
 
             </div>
             <div class="calculator-description">
-                <p><strong>What's Your Money Code? Unlock the Energy Behind Your Wealth</strong></p>
-                <p>Your birth date carries a unique money blueprint — a personal energy pattern that reveals how you naturally attract wealth, where your financial power lies, and what may be quietly blocking your abundance.</p>
-                <p>With just one click, this calculator decodes your Money Triangle: six powerful financial energies based on ancient Arcana wisdom. You'll uncover:</p>
+                <p><strong>What's Your Money Code? </strong></p>
+                <p>Your birth date carries a unique money blueprint, a personal energy pattern that reveals how you naturally attract wealth, where your financial power lies, and what may be quietly blocking your abundance.</p>
+                <br><br>
+                
+                <p>With just one click, this calculator decodes your Money Triangle: all six programs decoded. You'll uncover:</p>
                 <ul>
                     <li>✔ Your natural paths to generating income</li>
                     <li>✔ The hidden blocks that may be limiting your financial flow</li>
@@ -3160,6 +3150,8 @@ document.getElementById('help-image-modal').addEventListener('click', function(e
                     <li>✔ How to use money as a tool for purpose, growth, and freedom</li>
                 </ul>
                 <p>Whether you're feeling stuck or ready to thrive, this is your first step to a more conscious, empowered relationship with money.</p>
+                <br><br>
+                
             </div>
             <div class="calculator-buttons">
                 <button class="btn get-access-btn" onclick="window.open('https://payhip.com/b/fPRZK', '_blank')">Get Access Here</button>
@@ -3178,9 +3170,13 @@ document.getElementById('help-image-modal').addEventListener('click', function(e
     <div class="calculator-image">
         <img src="https://i.imgur.com/8ZfupjB.png" alt="Forecast Calculator">
     </div>
+    <br><br>
+    
     <div class="calculator-description">
         <p><strong>Your Personal Energy Forecast — Aligned Guidance for Your Day, Month & Year</strong></p>
         <p>Imagine waking up and knowing exactly what kind of energy surrounds you — and how to make the most of it. This calculator reveals your unique daily, monthly, and yearly forecasts, based on your date of birth.</p>
+        <br><br>
+        
         <p>Get practical and intuitive guidance tailored to your personal rhythm:</p>
         <ul>
             <li>✔ The energetic tone of your day, month, and year</li>
@@ -3190,6 +3186,8 @@ document.getElementById('help-image-modal').addEventListener('click', function(e
         </ul>
         <p>Whether you're planning your day or realigning your year, this tool helps you work with your energy, not against it.</p>
     </div>
+    <br><br>
+    
     <div class="calculator-buttons">
         <button class="btn get-access-btn" onclick="window.open('https://payhip.com/b/KOfjY', '_blank')">Get Access Here</button>
         <button class="btn unlock-btn" onclick="showCodeInput('forecast')">I Have Access Code</button>
@@ -3198,7 +3196,7 @@ document.getElementById('help-image-modal').addEventListener('click', function(e
  </div>
 </div>
 
-        <!-- YOUR LIFE MAP PAGE -->
+       <!-- YOUR LIFE MAP PAGE -->
 <div id="lifemap-page" class="page">
     <div class="page-header">
         <h1>️ Your Life Map</h1>
@@ -3207,16 +3205,20 @@ document.getElementById('help-image-modal').addEventListener('click', function(e
     </div>
     
     <div class="lifemap-content">
-        <div class="lifemap-description">
-            <p>Curious about your true potential? Discover the hidden energies that shape your <strong>Personality, Spiritual Path, Financial Abundance, Relationships, Health, and Soul Mission</strong> — all based on your unique date of birth.</p>
-            
-            <p>This free, instant tool reveals your core life energies and their positive aspects, helping you understand how to harness your strengths for greater clarity, success, and fulfillment. No waiting, no cost — just powerful insight right at your fingertips.</p>
-        </div>
-        
-        <div class="lifemap-image">
-            <img src="https://i.imgur.com/XMp5RbU.png" alt="Life Map Discovery" />
-        </div>
-        
+    <div class="lifemap-description">
+        <p>Curious about your true potential? Discover the hidden energies that shape your <strong>Personality, Spiritual Path, Financial Abundance, Relationships, Health, and Soul Mission</strong> — all based on your unique date of birth.</p>
+    </div>
+    <br><br>
+    
+   <div class="lifemap-image">
+    <img src="https://i.imgur.com/JC011D8.jpeg" alt="Life Map Discovery" />
+    <br><br>
+    <p>This free, instant tool reveals your core life energies and their positive aspects, helping you understand how to harness your strengths for greater clarity, success, and fulfillment. No waiting, no cost — just powerful insight right at your fingertips.</p>
+    <br><br>
+    <img src="https://i.imgur.com/MuyxWVP.png" alt="Life Map Discovery2" />
+</div>
+
+<br><br>
         <div class="lifemap-message">
             <p><strong>What if the answers you've been searching for were already written in your energy from the moment you were born?</strong></p>
             
@@ -3226,7 +3228,7 @@ document.getElementById('help-image-modal').addEventListener('click', function(e
             
             <p><strong>No guesswork. No cost. Just clarity and direction, starting right now.</strong></p>
         </div>
-        
+         <br><br>
         <div class="lifemap-button">
             <button class="btn lifemap-btn" onclick="window.open('https://t.me/decoded_dob_bot?start=w40258673', '_blank')">
                  Show Me My Path
@@ -3234,6 +3236,7 @@ document.getElementById('help-image-modal').addEventListener('click', function(e
         </div>
     </div>
 </div>
+
 
 
 
@@ -3845,7 +3848,6 @@ window.signInWithApple = async function() {
       selectedCategories: categories,
       selectedAffirmations: selectedAffirmations,
       schedule: schedule,
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       pushToken: pushToken, // ADD THIS LINE
       createdAt: new Date()
     });
@@ -3894,19 +3896,16 @@ Notification.requestPermission().then((permission) => {
 
 onMessage(messaging, (payload) => {
   console.log('Foreground message received:', payload);
-  if (Notification.permission === 'granted' && /Android/i.test(navigator.userAgent)) {
+
+  if (Notification.permission === 'granted') {
     new Notification('SoulCode', {
       body: payload.notification.body,
       icon: '/icon-192.png',
       badge: '/icon-192.png',
       vibrate: [200, 100, 200],
-      tag: 'soulcode-affirmation' // Add this line
     });
   }
 });
-
-
-
 
 // Recent Affirmations Functions - INSIDE MODULE with Event Listeners
 
@@ -6035,38 +6034,14 @@ function saveNotificationSettings() {
     const startTime = document.getElementById('start-time').value;
     
     // Save notification settings
-const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-const notificationSettings = {
-    categories: selectedCategories,
-    days: selectedDays,
-    frequency: parseInt(frequency),
-    startTime: startTime,
-    timezone: userTimezone,
-    enabled: true,
-    createdAt: new Date().toISOString()
-};
-
-// Save to localStorage
-localStorage.setItem('notificationSettings', JSON.stringify(notificationSettings));
-
-// Save to Firebase for Cloud Function
-if (auth.currentUser) {
-    db.collection('users').doc(auth.currentUser.uid).update({
-        schedule: {
-            days: selectedDays,
-            frequency: parseInt(frequency),
-            startTime: startTime,
-            timezone: userTimezone
-        },
-        selectedCategories: selectedCategories
-    }).then(() => {
-        console.log('Settings saved to Firebase successfully!');
-    }).catch((error) => {
-        console.error('Error saving to Firebase:', error);
-    });
-}
-
+    const notificationSettings = {
+        categories: selectedCategories,
+        days: selectedDays,
+        frequency: parseInt(frequency),
+        startTime: startTime,
+        enabled: true,
+        createdAt: new Date().toISOString()
+    };
     
     localStorage.setItem('notificationSettings', JSON.stringify(notificationSettings));
     
@@ -6524,19 +6499,6 @@ function showMainApp() {
   console.log('=== showMainApp finished ===');
 }
 
-// Add the new URL parameter detection here
-window.addEventListener('load', function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('page') === 'recent-affirmations') {
-        openRecentAffirmations();
-    }
-});
-
-    navigator.serviceWorker.addEventListener('message', (event) => {
-  if (event.data && event.data.command === 'openRecentAffirmations') {
-    openRecentAffirmations();
-  }
-});
 
 
 
