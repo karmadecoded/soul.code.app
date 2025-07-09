@@ -3845,6 +3845,7 @@ window.signInWithApple = async function() {
       selectedCategories: categories,
       selectedAffirmations: selectedAffirmations,
       schedule: schedule,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       pushToken: pushToken, // ADD THIS LINE
       createdAt: new Date()
     });
