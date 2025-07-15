@@ -5211,7 +5211,7 @@ function closeCodeModal() {
 }
 
 function validateCode() {
-    const code = document.getElementById('access-code-input').value.trim();
+     const code = document.getElementById('access-code-input').value.trim().toLowerCase();
     const validCodes = {
         'money-code': 'wealthcode455',
         'forecast': 'vision775'
