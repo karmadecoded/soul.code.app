@@ -15,42 +15,26 @@ class SoulCodeApp {
     }
 
     // Service Worker Registration
-    // Replace your existing registerServiceWorker method with this:
-async registerServiceWorker() {
-    if ('serviceWorker' in navigator) {
-        try {
-            const registration = await navigator.serviceWorker.register('/sw.js');
-            console.log('Service Worker registered:', registration);
-            
-            // Check for updates immediately
-            registration.update();
-            
-            // Handle updates
-            registration.addEventListener('updatefound', () => {
-                const newWorker = registration.installing;
-                newWorker.addEventListener('statechange', () => {
-                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                        // New version available, force reload automatically
-                        window.location.reload();
-                    }
+    async registerServiceWorker() {
+        if ('serviceWorker' in navigator) {
+            try {
+                const registration = await navigator.serviceWorker.register('/sw.js');
+                console.log('Service Worker registered:', registration);
+                
+                // Handle updates
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            this.showUpdateAvailable();
+                        }
+                    });
                 });
-            });
-        } catch (error) {
-            console.error('Service Worker registration failed:', error);
+            } catch (error) {
+                console.error('Service Worker registration failed:', error);
+            }
         }
     }
-    
-    // Also check for updates when app becomes visible
-    document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) {
-            navigator.serviceWorker.getRegistration().then(registration => {
-                if (registration) {
-                    registration.update();
-                }
-            });
-        }
-    });
-}
 
     // Load user data from localStorage
     loadUserData() {
