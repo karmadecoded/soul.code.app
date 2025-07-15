@@ -1,5 +1,5 @@
-const CACHE_VERSION = 'v16.0.4';
-const CACHE_NAME = soulcode-${CACHE_VERSION};
+const CACHE_VERSION = 'v20.0.0';
+const CACHE_NAME = `soulcode-${CACHE_VERSION}`;
 const urlsToCache = [
     '/',
     '/index.html',
@@ -9,6 +9,7 @@ const urlsToCache = [
     '/icon-192.png',
     '/icon-512.png'
 ];
+
 self.addEventListener('push', event => {
     const options = {
         body: event.data ? (event.data.json().notification?.body || event.data.json().body || 'Your daily affirmation is ready!') : 'Default notification message',
@@ -25,12 +26,11 @@ self.addEventListener('push', event => {
     );
 });
 
+// Force immediate activation for iOS
 self.addEventListener('install', event => {
     event.waitUntil(
         Promise.all([
-            // Force immediate activation
-            self.skipWaiting(),
-            // Cache resources
+            self.skipWaiting(), // Force immediate activation
             caches.open(CACHE_NAME).then(cache => {
                 console.log('Service Worker: Caching files');
                 return cache.addAll(urlsToCache);
@@ -39,22 +39,20 @@ self.addEventListener('install', event => {
     );
 });
 
-
-
-// Activate event
+// Activate event - more aggressive cache clearing
 self.addEventListener('activate', event => {
     event.waitUntil(
         Promise.all([
             caches.keys().then(cacheNames => {
                 return Promise.all(
                     cacheNames.map(cacheName => {
-                        if (cacheName.startsWith('soulcode-') && cacheName !== CACHE_NAME) {
-                            return caches.delete(cacheName);
+                        if (cacheName !== CACHE_NAME) {
+                            return caches.delete(cacheName); // Delete ALL old caches
                         }
                     })
                 );
             }),
-            clients.claim()
+            self.clients.claim() // Take control immediately
         ])
     );
 });
@@ -110,4 +108,4 @@ self.addEventListener('fetch', event => {
     }
 });
 
-console.log('Service Worker: Loaded successfully')
+console.log('Service Worker: Loaded successfully');
