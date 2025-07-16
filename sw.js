@@ -1,5 +1,6 @@
-const CACHE_VERSION = 'v16.0.5';
-const CACHE_NAME = soulcode-${CACHE_VERSION};
+const CACHE_VERSION = 'v17.0.0';
+const CACHE_NAME = `soulcode-${CACHE_VERSION}`;
+
 const urlsToCache = [
     '/',
     '/index.html',
@@ -9,9 +10,24 @@ const urlsToCache = [
     '/icon-192.png',
     '/icon-512.png'
 ];
+
 self.addEventListener('push', event => {
+    let affirmationText = 'Your daily affirmation is ready!';
+    
+    try {
+        if (event.data) {
+            const payload = event.data.json();
+            affirmationText = payload?.notification?.body || 
+                            payload?.body || 
+                            payload?.data?.affirmation || 
+                            'Your daily affirmation is ready!';
+        }
+    } catch (e) {
+        console.error('Error parsing push payload:', e);
+    }
+
     const options = {
-        body: event.data ? (event.data.json().notification?.body || event.data.json().body || 'Your daily affirmation is ready!') : 'Default notification message',
+        body: affirmationText,
         icon: '/icon-192.png',
         badge: '/icon-192.png',
         vibrate: [100, 50, 100],
@@ -20,6 +36,7 @@ self.addEventListener('push', event => {
             primaryKey: 1
         }
     };
+
     event.waitUntil(
         self.registration.showNotification('Soul Code', options)
     );
@@ -28,9 +45,7 @@ self.addEventListener('push', event => {
 self.addEventListener('install', event => {
     event.waitUntil(
         Promise.all([
-            // Force immediate activation
             self.skipWaiting(),
-            // Cache resources
             caches.open(CACHE_NAME).then(cache => {
                 console.log('Service Worker: Caching files');
                 return cache.addAll(urlsToCache);
@@ -39,9 +54,6 @@ self.addEventListener('install', event => {
     );
 });
 
-
-
-// Activate event
 self.addEventListener('activate', event => {
     event.waitUntil(
         Promise.all([
@@ -59,7 +71,7 @@ self.addEventListener('activate', event => {
     );
 });
 
-// Fetch event - serve cached content when offline
+// 🔧 BACK TO VERSION 1 STRUCTURE - Two separate fetch handlers
 self.addEventListener('fetch', event => {
     if (!event.request.url.startsWith(self.location.origin)) {
         return;
@@ -71,7 +83,7 @@ self.addEventListener('fetch', event => {
                     console.log('Service Worker: Serving from cache', event.request.url);
                     return response;
                 }
-                
+                                
                 console.log('Service Worker: Fetching from network', event.request.url);
                 return fetch(event.request)
                     .then(response => {
@@ -94,7 +106,7 @@ self.addEventListener('fetch', event => {
     );
 });
 
-// Handle failed network requests
+// Second fetch handler for images (EXACTLY like Version 1)
 self.addEventListener('fetch', event => {
     if (event.request.destination === 'image') {
         event.respondWith(
@@ -110,4 +122,4 @@ self.addEventListener('fetch', event => {
     }
 });
 
-console.log('Service Worker: Loaded successfully')
+console.log('Service Worker: Loaded successfully');
