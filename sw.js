@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v18.0.0';
+const CACHE_VERSION = 'v18.0.1';
 const CACHE_NAME = `soulcode-${CACHE_VERSION}`;
 const urlsToCache = [
     '/',
@@ -9,21 +9,6 @@ const urlsToCache = [
     '/icon-192.png',
     '/icon-512.png'
 ];
-self.addEventListener('push', event => {
-    const options = {
-        body: event.data ? (event.data.json().notification?.body || event.data.json().body || 'Your daily affirmation is ready!') : 'Default notification message',
-        icon: '/icon-192.png',
-        badge: '/icon-192.png',
-        vibrate: [100, 50, 100],
-        data: {
-            dateOfArrival: Date.now(),
-            primaryKey: 1
-        }
-    };
-    event.waitUntil(
-        self.registration.showNotification('Soul Code', options)
-    );
-});
 
 self.addEventListener('install', event => {
     event.waitUntil(
@@ -38,8 +23,6 @@ self.addEventListener('install', event => {
         ])
     );
 });
-
-
 
 // Activate event
 self.addEventListener('activate', event => {
@@ -71,7 +54,6 @@ self.addEventListener('fetch', event => {
                     console.log('Service Worker: Serving from cache', event.request.url);
                     return response;
                 }
-
                 console.log('Service Worker: Fetching from network', event.request.url);
                 return fetch(event.request)
                     .then(response => {
