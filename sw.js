@@ -1,6 +1,6 @@
-const CACHE_VERSION = 'v18.0.8';
-const CACHE_NAME = `soulcode-${CACHE_VERSION}`;
 
+const CACHE_VERSION = 'v19.0.5';
+const CACHE_NAME = `soulcode-${CACHE_VERSION}`;
 const urlsToCache = [
     '/',
     '/index.html',
@@ -10,17 +10,12 @@ const urlsToCache = [
     '/icon-192.png',
     '/icon-512.png'
 ];
-
 self.addEventListener('push', event => {
     let affirmationText = 'Your daily affirmation is ready!';
-    
     try {
-        if (event.data) {
-            const payload = event.data.json();
-            affirmationText = payload?.notification?.body || 
-                            payload?.body || 
-                            payload?.data?.affirmation || 
-                            'Your daily affirmation is ready!';
+        const payload = event.data?.json();
+        if (payload?.data?.affirmation) {
+            affirmationText = payload.data.affirmation;
         }
     } catch (e) {
         console.error('Error parsing push payload:', e);
@@ -42,10 +37,13 @@ self.addEventListener('push', event => {
     );
 });
 
+
 self.addEventListener('install', event => {
     event.waitUntil(
         Promise.all([
+            // Force immediate activation
             self.skipWaiting(),
+            // Cache resources
             caches.open(CACHE_NAME).then(cache => {
                 console.log('Service Worker: Caching files');
                 return cache.addAll(urlsToCache);
@@ -54,6 +52,9 @@ self.addEventListener('install', event => {
     );
 });
 
+
+
+// Activate event
 self.addEventListener('activate', event => {
     event.waitUntil(
         Promise.all([
@@ -71,7 +72,7 @@ self.addEventListener('activate', event => {
     );
 });
 
-// 🔧 BACK TO VERSION 1 STRUCTURE - Two separate fetch handlers
+// Fetch event - serve cached content when offline
 self.addEventListener('fetch', event => {
     if (!event.request.url.startsWith(self.location.origin)) {
         return;
@@ -83,7 +84,7 @@ self.addEventListener('fetch', event => {
                     console.log('Service Worker: Serving from cache', event.request.url);
                     return response;
                 }
-                                
+                
                 console.log('Service Worker: Fetching from network', event.request.url);
                 return fetch(event.request)
                     .then(response => {
@@ -106,7 +107,7 @@ self.addEventListener('fetch', event => {
     );
 });
 
-// Second fetch handler for images (EXACTLY like Version 1)
+// Handle failed network requests
 self.addEventListener('fetch', event => {
     if (event.request.destination === 'image') {
         event.respondWith(
