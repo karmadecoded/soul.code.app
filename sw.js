@@ -14,9 +14,14 @@ self.addEventListener('push', event => {
     let affirmationText = 'THIS IS SWJS Your daily affirmation is ready!';
     try {
         const payload = event.data?.json();
-       if (payload?.notification?.body) {
+      if (payload?.notification?.body) {
     affirmationText = payload.notification.body;
+} else if (payload?.data?.body) {
+    affirmationText = payload.data.body;
+} else if (payload?.body) {
+    affirmationText = payload.body;
 }
+
     } catch (e) {
         console.error('Error parsing push payload:', e);
     }
