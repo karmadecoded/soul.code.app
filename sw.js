@@ -1,5 +1,5 @@
 
-const CACHE_VERSION = 'v21.0.0';
+const CACHE_VERSION = 'v21.0.1';
 const CACHE_NAME = `soulcode-${CACHE_VERSION}`;
 const urlsToCache = [
     '/',
@@ -14,9 +14,9 @@ self.addEventListener('push', event => {
     let affirmationText = 'Your daily affirmation is ready!';
     try {
         const payload = event.data?.json();
-        if (payload?.data?.affirmation) {
-            affirmationText = payload.data.affirmation;
-        }
+       if (payload?.notification?.body) {
+    affirmationText = payload.notification.body;
+}
     } catch (e) {
         console.error('Error parsing push payload:', e);
     }
