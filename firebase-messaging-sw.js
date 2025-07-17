@@ -15,7 +15,7 @@ const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(function(payload) {
     return self.registration.showNotification('SoulCode', {
-        body: payload.notification.body,
+        body: payload.data?.affirmation || "Your daily affirmation is ready!",body,
         icon: '/icon-192.png',
         badge: '/icon-192.png',
         tag: 'soulcode-affirmation'
