@@ -16,22 +16,23 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage(function(payload) {
     console.log('Background message received:', payload);
     
-    // Extract the clean title and body
+    // Extract the clean title and body with fallbacks
     const notificationTitle = payload.notification?.title || 'Soul Code';
-    const notificationBody = payload.notification?.body || 'Your daily affirmation is ready!';
+    const notificationBody = payload.notification?.body || payload.data?.body || payload.body || 'Your daily affirmation is ready!';
     
     const notificationOptions = {
         body: notificationBody,
         icon: '/icon-192.png',
         badge: '/icon-192.png',
         tag: 'soulcode-affirmation',
-        data: payload.data, // Store data for click handling
+        data: payload.data,
         requireInteraction: false,
         silent: false
     };
     
     return self.registration.showNotification(notificationTitle, notificationOptions);
 });
+
 
 self.addEventListener('notificationclick', function(event) {
     console.log('Notification clicked:', event.notification);
