@@ -1,5 +1,5 @@
 
-const CACHE_VERSION = 'v22.0.1';
+const CACHE_VERSION = 'v22.0.2';
 const CACHE_NAME = `soulcode-${CACHE_VERSION}`;
 const urlsToCache = [
     '/',
@@ -11,7 +11,7 @@ const urlsToCache = [
     '/icon-512.png'
 ];
 self.addEventListener('push', event => {
-    let affirmationText = 'Your daily affirmation is ready!';
+    let affirmationText = 'THIS IS SWJS Your daily affirmation is ready!';
     try {
         const payload = event.data?.json();
        if (payload?.notification?.body) {
