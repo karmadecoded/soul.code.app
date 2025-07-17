@@ -15,36 +15,54 @@ const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(function(payload) {
   console.log('[firebase-messaging-sw.js] Received background message ', payload);
-
-  const notificationTitle = payload.data?.title || 'Soul Code';
+  console.log('=== DEBUG PAYLOAD ===');
+console.log('Full payload:', JSON.stringify(payload, null, 2));
+console.log('notification.title:', payload.notification?.title);
+console.log('notification.body:', payload.notification?.body);
+console.log('data object:', payload.data);
+console.log('=== END DEBUG ===');
+  const notificationTitle = payload.notification?.title || 'SoulCode Affirmation';
   const notificationOptions = {
-    body: payload.data?.body || 'You are amazing and capable of great things!',
-    icon: payload.data?.icon || '/icon-192.png',
+    body: typeof payload.notification?.body === 'string' ? payload.notification.body : 'Your daily affirmation is ready!',
+    icon: '/icon-192.png',
     badge: '/icon-192.png',
-    data: payload.data
+    vibrate: [200, 100, 200],
+    data: payload.data || {},
+    actions: [
+      { action: 'explore', title: 'Open App', icon: '/icon-192.png' },
+      { action: 'close', title: 'Close', icon: '/icon-192.png' }
+    ]
   };
-
   self.registration.showNotification(notificationTitle, notificationOptions);
 });
-
-
+// Notification click handler
 self.addEventListener('notificationclick', function(event) {
-    console.log('Notification clicked:', event.notification);
-    event.notification.close();
-    
-    event.waitUntil(
-        clients.matchAll({type: 'window', includeUncontrolled: true})
-            .then(function(clientList) {
-                if (clientList.length > 0) {
-                    let client = clientList[0];
-                    client.focus();
-                    client.postMessage({
-                        type: 'OPEN_RECENT_AFFIRMATIONS',
-                        data: event.notification.data
-                    });
-                    return;
-                }
-                clients.openWindow('/?page=recent-affirmations');
-            })
-    );
+  console.log('[firebase-messaging-sw.js] Notification clicked', event);
+  
+  event.notification.close();
+  
+  // Open the Recent Affirmations page instead of main app
+  event.waitUntil(
+    clients.matchAll({
+      type: 'window',
+      includeUncontrolled: true
+    }).then(function(clientList) {
+      // Check if app is already open
+      for (let i = 0; i < clientList.length; i++) {
+        const client = clientList[i];
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          // Navigate to recent affirmations page
+          client.postMessage({
+            type: 'OPEN_RECENT_AFFIRMATIONS'
+          });
+          return client.focus();
+        }
+      }
+      
+      // If app is not open, open it with recent affirmations page
+      if (clients.openWindow) {
+        return clients.openWindow('/?page=recent-affirmations');
+      }
+    })
+  );
 });
