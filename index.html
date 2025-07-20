@@ -5509,7 +5509,7 @@ document.getElementById(`restore-${calculatorType}`).addEventListener('click', f
     calculatorContainer.style.top = '0';
     calculatorContainer.style.left = '0';
     calculatorContainer.style.width = '100vw'; // Use viewport width
-    calculatorContainer.style.height = '100vh'; // Use viewport height
+    calculatorContainer.style.height = window.innerHeight + 'px';
     calculatorContainer.style.background = 'rgba(0, 0, 0, 0.9)';
     calculatorContainer.style.zIndex = '1000';
     calculatorContainer.style.display = 'block';
@@ -5534,7 +5534,7 @@ document.getElementById(`restore-${calculatorType}`).addEventListener('click', f
         iframeContainer.style.display = 'block';
         iframeContainer.style.background = 'white';
         iframeContainer.style.borderRadius = '10px';
-        iframeContainer.style.height = 'calc(100vh - 80px)'; // Use viewport height
+        iframeContainer.style.height = (window.innerHeight - 80) + 'px';
         iframeContainer.style.overflow = 'auto'; // Allow scrolling inside
     }
     
