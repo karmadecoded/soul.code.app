@@ -5509,11 +5509,11 @@ document.getElementById(`restore-${calculatorType}`).addEventListener('click', f
     calculatorContainer.style.top = '0';
     calculatorContainer.style.left = '0';
     calculatorContainer.style.width = '100vw'; // Use viewport width
-    calculatorContainer.style.height = window.innerHeight + 'px';
+    calculatorContainer.style.height = (window.innerHeight - 20) + 'px';
     calculatorContainer.style.background = 'rgba(0, 0, 0, 0.9)';
     calculatorContainer.style.zIndex = '1000';
     calculatorContainer.style.display = 'block';
-    calculatorContainer.style.padding = '20px';
+    calculatorContainer.style.padding = '0px';
     calculatorContainer.style.boxSizing = 'border-box';
     calculatorContainer.style.overflow = 'hidden'; // Prevent mobile scroll issues
     
@@ -5529,20 +5529,31 @@ document.getElementById(`restore-${calculatorType}`).addEventListener('click', f
     }
     
     // Reset iframe container to ORIGINAL
-    const iframeContainer = calculatorContainer.querySelector('.calculator-iframe-container');
-    if (iframeContainer) {
-        iframeContainer.style.display = 'block';
-        iframeContainer.style.background = 'white';
-        iframeContainer.style.borderRadius = '10px';
-        iframeContainer.style.height = (window.innerHeight - 80) + 'px';
-        iframeContainer.style.overflow = 'auto'; // Allow scrolling inside
-    }
+const iframeContainer = calculatorContainer.querySelector('.calculator-iframe-container');
+if (iframeContainer) {
+    iframeContainer.style.display = 'block';
+    iframeContainer.style.background = 'transparent';
+    iframeContainer.style.borderRadius = '10px';
+    iframeContainer.style.height = (window.innerHeight - 47) + 'px';
+    iframeContainer.style.overflow = 'auto'; // Allow scrolling inside
     
-    // Show minimize button, hide restore button
-    document.getElementById(`minimize-${calculatorType}`).style.display = 'inline-block';
-    document.getElementById(`restore-${calculatorType}`).style.display = 'none';
-});
+    // Make iframe fill container completely
+    const iframe = iframeContainer.querySelector('iframe');
+    if (iframe) {
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+    }
+}
 
+// Force container to not exceed screen
+setTimeout(function() {
+    calculatorContainer.style.height = window.innerHeight + 'px';
+}, 50);
+
+// Show minimize button, hide restore button
+document.getElementById(`minimize-${calculatorType}`).style.display = 'inline-block';
+document.getElementById(`restore-${calculatorType}`).style.display = 'none';
+});
 
 
 }
