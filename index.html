@@ -2411,6 +2411,41 @@ input:checked + .toggle-slider:before {
     user-select: none;
 }
 
+.embedded-calculator {
+    position: fixed;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 800px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    z-index: 10000;
+}
+
+.embedded-calculator.minimized {
+    height: 60px !important;
+    overflow: hidden !important;
+}
+
+.embedded-calculator.minimized .calculator-iframe-container {
+    display: none !important;
+}
+
+.restore-calculator {
+    display: none !important;
+}
+
+.embedded-calculator.minimized .restore-calculator {
+    display: inline-block !important;
+}
+
+.embedded-calculator.minimized .close-calculator {
+    display: none !important;
+}
+
+
 
     #recent-affirmations-modal {
         width: 90% !important;
@@ -5238,16 +5273,23 @@ function closeCodeModal() {
 }
 
 function validateCode() {
-     const code = document.getElementById('access-code-input').value.trim().toLowerCase();
+    const code = document.getElementById('access-code-input').value.trim().toLowerCase();
     const validCodes = {
         'money-code': 'wealthcode455',
         'forecast': 'vision775'
     };
-
+    
     if (code === validCodes[currentCalculator]) {
         unlockCalculator(currentCalculator);
         closeCodeModal();
         alert('Calculator unlocked! 🎉');
+        
+        // Hide the "I have a code" button after successful access
+        const codeButton = document.querySelector(`button[onclick*="${currentCalculator}"]`);
+        if (codeButton && codeButton.textContent.includes('I have a code')) {
+            codeButton.style.display = 'none';
+        }
+        
     } else {
         alert('Invalid code. Please try again.');
     }
@@ -5280,44 +5322,147 @@ function unlockCalculator(calculatorType) {
 
 function showEmbeddedCalculator(calculatorType) {
     if (document.getElementById(`embedded-${calculatorType}`)) return;
-
+    
     const calculatorUrls = {
         'money-code': 'https://money-code-calculator.vercel.app/',
         'forecast': 'https://forecast-calculator-ochre.vercel.app/'
     };
-
+    
     const calculatorNames = {
-        'money-code': '💰 Money Code Calculator',
-        'forecast': '🔮 Forecast Calculator'
+        'money-code': 'Money Code Calculator',
+        'forecast': 'Forecast Calculator'
     };
-
+    
     const calculatorContainer = document.createElement('div');
     calculatorContainer.id = `embedded-${calculatorType}`;
     calculatorContainer.className = 'embedded-calculator';
+    
     calculatorContainer.innerHTML = `
-        <div class="calculator-header">
-            <h2>${calculatorNames[calculatorType]}</h2>
-            <button class="close-calculator" onclick="closeEmbeddedCalculator('${calculatorType}')">×</button>
-        </div>
-        <div class="calculator-iframe-container">
-            <iframe src="${calculatorUrls[calculatorType]}" 
-                    frameborder="0" 
-                    width="100%" 
-                    height="600px"
-                    style="border-radius: 10px;">
-            </iframe>
-        </div>
-    `;
+    <div class="calculator-header">
+        <h2>${calculatorNames[calculatorType]}</h2>
+        <button class="restore-calculator" id="restore-${calculatorType}">□</button>
+        <button class="close-calculator" id="minimize-${calculatorType}">−</button>
+    </div>
+    <div class="calculator-iframe-container">
+        <iframe src="${calculatorUrls[calculatorType]}"
+                 frameborder="0"
+                 width="100%"
+                 height="600px"
+                style="border-radius: 10px;">
+        </iframe>
+    </div>
+`;
 
-    document.body.appendChild(calculatorContainer);
-    calculatorContainer.style.display = 'block';
+document.body.appendChild(calculatorContainer);
+calculatorContainer.style.display = 'block';
+
+           // Add event listeners directly with inline CSS
+  document.getElementById(`minimize-${calculatorType}`).addEventListener('click', function() {
+    console.log('MINIMIZING...');
+    
+    // DYNAMIC position - first minimized goes to 70px, second to 130px
+    const currentlyMinimized = document.querySelectorAll('.embedded-calculator[style*="height: 50px"]');
+  // FIXED position based on calculator type (most reliable)
+let bottomPosition;
+if (calculatorType === 'money-code') {
+    bottomPosition = '70px'; // Money code always at bottom
+} else if (calculatorType === 'forecast') {
+    bottomPosition = '130px'; // Forecast always above money code
 }
 
-function closeEmbeddedCalculator(calculatorType) {
-    const calculator = document.getElementById(`embedded-${calculatorType}`);
-    if (calculator) {
-        calculator.remove();
+    
+    // STATIC positioning - dynamic based on order
+    calculatorContainer.style.height = '50px';
+    calculatorContainer.style.overflow = 'hidden';
+    calculatorContainer.style.position = 'fixed';
+    calculatorContainer.style.bottom = bottomPosition; // DYNAMIC position
+    calculatorContainer.style.left = '0';
+    calculatorContainer.style.right = '0';
+    calculatorContainer.style.width = '100%';
+    calculatorContainer.style.maxWidth = '400px';
+    calculatorContainer.style.margin = '0 auto';
+    calculatorContainer.style.transform = 'none';
+    calculatorContainer.style.top = 'auto';
+    calculatorContainer.style.zIndex = '9998';
+    calculatorContainer.style.background = 'linear-gradient(135deg, #350c48, #ccae79)';
+    calculatorContainer.style.border = '2px solid #FFD700';
+    calculatorContainer.style.borderRadius = '8px';
+    calculatorContainer.style.boxShadow = '0 2px 10px rgba(255, 215, 0, 0.3)';
+    calculatorContainer.style.padding = '0';
+    
+    // Style the header for minimized state
+    const header = calculatorContainer.querySelector('.calculator-header');
+    if (header) {
+        header.style.padding = '5px 10px';
+        header.style.background = 'transparent';
+        header.style.display = 'flex';
+        header.style.justifyContent = 'space-between';
+        header.style.alignItems = 'center';
+        header.style.fontSize = '14px';
+          header.style.color = '#ccae79';
     }
+    
+    // Hide iframe container
+    const iframeContainer = calculatorContainer.querySelector('.calculator-iframe-container');
+    if (iframeContainer) {
+        iframeContainer.style.display = 'none';
+    }
+    
+    // Hide minimize button, show restore button
+    document.getElementById(`minimize-${calculatorType}`).style.display = 'none';
+    document.getElementById(`restore-${calculatorType}`).style.display = 'inline-block';
+});
+
+
+document.getElementById(`restore-${calculatorType}`).addEventListener('click', function() {
+    console.log('RESTORING...');
+    
+    // COMPLETE reset to original state - remove ALL inline styles first
+    calculatorContainer.removeAttribute('style');
+    
+    // Then apply ORIGINAL styles
+    calculatorContainer.style.position = 'fixed';
+    calculatorContainer.style.top = '50px';
+    calculatorContainer.style.left = '50%';
+    calculatorContainer.style.transform = 'translateX(-50%)';
+    calculatorContainer.style.width = '90%';
+    calculatorContainer.style.maxWidth = '800px';
+    calculatorContainer.style.height = 'auto';
+    calculatorContainer.style.overflow = 'visible';
+    calculatorContainer.style.zIndex = '10000';
+    calculatorContainer.style.background = 'white';
+    calculatorContainer.style.border = '1px solid #ddd';
+    calculatorContainer.style.borderRadius = '10px';
+    calculatorContainer.style.boxShadow = '0 4px 20px rgba(0,0,0,0.3)';
+    calculatorContainer.style.padding = '0';
+    calculatorContainer.style.display = 'block';
+    
+    // Reset header to ORIGINAL styling
+    const header = calculatorContainer.querySelector('.calculator-header');
+    if (header) {
+        header.removeAttribute('style'); // Clear all inline styles
+        header.style.padding = '15px';
+        header.style.background = '#f8f9fa';
+        header.style.borderBottom = '1px solid #ddd';
+        header.style.fontSize = '16px';
+        header.style.color = '#333333';
+        header.style.display = 'flex';
+        header.style.justifyContent = 'space-between';
+        header.style.alignItems = 'center';
+    }
+    
+    // Show iframe container
+    const iframeContainer = calculatorContainer.querySelector('.calculator-iframe-container');
+    if (iframeContainer) {
+        iframeContainer.style.display = 'block';
+    }
+    
+    // Show minimize button, hide restore button
+    document.getElementById(`minimize-${calculatorType}`).style.display = 'inline-block';
+    document.getElementById(`restore-${calculatorType}`).style.display = 'none';
+});
+
+
 }
 
 function checkAndHideCompletedSetup() {
@@ -5520,6 +5665,18 @@ function navigateToPage(pageName) {
         page.style.display = 'none';
     });
     
+    // Hide/Show minimized calculators based on page
+    const minimizedCalculators = document.querySelectorAll('.embedded-calculator');
+    minimizedCalculators.forEach(calc => {
+        if (pageName === 'calculators') {
+            // Show minimized calculators only on calculator page
+            calc.style.display = 'block';
+        } else {
+            // Hide minimized calculators on other pages
+            calc.style.display = 'none';
+        }
+    });
+    
     // Show the target page
     let targetPageElement;
     
@@ -5559,6 +5716,7 @@ function navigateToPage(pageName) {
         console.error('Target page element not found for:', pageName);
     }
 }
+
 
 // Enhanced forceShowBottomNav to ensure clickability
 function forceShowBottomNav() {
