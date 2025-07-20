@@ -4826,6 +4826,16 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.appendChild(installBtn);
         });
 
+window.addEventListener('resize', function() {
+    document.body.style.height = window.innerHeight + 'px';
+});
+
+window.addEventListener('orientationchange', function() {
+    setTimeout(function() {
+        document.body.style.height = window.innerHeight + 'px';
+    }, 100);
+});
+
         // Add pulse animation
         const style = document.createElement('style');
         style.textContent = `
