@@ -5403,10 +5403,11 @@ calculatorContainer.style.display = 'block';
     const currentlyMinimized = document.querySelectorAll('.embedded-calculator[style*="height: 50px"]');
   // FIXED position based on calculator type (most reliable)
 let bottomPosition;
-if (calculatorType === 'money-code') {
-    bottomPosition = '70px'; // Money code always at bottom
-} else if (calculatorType === 'forecast') {
-    bottomPosition = '130px'; // Forecast always above money code
+    
+if (currentlyMinimized.length === 0) {
+    bottomPosition = '70px'; // First minimized calculator goes close to footer
+} else {
+    bottomPosition = '130px'; // Second minimized calculator goes above first
 }
 
     
@@ -5456,20 +5457,21 @@ if (calculatorType === 'money-code') {
 document.getElementById(`restore-${calculatorType}`).addEventListener('click', function() {
     console.log('RESTORING...');
     
-    // COMPLETE reset to original fullscreen state
+    // COMPLETE reset to ORIGINAL embedded calculator state
     calculatorContainer.removeAttribute('style');
     
-    // Apply ORIGINAL fullscreen styles
+    // Apply ORIGINAL embedded calculator styles (mobile-compatible)
     calculatorContainer.style.position = 'fixed';
     calculatorContainer.style.top = '0';
     calculatorContainer.style.left = '0';
-    calculatorContainer.style.width = '100%';
-    calculatorContainer.style.height = '100%';
+    calculatorContainer.style.width = '100vw'; // Use viewport width
+    calculatorContainer.style.height = '100vh'; // Use viewport height
     calculatorContainer.style.background = 'rgba(0, 0, 0, 0.9)';
     calculatorContainer.style.zIndex = '1000';
     calculatorContainer.style.display = 'block';
     calculatorContainer.style.padding = '20px';
     calculatorContainer.style.boxSizing = 'border-box';
+    calculatorContainer.style.overflow = 'hidden'; // Prevent mobile scroll issues
     
     // Reset header to ORIGINAL styling
     const header = calculatorContainer.querySelector('.calculator-header');
@@ -5488,13 +5490,15 @@ document.getElementById(`restore-${calculatorType}`).addEventListener('click', f
         iframeContainer.style.display = 'block';
         iframeContainer.style.background = 'white';
         iframeContainer.style.borderRadius = '10px';
-        iframeContainer.style.height = 'calc(100% - 80px)';
+        iframeContainer.style.height = 'calc(100vh - 80px)'; // Use viewport height
+        iframeContainer.style.overflow = 'auto'; // Allow scrolling inside
     }
     
     // Show minimize button, hide restore button
     document.getElementById(`minimize-${calculatorType}`).style.display = 'inline-block';
     document.getElementById(`restore-${calculatorType}`).style.display = 'none';
 });
+
 
 
 }
