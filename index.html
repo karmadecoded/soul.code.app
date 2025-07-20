@@ -5456,44 +5456,39 @@ if (calculatorType === 'money-code') {
 document.getElementById(`restore-${calculatorType}`).addEventListener('click', function() {
     console.log('RESTORING...');
     
-    // COMPLETE reset to original state - remove ALL inline styles first
+    // COMPLETE reset to original fullscreen state
     calculatorContainer.removeAttribute('style');
     
-    // Then apply ORIGINAL styles
+    // Apply ORIGINAL fullscreen styles
     calculatorContainer.style.position = 'fixed';
-    calculatorContainer.style.top = '50px';
-    calculatorContainer.style.left = '50%';
-    calculatorContainer.style.transform = 'translateX(-50%)';
-    calculatorContainer.style.width = '90%';
-    calculatorContainer.style.maxWidth = '800px';
-    calculatorContainer.style.height = 'auto';
-    calculatorContainer.style.overflow = 'visible';
-    calculatorContainer.style.zIndex = '10000';
-    calculatorContainer.style.background = 'white';
-    calculatorContainer.style.border = '1px solid #ddd';
-    calculatorContainer.style.borderRadius = '10px';
-    calculatorContainer.style.boxShadow = '0 4px 20px rgba(0,0,0,0.3)';
-    calculatorContainer.style.padding = '0';
+    calculatorContainer.style.top = '0';
+    calculatorContainer.style.left = '0';
+    calculatorContainer.style.width = '100%';
+    calculatorContainer.style.height = '100%';
+    calculatorContainer.style.background = 'rgba(0, 0, 0, 0.9)';
+    calculatorContainer.style.zIndex = '1000';
     calculatorContainer.style.display = 'block';
+    calculatorContainer.style.padding = '20px';
+    calculatorContainer.style.boxSizing = 'border-box';
     
     // Reset header to ORIGINAL styling
     const header = calculatorContainer.querySelector('.calculator-header');
     if (header) {
-        header.removeAttribute('style'); // Clear all inline styles
-        header.style.padding = '15px';
-        header.style.background = '#f8f9fa';
-        header.style.borderBottom = '1px solid #ddd';
-        header.style.fontSize = '16px';
-        header.style.color = '#333333';
+        header.removeAttribute('style');
         header.style.display = 'flex';
         header.style.justifyContent = 'space-between';
         header.style.alignItems = 'center';
+        header.style.color = 'white';
+        header.style.marginBottom = '20px';
     }
     
-    // Show iframe container
+    // Reset iframe container to ORIGINAL
     const iframeContainer = calculatorContainer.querySelector('.calculator-iframe-container');
     if (iframeContainer) {
         iframeContainer.style.display = 'block';
+        iframeContainer.style.background = 'white';
+        iframeContainer.style.borderRadius = '10px';
+        iframeContainer.style.height = 'calc(100% - 80px)';
     }
     
     // Show minimize button, hide restore button
