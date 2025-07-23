@@ -4228,6 +4228,25 @@ document.addEventListener('DOMContentLoaded', function() {
 let usedMessages = [];
 let allMessages = [];
 
+// ADD THE MESSAGE LISTENER RIGHT HERE
+window.addEventListener('message', function(event) {
+    // Security check - only accept messages from your forecast calculator
+    if (event.origin !== 'https://forecast-calculator-ochre.vercel.app') {
+        return;
+    }
+    
+    // Handle forecast setup completion
+    if (event.data.type === 'forecastSetupComplete') {
+        console.log('User completed forecast setup with DOB:', event.data.birthDate);
+        
+        // Save DOB permanently in PWA storage
+        localStorage.setItem('pwa_forecastDOB', event.data.birthDate);
+        localStorage.setItem('pwa_forecastSetupComplete', 'true');
+        
+        console.log('DOB saved in PWA storage - user will not need to enter again');
+    }
+});
+
 // Messages embedded directly
 function loadMessages() {
     allMessages = [
@@ -5431,14 +5450,19 @@ function showEmbeddedCalculator(calculatorType) {
                  frameborder="0"
                  width="100%"
                  height="600px"
-                style="border-radius: 10px;">
+                style="border-radius: 10px;"
+                id="iframe-${calculatorType}">
         </iframe>
     </div>
-`;
+    `;
 
-document.body.appendChild(calculatorContainer);
-calculatorContainer.style.display = 'block';
+    document.body.appendChild(calculatorContainer);
+    calculatorContainer.style.display = 'block';
 
+    // NEW: Handle forecast calculator DOB persistence
+    if (calculatorType === 'forecast') {
+        handleForecastDOBPersistence(calculatorType);
+    }
            // Add event listeners directly with inline CSS
   document.getElementById(`minimize-${calculatorType}`).addEventListener('click', function() {
     console.log('MINIMIZING...');
@@ -5556,6 +5580,33 @@ document.getElementById(`restore-${calculatorType}`).style.display = 'none';
 });
 
 
+}
+
+// ADD THE handleForecastDOBPersistence FUNCTION RIGHT HERE
+function handleForecastDOBPersistence(calculatorType) {
+    const iframe = document.getElementById(`iframe-${calculatorType}`);
+    if (!iframe) return;
+    
+    // Check if user already completed setup
+    const isSetupComplete = localStorage.getItem('pwa_forecastSetupComplete');
+    const savedDOB = localStorage.getItem('pwa_forecastDOB');
+    
+    iframe.onload = function() {
+        setTimeout(() => {
+            if (isSetupComplete === 'true' && savedDOB) {
+                console.log('User already completed setup, sending saved DOB:', savedDOB);
+                
+                iframe.contentWindow.postMessage({
+                    type: 'setPrefilledDOB',
+                    birthDate: savedDOB,
+                    isReturningUser: true
+                }, 'https://forecast-calculator-ochre.vercel.app');
+                
+            } else {
+                console.log('New user - calculator will show DOB input');
+            }
+        }, 1000);
+    };
 }
 
 function checkAndHideCompletedSetup() {
